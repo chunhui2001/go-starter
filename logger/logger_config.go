@@ -62,4 +62,7 @@ func init() {
 		"Env": env,
 	}).Info("Initialization log completed: app=", app, ", env=", env)
 
+	// don't forget to close it
+	//defer f.Close()
+
 }
