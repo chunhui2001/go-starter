@@ -5,6 +5,8 @@ go 1.17
 require (
 	github.com/gin-contrib/logger v0.2.2
 	github.com/gin-gonic/gin v1.8.1
+	github.com/google/uuid v1.3.0
+	github.com/gorilla/websocket v1.5.0
 	github.com/joho/godotenv v1.4.0
 	github.com/rs/zerolog v1.27.0
 	github.com/sirupsen/logrus v1.9.0

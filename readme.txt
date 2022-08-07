@@ -9,3 +9,5 @@ $ go get && go run .
 
 ### websocket 
 # https://hoohoo.top/blog/20220320172715-go-websocket/
+
+$ go get github.com/gorilla/websocket

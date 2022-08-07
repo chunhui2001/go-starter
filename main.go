@@ -6,7 +6,11 @@ import (
 	"github.com/chunhui2001/go-starter/config"
 )
 
+var APP_PORT string = config.GetEnv("APP_PORT", ":8080")
+
 func main() {
-	APP_PORT := config.GetEnv("APP_PORT", ":8080")
-	starter.Setup().Run(APP_PORT)
+
+	r := starter.Setup()
+	r.Run(APP_PORT)
+
 }

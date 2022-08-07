@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/chunhui2001/go-starter/config"
+	"github.com/chunhui2001/go-starter/wss"
 
 	"github.com/gin-gonic/gin"
 
@@ -16,6 +17,7 @@ import (
 func Setup() *gin.Engine {
 
 	APP_PORT := config.GetEnv("APP_PORT", ":8080")
+	WEBSOCKET_ROUTER := config.GetEnv("WEBSOCKET_ROUTER", "")
 
 	// new engine
 	engine := gin.New()
@@ -31,7 +33,11 @@ func Setup() *gin.Engine {
 		c.JSON(http.StatusOK, gin.H{"code": 200, "data": "hello world", "message": "Ok"})
 	})
 
-	logger.Log.Info("Listening and serving HTTP on " + APP_PORT)
+	if WEBSOCKET_ROUTER != "" {
+		engine.GET(WEBSOCKET_ROUTER, wss.WebsocketUpgrade)
+	}
+
+	logger.Log.Info("Listening and serving HTTP on " + APP_PORT + ", websocket=" + WEBSOCKET_ROUTER)
 
 	return engine
 

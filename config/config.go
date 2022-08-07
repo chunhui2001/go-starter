@@ -14,21 +14,24 @@ var filename string = ".env"
 // Useful in development and test modes. Not used in production.
 func init() {
 
-	err := godotenv.Load(filename)
 	var env string = os.Getenv("GIN_ENV")
 
-	if err != nil {
-		log.Println("load .env file error: errorMessage=" + fmt.Sprint(err) + ".")
-		os.Exit(3)
-		return
-	}
-
 	filename = ".env." + env
-	err = godotenv.Load(filename)
+	err := godotenv.Load(filename)
 
 	if err != nil {
-		log.Println(filename + " file not exists, use .env file.")
+
+		log.Println("loading " + filename + " file error, use .env file, errorMessage=" + fmt.Sprint(err) + ".")
 		filename = ".env"
+
+		err = godotenv.Load(filename)
+
+		if err != nil {
+			log.Println("load .env file error: errorMessage=" + fmt.Sprint(err) + ".")
+			os.Exit(3)
+			return
+		}
+
 	}
 
 	log.Println(filename + " loaded.")
