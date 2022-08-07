@@ -9,13 +9,13 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"go-starter/config"
+	"go-starter/utils"
 
 	"github.com/sirupsen/logrus"
 	easy "github.com/t-tomalak/logrus-easy-formatter"
 )
 
 var Log *logrus.Logger
-var timeStampFormat = "2006-01-02T15:04:05.000Z07:00"
 
 func init() {
 
@@ -43,7 +43,7 @@ func init() {
 	Log.Formatter.(*logrus.TextFormatter).DisableTimestamp = true // remove timestamp from test output
 
 	Log.SetFormatter(&easy.Formatter{
-		TimestampFormat: timeStampFormat,
+		TimestampFormat: utils.TimeStampFormat,
 		LogFormat:       "[%lvl%] %time% - %msg%\n",
 	})
 

@@ -9,6 +9,8 @@ import (
 
 	"go-starter/logger"
 	"go-starter/middleware"
+
+	"github.com/thinkerou/favicon"
 )
 
 func Setup() *gin.Engine {
@@ -19,9 +21,10 @@ func Setup() *gin.Engine {
 	engine := gin.New()
 
 	// apply middleware
-	middleware.AccessFormat(engine)
 	engine.Use(gin.Recovery())
 	engine.Use(middleware.CORS(middleware.CORSOptions{}))
+	engine.Use(middleware.AccessFormat())
+	engine.Use(favicon.New("./static/favicon.ico")) // set favicon middleware
 
 	// info router
 	engine.GET("/info", func(c *gin.Context) {

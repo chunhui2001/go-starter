@@ -1,0 +1,37 @@
+
+## 安装Docker Compose
+# curl -L https://github.com/docker/compose/releases/download/1.24.1/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+# chmod +x /usr/local/bin/docker-compose
+# docker-compose --version
+# docker-compose up -d
+version: '2.4'
+networks:
+    br0:
+      external: true
+
+services:
+  go-starter:
+    container_name: go-starter
+    image: go-starter:1.0
+    hostname: go-starter
+    #mem_limit: 2048m
+    ports:
+      - 4000:8080
+    environment:
+      - GIN_ENV=production
+      #- GIN_ENV=staging
+    #entrypoint: ["/bin/sh", "-c", "while true; do echo 1 >/dev/null 2>/dev/null; sleep 1; done"]
+    #entrypoint: ["/dist/app"]
+    volumes:
+      - ./static:/dist/static:ro
+      - ./.env:/dist/.env:ro
+      - ./.env.development:/dist/.env.development:ro
+      - ./.env.production:/dist/.env.production:ro
+      - ./.env.testing:/dist/.env.testing:ro
+    restart: always
+    networks:
+        br0:
+          ipv4_address: 172.16.197.232
+    
+
+
