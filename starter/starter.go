@@ -3,12 +3,12 @@ package starter
 import (
 	"net/http"
 
-	"go-starter/config"
+	"github.com/chunhui2001/go-starter/config"
 
 	"github.com/gin-gonic/gin"
 
-	"go-starter/logger"
-	"go-starter/middleware"
+	"github.com/chunhui2001/go-starter/logger"
+	"github.com/chunhui2001/go-starter/middleware"
 
 	"github.com/thinkerou/favicon"
 )

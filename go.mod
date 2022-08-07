@@ -1,4 +1,4 @@
-module go-starter
+module github.com/chunhui2001/go-starter
 
 go 1.17
 

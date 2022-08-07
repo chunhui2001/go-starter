@@ -3,7 +3,7 @@ package middleware
 import (
 	"fmt"
 
-	"go-starter/utils"
+	"github.com/chunhui2001/go-starter/utils"
 
 	"github.com/gin-gonic/gin"
 )

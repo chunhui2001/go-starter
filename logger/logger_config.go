@@ -8,8 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"go-starter/config"
-	"go-starter/utils"
+	"github.com/chunhui2001/go-starter/config"
+	"github.com/chunhui2001/go-starter/utils"
 
 	"github.com/sirupsen/logrus"
 	easy "github.com/t-tomalak/logrus-easy-formatter"

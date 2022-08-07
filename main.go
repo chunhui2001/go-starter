@@ -1,8 +1,9 @@
 package main
 
 import (
-	"go-starter/config"
-	"go-starter/starter"
+	"github.com/chunhui2001/go-starter/starter"
+
+	"github.com/chunhui2001/go-starter/config"
 )
 
 func main() {
