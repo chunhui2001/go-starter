@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"errors"
 	"io"
 	"os"
 	"path"
@@ -14,6 +13,7 @@ import (
 	"github.com/chunhui2001/go-starter/utils"
 
 	"github.com/sirupsen/logrus"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 var Log *logrus.Logger
@@ -25,15 +25,16 @@ func init() {
 
 	log_folder := "/tmp/" + app
 
-	if _, err := os.Stat(log_folder); errors.Is(err, os.ErrNotExist) {
-		os.Mkdir(log_folder, os.ModePerm)
+	lumberjackLogger := &lumberjack.Logger{
+		Filename:   log_folder + "/mylog.txt",
+		MaxSize:    1, // MB
+		MaxBackups: 10,
+		MaxAge:     30, // days
+		Compress:   true,
 	}
 
-	// open a file
-	f, _ := os.OpenFile(log_folder+"/log.txt", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
-
 	// assign it to the standard logger
-	mw := io.MultiWriter(os.Stdout, f)
+	mw := io.MultiWriter(os.Stdout, lumberjackLogger)
 
 	Log = logrus.New()
 
@@ -62,7 +63,7 @@ func init() {
 	}
 
 	gin.DisableConsoleColor() //  Disable Console Color
-	gin.DefaultWriter = io.MultiWriter(f, os.Stdout)
+	gin.DefaultWriter = io.MultiWriter(lumberjackLogger, os.Stdout)
 
 	Log.WithFields(logrus.Fields{
 		"App": app,
