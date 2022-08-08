@@ -5,6 +5,9 @@ ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 e 	?=production
 c 	?=10000
 
+dev:
+	go get && gin -i --appPort 8080 --port 3000 run main.go
+
 # make run e=development 
 run:
 	go get && GIN_ENV=$(e) go run .

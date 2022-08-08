@@ -11,7 +11,7 @@ import (
 // CORS middleware from https://github.com/gin-gonic/gin/issues/29#issuecomment-89132826
 func AccessFormat() gin.HandlerFunc {
 	return gin.LoggerWithConfig(gin.LoggerConfig{
-		SkipPaths: []string{"/favicon.ico"}, Formatter: func(param gin.LogFormatterParams) string {
+		SkipPaths: []string{"/favicon.ico", "/static"}, Formatter: func(param gin.LogFormatterParams) string {
 			// your custom format
 			return fmt.Sprintf("[%s] %s - Access %s \"%s %s %s %d %s\"\n",
 				"INFO",

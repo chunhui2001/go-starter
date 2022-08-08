@@ -24,6 +24,7 @@ services:
     #entrypoint: ["/dist/app"]
     volumes:
       - ./static:/dist/static:ro
+      - ./templates:/dist/templates:ro
       - ./.env:/dist/.env:ro
       - ./.env.development:/dist/.env.development:ro
       - ./.env.production:/dist/.env.production:ro
