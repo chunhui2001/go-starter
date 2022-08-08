@@ -3,10 +3,11 @@ package starter
 import (
 	"html/template"
 	"net/http"
-	"strings"
 
 	"github.com/chunhui2001/go-starter/config"
 	"github.com/chunhui2001/go-starter/wss"
+	"github.com/foolin/goview"
+	"github.com/foolin/goview/supports/ginview"
 	"github.com/gin-contrib/static"
 
 	"github.com/gin-gonic/gin"
@@ -26,8 +27,19 @@ func Setup() *gin.Engine {
 	engine := gin.New()
 
 	// init html template
-	engine.SetFuncMap(template.FuncMap{"upper": strings.ToUpper})
-	engine.LoadHTMLGlob("templates/*.html")
+	engine.HTMLRender = ginview.New(goview.Config{
+		Root:      "views",
+		Extension: ".html",
+		Master:    "layouts/master",
+		//Partials:  []string{"partials/ad"},
+		Funcs: template.FuncMap{
+			"sub": func(a, b int) int {
+				return a - b
+			},
+			// more funcs
+		},
+		DisableCache: true,
+	})
 
 	// apply middleware
 	engine.Use(gin.Recovery())
@@ -43,8 +55,9 @@ func Setup() *gin.Engine {
 
 	// index page
 	engine.GET("/home", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", gin.H{
-			"content": "This is an Home page.",
+		//render with master
+		c.HTML(http.StatusOK, "index", gin.H{
+			"content": "This is an Home page...",
 		})
 	})
 
