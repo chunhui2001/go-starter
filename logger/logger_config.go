@@ -4,6 +4,9 @@ import (
 	"errors"
 	"io"
 	"os"
+	"path"
+	"runtime"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
@@ -11,7 +14,6 @@ import (
 	"github.com/chunhui2001/go-starter/utils"
 
 	"github.com/sirupsen/logrus"
-	easy "github.com/t-tomalak/logrus-easy-formatter"
 )
 
 var Log *logrus.Logger
@@ -37,13 +39,19 @@ func init() {
 
 	Log.SetOutput(mw)
 	Log.SetLevel(logrus.DebugLevel)
+	Log.SetReportCaller(true)
 
 	Log.Formatter.(*logrus.TextFormatter).DisableColors = true    // remove colors
 	Log.Formatter.(*logrus.TextFormatter).DisableTimestamp = true // remove timestamp from test output
 
-	Log.SetFormatter(&easy.Formatter{
+	Log.SetFormatter(&MyFormatter{
 		TimestampFormat: utils.TimeStampFormat,
-		LogFormat:       "[%lvl%] %time% - %msg%\n",
+		LogFormat:       "%time% [%lvl%] - %file% >> %msg%\n",
+		CallerPrettyfier: func(frame *runtime.Frame) (function string, file string) {
+			fileName := path.Base(frame.File) + ":" + strconv.Itoa(frame.Line)
+			//return frame.Function, fileName
+			return "", fileName
+		},
 	})
 
 	// config gin

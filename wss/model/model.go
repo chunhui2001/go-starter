@@ -41,26 +41,6 @@ func (s *Server) Send(client *Client, message string) {
 	client.Connection.WriteMessage(1, []byte(message))
 }
 
-func (s *Server) RemoveClient(client Client) {
-	// Read all subs
-	for _, sub := range s.Subscriptions {
-		// Read all client
-		for i := 0; i < len(*sub.Clients); i++ {
-			if client.ID == (*sub.Clients)[i].ID {
-				// If found, remove client
-				if i == len(*sub.Clients)-1 {
-					// if it's stored as the last element, crop the array length
-					*sub.Clients = (*sub.Clients)[:len(*sub.Clients)-1]
-				} else {
-					// if it's stored in between elements, overwrite the element and reduce iterator to prevent out-of-bound
-					*sub.Clients = append((*sub.Clients)[:i], (*sub.Clients)[i+1:]...)
-					i--
-				}
-			}
-		}
-	}
-}
-
 func (s *Server) ProcessMessage(client Client, messageType int, payload []byte) *Server {
 
 	m := Message{}
@@ -92,6 +72,7 @@ func (s *Server) ProcessMessage(client Client, messageType int, payload []byte) 
 }
 
 func (s *Server) Publish(topic string, message []byte) {
+
 	var clients []Client
 
 	// get list of clients subscribed to topic
@@ -149,6 +130,26 @@ func (s *Server) Unsubscribe(client *Client, topic string) {
 						*sub.Clients = append((*sub.Clients)[:i], (*sub.Clients)[i+1:]...)
 						i--
 					}
+				}
+			}
+		}
+	}
+}
+
+func (s *Server) RemoveClient(client Client) {
+	// Read all subs
+	for _, sub := range s.Subscriptions {
+		// Read all client
+		for i := 0; i < len(*sub.Clients); i++ {
+			if client.ID == (*sub.Clients)[i].ID {
+				// If found, remove client
+				if i == len(*sub.Clients)-1 {
+					// if it's stored as the last element, crop the array length
+					*sub.Clients = (*sub.Clients)[:len(*sub.Clients)-1]
+				} else {
+					// if it's stored in between elements, overwrite the element and reduce iterator to prevent out-of-bound
+					*sub.Clients = append((*sub.Clients)[:i], (*sub.Clients)[i+1:]...)
+					i--
 				}
 			}
 		}

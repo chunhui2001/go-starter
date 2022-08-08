@@ -1,15 +1,24 @@
 package wss
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 
+	"github.com/chunhui2001/go-starter/cron"
+	"github.com/chunhui2001/go-starter/logger"
 	"github.com/chunhui2001/go-starter/wss/model"
 )
+
+func init() {
+
+	cron.Add("* * * * * *", func() {
+		logger.Log.Info("1.")
+	})
+
+}
 
 var upgrader = websocket.Upgrader{
 
@@ -60,13 +69,7 @@ func WebsocketUpgrade(c *gin.Context) {
 		// If client message is ping will return pong
 		if string(message) == "ping" {
 			message = []byte("pong")
-			// Response message to client
-			err = ws.WriteMessage(mt, message)
-
-			if err != nil {
-				fmt.Println(err)
-				break
-			}
+			_ = ws.WriteMessage(mt, message)
 		} else {
 			server.ProcessMessage(client, mt, message)
 		}

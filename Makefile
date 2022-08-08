@@ -16,7 +16,7 @@ up:
 	docker-compose -f docker-compose.yml up -d
 
 log:
-	docker logs -f go-starter
+	docker logs -f --tail 1000 go-starter
 
 rm:
 	docker rm -f go-starter
@@ -24,3 +24,4 @@ rm:
 # make load c=10000 
 load:
 	h2load -n$(c) -c100 -m10 --h1 "http://localhost:4000/info"
+
