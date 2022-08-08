@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/gin-contrib/logger v0.2.2
+	github.com/gin-contrib/static v0.0.1
 	github.com/gin-gonic/gin v1.8.1
 	github.com/gomodule/redigo v1.8.9
 	github.com/google/uuid v1.3.0

@@ -5,6 +5,7 @@ import (
 
 	"github.com/chunhui2001/go-starter/config"
 	"github.com/chunhui2001/go-starter/wss"
+	"github.com/gin-contrib/static"
 
 	"github.com/gin-gonic/gin"
 
@@ -26,6 +27,7 @@ func Setup() *gin.Engine {
 	engine.Use(gin.Recovery())
 	engine.Use(middleware.CORS(middleware.CORSOptions{}))
 	engine.Use(middleware.AccessFormat())
+	engine.Use(static.Serve("/static", static.LocalFile("./static", false)))
 	engine.Use(favicon.New("./static/favicon.ico")) // set favicon middleware
 
 	// info router
