@@ -63,7 +63,7 @@ func Setup() *gin.Engine {
 
 	// about page
 	engine.GET("/about", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "about.html", gin.H{
+		c.HTML(http.StatusOK, "about", gin.H{
 			"content": "This is an about page...",
 		})
 	})
