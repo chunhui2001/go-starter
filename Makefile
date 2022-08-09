@@ -14,7 +14,7 @@ run:
 	go get && GIN_ENV=$(e) go run .
 
 build:
-	docker build . -t go-starter:1.0
+	docker rmi -f go-starter:1.0 && docker build . -t go-starter:1.0
 
 up:
 	docker-compose -f docker-compose.yml up -d

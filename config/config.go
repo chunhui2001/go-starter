@@ -32,9 +32,7 @@ type Redis struct {
 }
 
 var AppSetting = &App{}
-
 var WssSetting = &Wss{}
-
 var RedisConf = &Redis{}
 
 var filename string = ".env"
@@ -44,67 +42,51 @@ var filename string = ".env"
 func init() {
 
 	var env string = os.Getenv("GIN_ENV")
-	var envfile = utils.RootDir() + "/" + ".env." + env
+	var envfile = ".env." + env
 
-	if exists, _ := utils.Exists(envfile); exists == true {
+	if exists, _ := utils.Exists(utils.RootDir() + "/" + envfile); exists == true {
 		filename = envfile
 	} else {
-		log.Println("loading " + envfile + " file error, use .env file.")
+		log.Println("Configuration loading " + utils.RootDir() + "/" + envfile + " file error, use .env file.")
 	}
 
 	err := godotenv.Load(filename)
 
 	if err != nil {
-		log.Println("loading " + filename + " file error, errorMessage=" + fmt.Sprint(err) + ".")
+		log.Println("Configuration loading " + utils.RootDir() + "/" + filename + " file error, errorMessage=" + fmt.Sprint(err) + ".")
 		os.Exit(3)
 		return
 	}
 
-	viper.AddConfigPath(utils.RootDir())
-	viper.SetConfigName(filename)
-	viper.SetConfigType("env")
+	v1 := readConfig(filename, map[string]interface{}{})
 
-	viper.AutomaticEnv()
+	loadAppSettings(v1, filename)
+	loadRedisSettings(v1, filename)
+	loadWssSettings(v1, filename)
 
-	err = viper.ReadInConfig()
-
-	if err != nil {
-		log.Println("viper loaded error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
-		os.Exit(3)
-		return
-	}
-
-	loadAppSettings(filename)
-	loadRedisSettings(filename)
-	loadWssSettings(filename)
-
-	log.Println("viper " + filename + " loaded.")
+	log.Println("Configuration loaded " + utils.RootDir() + "/" + filename + " successful.")
 
 }
 
-func loadAppSettings(filename string) {
-	err := viper.Unmarshal(&AppSetting)
+func loadAppSettings(v1 *viper.Viper, filename string) {
+	err := v1.Unmarshal(&AppSetting)
 	if err != nil {
 		log.Println("viper parse AppSettings error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
 		os.Exit(3)
 		return
-	} else {
-		log.Println("viper readed AppSettings appName=" + AppSetting.AppName)
 	}
 }
 
-func loadRedisSettings(filename string) {
+func loadRedisSettings(v1 *viper.Viper, filename string) {
 
 	REDIS_Enable, _ := strconv.ParseBool(GetEnv("REDIS_Enable", "false"))
 
 	if REDIS_Enable {
-		err := viper.Unmarshal(&RedisConf)
+		err := v1.Unmarshal(&RedisConf)
 		if err != nil {
 			log.Println("viper parse RedisConf error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
 			os.Exit(3)
 			return
-		} else {
-			log.Println("viper readed RedisConf redisHost=" + RedisConf.Host)
 		}
 	} else {
 		RedisConf = &Redis{Enable: false}
@@ -112,23 +94,41 @@ func loadRedisSettings(filename string) {
 
 }
 
-func loadWssSettings(filename string) {
+func loadWssSettings(v1 *viper.Viper, filename string) {
 
 	WSS_PREFIX := GetEnv("WSS_PREFIX", "")
 
 	if WSS_PREFIX != "" {
-		err := viper.Unmarshal(&WssSetting)
+		err := v1.Unmarshal(&WssSetting)
 		if err != nil {
 			log.Println("viper parse WssSetting error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
 			os.Exit(3)
 			return
 		} else {
-			log.Println("viper readed WssSetting wssPrefix=" + WssSetting.Prefix)
+			log.Println("WssSetting.Prefix: file=" + WssSetting.Prefix)
 		}
 	} else {
 		WssSetting = &Wss{Prefix: ""}
 	}
 
+}
+
+func readConfig(filename string, defaults map[string]interface{}) *viper.Viper {
+	v := viper.New()
+	for key, value := range defaults {
+		v.SetDefault(key, value)
+	}
+	v.AddConfigPath(utils.RootDir())
+	v.SetConfigName(filename)
+	v.SetConfigType("env")
+	v.AutomaticEnv()
+	err := v.ReadInConfig()
+	if err != nil {
+		log.Println("viper loaded error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		os.Exit(3)
+		return nil
+	}
+	return v
 }
 
 // GetEnv returns an environment variable or a default value if not present
