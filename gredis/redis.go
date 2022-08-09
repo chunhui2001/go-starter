@@ -3,7 +3,6 @@ package gredis
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/chunhui2001/go-starter/config"
@@ -16,17 +15,15 @@ var RedisConn *redis.Pool
 // Setup Initialize the Redis instance
 func init() {
 
-	REDIS_Enable, _ := strconv.ParseBool(config.GetEnv("REDIS_Enable", "false"))
-
-	if REDIS_Enable == false {
+	if config.RedisConf.Enable == false {
 		return
 	}
 
-	REDIS_HOST := config.GetEnv("REDIS_Host", "127.0.0.1:6379")
-	REDIS_Password := config.GetEnv("REDIS_Password", "")
-	REDIS_MaxIdle, _ := strconv.Atoi(config.GetEnv("REDIS_MaxIdle", "30"))
-	REDIS_MaxActive, _ := strconv.Atoi(config.GetEnv("REDIS_MaxActive", "30"))
-	REDIS_IdleTimeout, _ := time.ParseDuration(config.GetEnv("REDIS_IdleTimeout", "200"))
+	REDIS_HOST := config.RedisConf.Host
+	REDIS_Password := config.RedisConf.Passwd
+	REDIS_MaxIdle := config.RedisConf.MaxIdle
+	REDIS_MaxActive := config.RedisConf.MaxActive
+	REDIS_IdleTimeout := config.RedisConf.IdleTimeout
 
 	RedisConn = &redis.Pool{
 

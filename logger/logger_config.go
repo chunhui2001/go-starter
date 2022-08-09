@@ -20,8 +20,8 @@ var Log *logrus.Logger
 
 func init() {
 
-	env := config.GetEnv("GIN_ENV", "development")
-	app := config.GetEnv("APP_NAME", "go-starter")
+	env := config.AppSetting.Env
+	app := config.AppSetting.AppName
 
 	log_folder := "/tmp/" + app
 
@@ -68,7 +68,7 @@ func init() {
 	Log.WithFields(logrus.Fields{
 		"App": app,
 		"Env": env,
-	}).Info("Initialization log completed: app=", app, ", env=", env)
+	}).Info("Initialization log completed: app=", app, ", env=", env, ", appRoot=", utils.RootDir())
 
 	// don't forget to close it
 	//defer f.Close()

@@ -20,8 +20,8 @@ import (
 
 func Setup() *gin.Engine {
 
-	APP_PORT := config.GetEnv("APP_PORT", ":8080")
-	WEBSOCKET_ROUTER := config.GetEnv("WEBSOCKET_ROUTER", "")
+	APP_PORT := config.AppSetting.AppPort
+	WSS_PREFIX := config.WssSetting.Prefix
 
 	// new engine
 	engine := gin.New()
@@ -68,11 +68,11 @@ func Setup() *gin.Engine {
 		})
 	})
 
-	if WEBSOCKET_ROUTER != "" {
-		engine.GET(WEBSOCKET_ROUTER, wss.WebsocketUpgrade)
+	if WSS_PREFIX != "" {
+		engine.GET(WSS_PREFIX, wss.WebsocketUpgrade)
 	}
 
-	logger.Log.Info("Listening and serving HTTP on " + APP_PORT + ", websocket=" + WEBSOCKET_ROUTER)
+	logger.Log.Info("Listening and serving HTTP on " + APP_PORT + ", websocket=" + WSS_PREFIX)
 
 	return engine
 
