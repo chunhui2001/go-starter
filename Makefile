@@ -29,3 +29,5 @@ rm:
 load:
 	h2load -n$(c) -c100 -m10 --h1 "http://localhost:4000/info"
 
+clear:
+	go clean --modcache
