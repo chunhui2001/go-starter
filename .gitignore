@@ -46,3 +46,4 @@ yarn.lock*
 *.zip
 package-lock.json
 gin-bin
+go-starter

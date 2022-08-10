@@ -1,3 +1,7 @@
+
+### Install
+$ go get github.com/codegangsta/gin
+
 ### Refer
 # https://go.dev/doc/tutorial/web-service-gin
 
