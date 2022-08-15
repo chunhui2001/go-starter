@@ -3,8 +3,8 @@ package model
 import (
 	"encoding/json"
 
-	"github.com/chunhui2001/go-starter/cron"
 	"github.com/chunhui2001/go-starter/logger"
+	"github.com/chunhui2001/go-starter/utils"
 	"github.com/gorilla/websocket"
 )
 
@@ -16,7 +16,7 @@ const (
 )
 
 const (
-	timer = "server_timer"
+	server_timer = "server_timer"
 )
 
 // a server type to store all subscriptions
@@ -43,21 +43,14 @@ type Message struct {
 	Message string `json:"message"`
 }
 
-func init() {
-
-	cron.Add("* * * * * *", func() {
-		ServerTimer()
-	})
-
-}
-
-func ServerTimer() {
-	logger.Log.Info("server_timer.")
+func (s *Server) ServerTimer() {
+	logger.Log.Info("server_timer: " + utils.DateTime())
+	s.Publish(server_timer, []byte(utils.DateTime()))
 }
 
 func (s *Server) NewClient(client *Client) {
-	s.Send(client, "Server: Welcome! Your ID is "+client.ID)
-	s.Subscribe(client, timer)
+	s.Send(client, "Welcome! Your ID is: "+client.ID+", DataTime: "+utils.DateTime())
+	s.Subscribe(client, server_timer)
 }
 
 func (s *Server) Send(client *Client, message string) {

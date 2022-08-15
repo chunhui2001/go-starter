@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 
+	"github.com/chunhui2001/go-starter/cron"
 	"github.com/chunhui2001/go-starter/wss/model"
 )
 
@@ -24,6 +25,14 @@ var upgrader = websocket.Upgrader{
 }
 
 var server = &model.Server{}
+
+func init() {
+
+	cron.Add("* * * * * *", func() {
+		server.ServerTimer()
+	})
+
+}
 
 func WebsocketUpgrade(c *gin.Context) {
 

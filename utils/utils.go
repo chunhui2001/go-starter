@@ -6,6 +6,7 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
+	"time"
 )
 
 var TimeStampFormat = "2006-01-02T15:04:05.000Z07:00"
@@ -25,4 +26,8 @@ func Exists(name string) (bool, error) {
 		return false, nil
 	}
 	return false, err
+}
+
+func DateTime() string {
+	return time.Now().Format(TimeStampFormat)
 }
