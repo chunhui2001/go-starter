@@ -15,6 +15,7 @@ import (
 	"github.com/chunhui2001/go-starter/logger"
 	"github.com/chunhui2001/go-starter/middleware"
 
+	"github.com/chunhui2001/go-starter/controller"
 	"github.com/thinkerou/favicon"
 )
 
@@ -54,19 +55,12 @@ func Setup() *gin.Engine {
 	})
 
 	// index page
-	engine.GET("/home", func(c *gin.Context) {
-		//render with master
-		c.HTML(http.StatusOK, "index", gin.H{
-			"content": "This is an Home page...",
-		})
-	})
+	engine.GET("", controller.IndexRouter)
+	engine.GET("/index", controller.IndexRouter)
+	engine.GET("/home", controller.IndexRouter)
 
 	// about page
-	engine.GET("/about", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "about", gin.H{
-			"content": "This is an about page...",
-		})
-	})
+	engine.GET("/about", controller.AboutRouter)
 
 	if WSS_PREFIX != "" {
 		engine.GET(WSS_PREFIX, wss.WebsocketUpgrade)

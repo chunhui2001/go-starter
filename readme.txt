@@ -28,3 +28,7 @@ $ go get github.com/gorilla/websocket
 # https://github.com/foolin/goview
 # https://curatedgo.com/r/goview-is-a-foolingoview/index.html
 # https://www.godoc.org/github.com/foolin/goview
+
+### Gin doc
+https://chenyitian.gitbooks.io/gin-web-framework/content/docs/14.html
+
