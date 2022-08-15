@@ -29,7 +29,7 @@ var server = &model.Server{}
 func init() {
 
 	cron.Add("* * * * * *", func() {
-		server.ServerTimer()
+		server.ServerPing()
 	})
 
 }

@@ -16,7 +16,7 @@ const (
 )
 
 const (
-	server_timer = "server_timer"
+	server_ping = "server_ping"
 )
 
 // a server type to store all subscriptions
@@ -43,14 +43,13 @@ type Message struct {
 	Message string `json:"message"`
 }
 
-func (s *Server) ServerTimer() {
-	logger.Log.Info("server_timer: " + utils.DateTime())
-	s.Publish(server_timer, []byte(utils.DateTime()))
+func (s *Server) ServerPing() {
+	s.Publish(server_ping, []byte(utils.DateTime()))
 }
 
 func (s *Server) NewClient(client *Client) {
+	s.Subscribe(client, server_ping)
 	s.Send(client, "Welcome! Your ID is: "+client.ID+", DataTime: "+utils.DateTime())
-	s.Subscribe(client, server_timer)
 }
 
 func (s *Server) Send(client *Client, message string) {
@@ -98,9 +97,14 @@ func (s *Server) Publish(topic string, message []byte) {
 		}
 	}
 
-	// send to clients
-	for _, client := range clients {
-		s.Send(&client, string(message))
+	if len(clients) != 0 {
+		// send to clients
+		for _, client := range clients {
+			s.Send(&client, string(message))
+			logger.Log.Info(topic + ": " + string(message) + ", clientId: " + client.ID)
+		}
+	} else {
+		logger.Log.Info("no-have-clients-to-be-subscribe: topic=" + topic)
 	}
 }
 
