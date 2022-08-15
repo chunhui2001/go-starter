@@ -7,18 +7,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 
-	"github.com/chunhui2001/go-starter/cron"
-	"github.com/chunhui2001/go-starter/logger"
 	"github.com/chunhui2001/go-starter/wss/model"
 )
-
-func init() {
-
-	cron.Add("* * * * * *", func() {
-		logger.Log.Info("1.")
-	})
-
-}
 
 var upgrader = websocket.Upgrader{
 
@@ -54,7 +44,7 @@ func WebsocketUpgrade(c *gin.Context) {
 	}
 
 	// greet the new client
-	server.Send(&client, "Server: Welcome! Your ID is "+client.ID)
+	server.NewClient(&client)
 
 	for {
 
