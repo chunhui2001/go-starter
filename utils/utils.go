@@ -2,6 +2,7 @@ package utils
 
 import (
 	"crypto/rand"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math/big"
@@ -73,4 +74,16 @@ func BigIntFromHexString(num string) *big.Int {
 func ShortId() string {
 	encoded, _ := basex.Encode(BigIntRandom().String())
 	return encoded
+}
+
+func ToJsonString(v interface{}) string {
+	b, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	return string(b)
+}
+
+func MapOf() map[string]interface{} {
+	return make(map[string]interface{})
 }

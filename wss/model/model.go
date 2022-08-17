@@ -44,7 +44,7 @@ type Message struct {
 }
 
 func (s *Server) ServerPing() {
-	s.Publish(server_ping, []byte(utils.DateTime()))
+	s.Publish(server_ping, utils.DateTime())
 }
 
 func (s *Server) NewClient(client *Client) {
@@ -67,7 +67,7 @@ func (s *Server) ProcessMessage(client Client, messageType int, payload []byte) 
 
 	switch m.Action {
 	case publish:
-		s.Publish(m.Topic, []byte(m.Message))
+		s.Publish(m.Topic, m.Message)
 		break
 
 	case subscribe:
@@ -86,7 +86,7 @@ func (s *Server) ProcessMessage(client Client, messageType int, payload []byte) 
 	return s
 }
 
-func (s *Server) Publish(topic string, message []byte) {
+func (s *Server) Publish(topic string, message string) {
 
 	var clients []Client
 
@@ -100,8 +100,11 @@ func (s *Server) Publish(topic string, message []byte) {
 	if len(clients) != 0 {
 		// send to clients
 		for _, client := range clients {
-			s.Send(&client, string(message))
-			logger.Log.Info(topic + ": " + string(message) + ", clientId: " + client.ID)
+			m := utils.MapOf()
+			m["topic"] = topic
+			m["message"] = message
+			s.Send(&client, utils.ToJsonString(m))
+			//logger.Log.Info(topic + ": " + message + ", clientId: " + client.ID)
 		}
 	} else {
 		logger.Log.Info("no-have-clients-to-be-subscribe: topic=" + topic)
