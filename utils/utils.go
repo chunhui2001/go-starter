@@ -2,17 +2,20 @@ package utils
 
 import (
 	"crypto/rand"
+	"encoding/base64"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
 	"os"
 	"path"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
-	"github.com/dineshappavoo/basex"
 	"github.com/ubiq/go-ubiq/common/hexutil"
 )
 
@@ -71,12 +74,36 @@ func BigIntFromHexString(num string) *big.Int {
 	return a
 }
 
+func randint64() (int64, error) {
+	val, err := rand.Int(rand.Reader, big.NewInt(int64(math.MaxInt64)))
+	if err != nil {
+		return 0, err
+	}
+	return val.Int64(), nil
+}
+
 func ShortId() string {
-	encoded, err := basex.Encode(BigIntRandom().String())
+
+	// encoded, _ := basex.Encode(BigIntRandom().String())
+
+	val, err := rand.Int(rand.Reader, big.NewInt(int64(math.MaxInt64)))
+
 	if err != nil {
 		panic(err)
 	}
-	return encoded
+
+	b := make([]byte, 8)
+
+	binary.LittleEndian.PutUint64(b, uint64(val.Int64()))
+	encoded := base64.StdEncoding.EncodeToString([]byte(b))
+
+	var replacer = strings.NewReplacer(
+		"+", "-",
+		"/", "_",
+	)
+
+	return replacer.Replace(encoded[:11])
+
 }
 
 func ToJsonString(v interface{}) string {
