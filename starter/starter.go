@@ -15,6 +15,7 @@ import (
 	"github.com/chunhui2001/go-starter/logger"
 	"github.com/chunhui2001/go-starter/middleware"
 
+	"github.com/chunhui2001/go-starter/actions"
 	"github.com/chunhui2001/go-starter/controller"
 	"github.com/thinkerou/favicon"
 )
@@ -61,6 +62,10 @@ func Setup() *gin.Engine {
 
 	// about page
 	engine.GET("/about", controller.AboutRouter)
+
+	// labs
+	engine.GET("/labs-bigint", actions.BigRouter)
+	engine.GET("/labs-ytld", actions.YtIdRouter)
 
 	if WSS_PREFIX != "" {
 		engine.GET(WSS_PREFIX, wss.WebsocketUpgrade)

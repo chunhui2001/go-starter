@@ -33,7 +33,9 @@ type Redis struct {
 
 var AppSetting = &App{}
 var WssSetting = &Wss{}
-var RedisConf = &Redis{}
+var RedisConf = &Redis{
+	Enable: false,
+}
 
 var filename string = ".env"
 
