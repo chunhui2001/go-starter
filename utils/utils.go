@@ -72,7 +72,10 @@ func BigIntFromHexString(num string) *big.Int {
 }
 
 func ShortId() string {
-	encoded, _ := basex.Encode(BigIntRandom().String())
+	encoded, err := basex.Encode(BigIntRandom().String())
+	if err != nil {
+		panic(err)
+	}
 	return encoded
 }
 
