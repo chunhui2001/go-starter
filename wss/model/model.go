@@ -3,7 +3,7 @@ package model
 import (
 	"encoding/json"
 
-	"github.com/chunhui2001/go-starter/logger"
+	_ "github.com/chunhui2001/go-starter/logger"
 	"github.com/chunhui2001/go-starter/utils"
 	"github.com/gorilla/websocket"
 )
@@ -44,12 +44,12 @@ type Message struct {
 }
 
 func (s *Server) ServerPing() {
-	s.Publish(server_ping, utils.DateTime())
+	s.Publish(server_ping, utils.DateTimeUTCString())
 }
 
 func (s *Server) NewClient(client *Client) {
 	s.Subscribe(client, server_ping)
-	s.Send(client, "Welcome! Your ID is: "+client.ID+", DataTime: "+utils.DateTime())
+	s.Send(client, "Welcome! Your ID is: "+client.ID+", DataTime: "+utils.DateTimeUTCString())
 }
 
 func (s *Server) Send(client *Client, message string) {
@@ -100,14 +100,12 @@ func (s *Server) Publish(topic string, message string) {
 	if len(clients) != 0 {
 		// send to clients
 		for _, client := range clients {
-			m := utils.MapOf()
-			m["topic"] = topic
-			m["message"] = message
+			m := utils.MapOf("topic", topic, "message", message)
 			s.Send(&client, utils.ToJsonString(m))
-			//logger.Log.Info(topic + ": " + message + ", clientId: " + client.ID)
+			// logger.Log.Info(topic + ": " + message + ", clientId: " + client.ID)
 		}
 	} else {
-		logger.Log.Info("no-have-clients-to-be-subscribe: topic=" + topic)
+		//logger.Log.Info("no-have-clients-to-be-subscribe: topic=" + topic)
 	}
 }
 

@@ -27,6 +27,14 @@ func RootDir() string {
 	return filepath.Dir(d)
 }
 
+func RootDir2() string {
+	ex, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	return filepath.Dir(ex)
+}
+
 func FileExists(name string) (bool, error) {
 	_, err := os.Stat(name)
 	if err == nil {
@@ -38,7 +46,7 @@ func FileExists(name string) (bool, error) {
 	return false, err
 }
 
-func DateTime() string {
+func DateTimeUTCString() string {
 	return time.Now().Format(TimeStampFormat)
 }
 
@@ -114,6 +122,24 @@ func ToJsonString(v interface{}) string {
 	return string(b)
 }
 
-func MapOf() map[string]interface{} {
-	return make(map[string]interface{})
+func ToString(s any) string {
+	return fmt.Sprintf("%s", s)
+}
+
+func MapOf(kv ...any) map[string]interface{} {
+
+	m := make(map[string]interface{})
+
+	for i := 0; i < len(kv); i++ {
+		k := ToString(kv[i])
+		m[k] = kv[i+1]
+		i++
+	}
+
+	return m
+
+}
+
+func StringToBytes(str string) []byte {
+	return []byte(str)
 }

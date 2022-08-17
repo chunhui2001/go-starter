@@ -66,6 +66,7 @@ func Setup() *gin.Engine {
 	// labs
 	engine.GET("/labs-bigint", actions.BigRouter)
 	engine.GET("/labs-ytld", actions.YtIdRouter)
+	engine.GET("/labs-pem", actions.PemRouter)
 
 	if WSS_PREFIX != "" {
 		engine.GET(WSS_PREFIX, wss.WebsocketUpgrade)
