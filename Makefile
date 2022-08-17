@@ -25,9 +25,9 @@ log:
 rm:
 	docker rm -f go-starter
 
-# make load c=10000 
+# make load n=10000 p=info
 load:
-	h2load -n$(c) -c100 -m10 --h1 "http://localhost:4000/info"
+	h2load -n$(n) -c100 -m10 --h1 "http://localhost:4000/$(p)"
 
 clear:
 	go clean --modcache
