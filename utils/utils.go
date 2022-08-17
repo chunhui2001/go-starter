@@ -44,9 +44,8 @@ func BigIntRandom() *big.Int {
 	// Generate cryptographically strong pseudo-random between [0, max)
 	n, err := rand.Int(rand.Reader, max)
 	if err != nil {
-		// error handling
+		panic(err)
 	}
-	//fmt.Println(n)
 	return n
 }
 
