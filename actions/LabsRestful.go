@@ -33,13 +33,19 @@ func YtIdRouter(c *gin.Context) {
 }
 
 func PemRouter(c *gin.Context) {
-	privateKey, publicKey := gras.GenerateRSAKey(2048)
-	c.JSON(http.StatusOK, gin.H{
-		"code": 200,
-		"data": gin.H{
-			"privateKey": privateKey,
-			"publicKey":  publicKey,
-		},
-		"message": "Ok",
-	})
+
+	_, publicKey := gras.GenerateRSAKey(2048)
+
+	data := utils.StringToBytes(publicKey)
+
+	c.Header("Content-Type", "application/octet-stream")
+	// Force browser download
+	c.Header("Content-Disposition", "attachment; filename=public.pem")
+	// Browser download or preview
+	c.Header("Content-Disposition", "inline;filename=public.pem")
+	c.Header("Content-Transfer-Encoding", "binary")
+	c.Header("Cache-Control", "no-cache")
+
+	c.Writer.Write(data)
+
 }
