@@ -14,6 +14,7 @@ func GenerateRSAKey(bits int) (string, string) {
 	// The generatekey function uses the random data generator random to generate a pair of RSA keys with a specified number of words
 	// Reader is a global, shared strong random number generator for passwords
 	privateKey, err := rsa.GenerateKey(rand.Reader, bits)
+
 	if err != nil {
 		panic(err)
 	}
