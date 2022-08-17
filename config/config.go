@@ -46,7 +46,7 @@ func init() {
 	var env string = os.Getenv("GIN_ENV")
 	var envfile = ".env." + env
 
-	if exists, _ := utils.Exists(utils.RootDir() + "/" + envfile); exists == true {
+	if exists, _ := utils.FileExists(utils.RootDir() + "/" + envfile); exists == true {
 		filename = envfile
 	} else {
 		log.Println("Configuration loading " + utils.RootDir() + "/" + envfile + " file error, use .env file.")

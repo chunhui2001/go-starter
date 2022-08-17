@@ -24,7 +24,7 @@ func RootDir() string {
 	return filepath.Dir(d)
 }
 
-func Exists(name string) (bool, error) {
+func FileExists(name string) (bool, error) {
 	_, err := os.Stat(name)
 	if err == nil {
 		return true, nil
