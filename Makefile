@@ -31,6 +31,7 @@ load:
 
 clear:
 	go clean --modcache
+	rm -rf `go env GOPATH`/bin/go-starter
 
 # make install mod=github.com/codegangsta/gin
 install:
