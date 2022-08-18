@@ -27,6 +27,7 @@ require (
 
 require (
 	github.com/0xAX/notificator v0.0.0-20220220101646-ee9b8921e557 // indirect
+	github.com/ahmetb/go-linq/v3 v3.2.0 // indirect
 	github.com/allegro/bigcache v1.2.1 // indirect
 	github.com/codegangsta/envy v0.0.0-20141216192214-4b78388c8ce4 // indirect
 	github.com/codegangsta/gin v0.0.0-20211113050330-71f90109db02 // indirect
