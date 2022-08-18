@@ -5,6 +5,9 @@ ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 e 	?=production
 c 	?=10000
 
+tidy:
+	go mod tidy
+
 # make run e=development 
 run:
 	go get && GIN_ENV=$(e) go run .
