@@ -37,4 +37,5 @@ install:
 	go install $(mod)
 
 list:
-	ls -alh $(GOPATH)/bin
+	ls -alh `go env GOPATH`/bin
+
