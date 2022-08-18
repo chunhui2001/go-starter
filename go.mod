@@ -10,6 +10,7 @@ require (
 	github.com/gin-contrib/logger v0.2.2
 	github.com/gin-contrib/static v0.0.1
 	github.com/gin-gonic/gin v1.8.1
+	github.com/go-errors/errors v1.4.2
 	github.com/gomodule/redigo v1.8.9
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.5.0
@@ -32,7 +33,6 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/go-errors/errors v1.4.2 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.11.0 // indirect

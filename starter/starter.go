@@ -6,10 +6,10 @@ import (
 
 	"github.com/chunhui2001/go-starter/config"
 	"github.com/chunhui2001/go-starter/wss"
-	nice "github.com/ekyoung/gin-nice-recovery"
 	"github.com/foolin/goview"
 	"github.com/foolin/goview/supports/ginview"
 	"github.com/gin-contrib/static"
+	"github.com/go-errors/errors"
 
 	"github.com/gin-gonic/gin"
 
@@ -45,7 +45,7 @@ func Setup() *gin.Engine {
 	})
 
 	// apply middleware
-	engine.Use(nice.Recovery(recoveryHandler)) // error nice handle
+	engine.Use(middleware.Recovery(recoveryHandler)) // error nice handle
 	engine.Use(static.Serve("/static", static.LocalFile("./static", false)))
 	engine.Use(favicon.New("./static/favicon.ico")) // set favicon middleware
 	engine.Use(middleware.CORS(middleware.CORSOptions{}))
@@ -80,5 +80,5 @@ func Setup() *gin.Engine {
 }
 
 func recoveryHandler(c *gin.Context, err interface{}) {
-	c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "data": nil, "message": err})
+	c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": errors.Wrap(err, 3).Error()})
 }
