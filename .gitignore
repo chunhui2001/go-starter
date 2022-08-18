@@ -47,3 +47,4 @@ yarn.lock*
 package-lock.json
 gin-bin
 go-starter
+vendor
