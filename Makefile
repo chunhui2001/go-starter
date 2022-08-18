@@ -31,3 +31,10 @@ load:
 
 clear:
 	go clean --modcache
+
+# make install mod=github.com/codegangsta/gin
+install:
+	go install $(mod)
+
+list:
+	ls -alh $(GOPATH)/bin
