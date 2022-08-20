@@ -45,6 +45,9 @@ install:
 list:
 	ls -alh `go env GOPATH`/bin
 
+ngrok:
+	ngrok start --config ./ngrok.yml go-starter
+
 # make load n=10000 p=info
 load:
 	h2load -n$(n) -c100 -m10 --h1 "http://localhost:4000/$(p)"
