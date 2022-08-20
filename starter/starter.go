@@ -1,8 +1,11 @@
 package starter
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/chunhui2001/go-starter/config"
 	"github.com/chunhui2001/go-starter/wss"
@@ -15,9 +18,12 @@ import (
 
 	"github.com/chunhui2001/go-starter/logger"
 	"github.com/chunhui2001/go-starter/middleware"
+	"github.com/chunhui2001/go-starter/mycache"
 
 	"github.com/chunhui2001/go-starter/actions"
 	"github.com/chunhui2001/go-starter/controller"
+	"github.com/gin-contrib/cache"
+	"github.com/gin-contrib/cache/persistence"
 	"github.com/thinkerou/favicon"
 )
 
@@ -28,6 +34,8 @@ func Setup() *gin.Engine {
 
 	// new engine
 	engine := gin.New()
+
+	store := persistence.NewInMemoryStore(time.Second)
 
 	// init html template
 	engine.HTMLRender = ginview.New(goview.Config{
@@ -53,8 +61,12 @@ func Setup() *gin.Engine {
 
 	// info router
 	engine.GET("/info", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"code": 200, "data": "hello world", "message": "Ok"})
+		c.JSON(http.StatusOK, gin.H{"code": 200, "data": "info", "message": "Ok"})
 	})
+
+	engine.GET("/info_cache", cache.CachePage(store, time.Minute, func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"code": 200, "data": "hello world, " + fmt.Sprint(time.Now().Unix()), "message": "Ok"})
+	}))
 
 	// index page
 	engine.GET("", controller.IndexRouter)
@@ -77,11 +89,14 @@ func Setup() *gin.Engine {
 		if c.Request.RequestURI == "/favicon.ico" {
 			c.Next()
 		} else {
-			logger.Log.Warn(c.Request.RequestURI)
-
-			c.HTML(http.StatusNotFound, "404", gin.H{
-				"content": "Page not found",
-			})
+			shortId := strings.Trim(strings.TrimSpace(c.Request.RequestURI), "/")
+			if mycache.ShortIdExists(shortId) {
+				controller.IndexRouter(c)
+			} else {
+				c.HTML(http.StatusNotFound, "404", gin.H{
+					"content": "Page not found",
+				})
+			}
 		}
 	})
 
