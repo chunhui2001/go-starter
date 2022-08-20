@@ -73,6 +73,18 @@ func Setup() *gin.Engine {
 		engine.GET(WSS_PREFIX, wss.WebsocketUpgrade)
 	}
 
+	engine.NoRoute(func(c *gin.Context) {
+		if c.Request.RequestURI == "/favicon.ico" {
+			c.Next()
+		} else {
+			logger.Log.Warn(c.Request.RequestURI)
+
+			c.HTML(http.StatusNotFound, "404", gin.H{
+				"content": "Page not found",
+			})
+		}
+	})
+
 	logger.Log.Info("Listening and serving HTTP on " + APP_PORT + ", websocket=" + config.WssSetting.Wss())
 
 	return engine

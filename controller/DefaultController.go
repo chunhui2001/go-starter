@@ -4,12 +4,14 @@ import (
 	"net/http"
 
 	"github.com/chunhui2001/go-starter/config"
+	"github.com/chunhui2001/go-starter/utils"
 	"github.com/gin-gonic/gin"
 )
 
 func IndexRouter(c *gin.Context) {
 	c.HTML(http.StatusOK, "index", gin.H{
 		"wssEndpoint": config.WssSetting.Wss(),
+		"yourRoomId":  utils.ShortId(),
 		"content":     "This is an Home page...",
 	})
 }
