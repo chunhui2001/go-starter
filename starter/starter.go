@@ -24,6 +24,8 @@ import (
 	"github.com/chunhui2001/go-starter/controller"
 	"github.com/gin-contrib/cache"
 	"github.com/gin-contrib/cache/persistence"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/thinkerou/favicon"
 )
 
@@ -31,6 +33,7 @@ func Setup() *gin.Engine {
 
 	APP_PORT := config.AppSetting.AppPort
 	WSS_PREFIX := config.WssSetting.Prefix
+	APP_COOKIE := config.CookieSetting
 
 	// new engine
 	engine := gin.New()
@@ -53,6 +56,12 @@ func Setup() *gin.Engine {
 	})
 
 	// apply middleware
+	if APP_COOKIE.Enable {
+		cookieStore := cookie.NewStore([]byte(APP_COOKIE.Secret))
+		cookieStore.Options(sessions.Options{MaxAge: 60 * 1}) // expire in one minute
+		engine.Use(sessions.Sessions(APP_COOKIE.Name, cookieStore))
+	}
+
 	engine.Use(middleware.Recovery(recoveryHandler)) // error nice handle
 	engine.Use(static.Serve("/static", static.LocalFile("./static", false)))
 	engine.Use(favicon.New("./static/favicon.ico")) // set favicon middleware

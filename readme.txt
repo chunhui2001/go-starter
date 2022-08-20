@@ -39,3 +39,8 @@ https://pkg.go.dev/github.com/ubiq/go-ubiq@v3.0.1+incompatible
 ### 31个！Golang常用工具
 https://blog.csdn.net/QcloudCommunity/article/details/126047057
 
+### Session Cookie Authentication in Golang (With Complete Examples)
+https://www.sohamkamani.com/golang/session-cookie-authentication/
+
+
+

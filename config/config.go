@@ -23,6 +23,12 @@ type Wss struct {
 	Host   string `mapstructure:"WSS_HOST"`
 }
 
+type Cookie struct {
+	Enable bool   `mapstructure:"COOKIE_ENABLE"`
+	Name   string `mapstructure:"COOKIE_NAME"`
+	Secret string `mapstructure:"COOKIE_SECRET"`
+}
+
 func (w *Wss) Wss() string {
 	return w.Host + w.Prefix
 }
@@ -36,10 +42,20 @@ type Redis struct {
 	IdleTimeout time.Duration `mapstructure:"REDIS_IdleTimeout"`
 }
 
-var AppSetting = &App{}
+var AppSetting = &App{
+	Env:     "development",
+	AppName: "go-starter",
+	AppPort: "8080",
+}
 
 var WssSetting = &Wss{
 	Prefix: "",
+}
+
+var CookieSetting = &Cookie{
+	Enable: false,
+	Name:   "_mycookie_name",
+	Secret: "_mycookie_secret",
 }
 
 var RedisConf = &Redis{
@@ -74,6 +90,7 @@ func init() {
 	loadAppSettings(v1, filename)
 	loadWssSettings(v1, filename)
 	loadRedisSettings(v1, filename)
+	loadCookieSettings(v1, filename)
 
 }
 
@@ -112,6 +129,20 @@ func loadWssSettings(v1 *viper.Viper, filename string) {
 		return
 	} else {
 		log.Println("WssSetting: Host=" + WssSetting.Host + ", Prefix=" + WssSetting.Prefix)
+	}
+
+}
+
+func loadCookieSettings(v1 *viper.Viper, filename string) {
+
+	err := v1.Unmarshal(&CookieSetting)
+
+	if err != nil {
+		log.Println("viper parse CookieSetting error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		os.Exit(3)
+		return
+	} else {
+		log.Println("CookieSetting: Enable=" + strconv.FormatBool(CookieSetting.Enable) + ", Name=" + CookieSetting.Name + ", Secret=" + CookieSetting.Secret)
 	}
 
 }
