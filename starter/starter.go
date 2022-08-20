@@ -73,7 +73,7 @@ func Setup() *gin.Engine {
 		engine.GET(WSS_PREFIX, wss.WebsocketUpgrade)
 	}
 
-	logger.Log.Info("Listening and serving HTTP on " + APP_PORT + ", websocket=" + WSS_PREFIX)
+	logger.Log.Info("Listening and serving HTTP on " + APP_PORT + ", websocket=" + config.WssSetting.Wss())
 
 	return engine
 

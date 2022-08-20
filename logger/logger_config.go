@@ -68,7 +68,7 @@ func init() {
 	Log.WithFields(logrus.Fields{
 		"App": app,
 		"Env": env,
-	}).Info("Initialization log completed: app=", app, ", env=", env, ", appRoot=", utils.RootDir())
+	}).Info("Initialization log completed: appRoot=", utils.RootDir())
 
 	// don't forget to close it
 	//defer f.Close()

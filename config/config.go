@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/chunhui2001/go-starter/utils"
-	"github.com/joho/godotenv"
+	_ "github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
 
@@ -20,6 +20,11 @@ type App struct {
 
 type Wss struct {
 	Prefix string `mapstructure:"WSS_PREFIX"`
+	Host   string `mapstructure:"WSS_HOST"`
+}
+
+func (w *Wss) Wss() string {
+	return w.Host + w.Prefix
 }
 
 type Redis struct {
@@ -32,7 +37,11 @@ type Redis struct {
 }
 
 var AppSetting = &App{}
-var WssSetting = &Wss{}
+
+var WssSetting = &Wss{
+	Prefix: "",
+}
+
 var RedisConf = &Redis{
 	Enable: false,
 }
@@ -52,21 +61,19 @@ func init() {
 		log.Println("Configuration loading " + utils.RootDir() + "/" + envfile + " file error, use .env file.")
 	}
 
-	err := godotenv.Load(filename)
+	// err := godotenv.Load(filename)
 
-	if err != nil {
-		log.Println("Configuration loading " + utils.RootDir() + "/" + filename + " file error, errorMessage=" + fmt.Sprint(err) + ".")
-		os.Exit(3)
-		return
-	}
+	// if err != nil {
+	// 	log.Println("Configuration loading " + utils.RootDir() + "/" + filename + " file error, errorMessage=" + fmt.Sprint(err) + ".")
+	// 	os.Exit(3)
+	// 	return
+	// }
 
 	v1 := readConfig(filename, map[string]interface{}{})
 
 	loadAppSettings(v1, filename)
-	loadRedisSettings(v1, filename)
 	loadWssSettings(v1, filename)
-
-	log.Println("Configuration loaded " + utils.RootDir() + "/" + filename + " successful.")
+	loadRedisSettings(v1, filename)
 
 }
 
@@ -76,41 +83,35 @@ func loadAppSettings(v1 *viper.Viper, filename string) {
 		log.Println("viper parse AppSettings error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
 		os.Exit(3)
 		return
+	} else {
+		log.Println("AppSetting: Env=" + AppSetting.Env + ", AppName=" + AppSetting.AppName + ", AppPort=" + AppSetting.AppPort)
 	}
 }
 
 func loadRedisSettings(v1 *viper.Viper, filename string) {
 
-	REDIS_Enable, _ := strconv.ParseBool(GetEnv("REDIS_Enable", "false"))
+	err := v1.Unmarshal(&RedisConf)
 
-	if REDIS_Enable {
-		err := v1.Unmarshal(&RedisConf)
-		if err != nil {
-			log.Println("viper parse RedisConf error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
-			os.Exit(3)
-			return
-		}
+	if err != nil {
+		log.Println("viper parse RedisConf error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		os.Exit(3)
+		return
 	} else {
-		RedisConf = &Redis{Enable: false}
+		log.Println("RedisSettings: Enable=" + strconv.FormatBool(RedisConf.Enable) + ", Host=" + RedisConf.Host)
 	}
 
 }
 
 func loadWssSettings(v1 *viper.Viper, filename string) {
 
-	WSS_PREFIX := GetEnv("WSS_PREFIX", "")
+	err := v1.Unmarshal(&WssSetting)
 
-	if WSS_PREFIX != "" {
-		err := v1.Unmarshal(&WssSetting)
-		if err != nil {
-			log.Println("viper parse WssSetting error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
-			os.Exit(3)
-			return
-		} else {
-			log.Println("WssSetting.Prefix: file=" + WssSetting.Prefix)
-		}
+	if err != nil {
+		log.Println("viper parse WssSetting error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		os.Exit(3)
+		return
 	} else {
-		WssSetting = &Wss{Prefix: ""}
+		log.Println("WssSetting: Host=" + WssSetting.Host + ", Prefix=" + WssSetting.Prefix)
 	}
 
 }
@@ -123,13 +124,14 @@ func readConfig(filename string, defaults map[string]interface{}) *viper.Viper {
 	v.AddConfigPath(utils.RootDir())
 	v.SetConfigName(filename)
 	v.SetConfigType("env")
-	v.AutomaticEnv()
+	// v.AutomaticEnv()
 	err := v.ReadInConfig()
 	if err != nil {
 		log.Println("viper loaded error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
 		os.Exit(3)
 		return nil
 	}
+	log.Println("viper Configuration loaded " + utils.RootDir() + "/" + filename + " successful.")
 	return v
 }
 
