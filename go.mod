@@ -20,7 +20,6 @@ require (
 	github.com/spf13/viper v1.12.0
 	github.com/thinkerou/favicon v0.1.0
 	github.com/ubiq/go-ubiq v3.0.1+incompatible
-	github.com/ulule/deepcopier v0.0.0-20200430083143-45decc6639b6
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
 

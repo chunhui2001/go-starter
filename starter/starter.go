@@ -48,7 +48,6 @@ var defaultServer = &Server{
 
 func Setup(starterServer *Server) *gin.Engine {
 
-	// copier.Copy(&defaultServer, &starterServer)
 	copier.CopyWithOption(&defaultServer, &starterServer, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 
 	// new engine
