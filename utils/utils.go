@@ -27,12 +27,17 @@ func RootDir2() string {
 	return filepath.Dir(d)
 }
 
-func RootDir() string {
+func RootDir3() string {
 	ex, err := os.Executable()
 	if err != nil {
 		panic(err)
 	}
 	return filepath.Dir(ex)
+}
+
+func RootDir() string {
+	dir, _ := os.Getwd()
+	return dir
 }
 
 func FileExists(name string) (bool, error) {
