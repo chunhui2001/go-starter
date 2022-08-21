@@ -42,5 +42,8 @@ https://blog.csdn.net/QcloudCommunity/article/details/126047057
 ### Session Cookie Authentication in Golang (With Complete Examples)
 https://www.sohamkamani.com/golang/session-cookie-authentication/
 
+### 我用 Golang 的 Gin/bindata (+React) 尝试了一个二进制文件
+https://qiita.com/wadahiro/items/4173788d54f028936723
+
 
 
