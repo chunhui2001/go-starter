@@ -14,6 +14,10 @@ $ go get github.com/codegangsta/gin
 $ mkdir go-starter && cd go-starter
 $ go mod init go-starter
 
+$ go get -u github.com/codegangsta/gin
+$ go get -u github.com/jteeuwen/go-bindata/...
+$ go get -u github.com/elazarl/go-bindata-assetfs/...
+
 $ go get && go run .
 
 ### websocket 
