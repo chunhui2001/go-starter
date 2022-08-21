@@ -21,11 +21,11 @@ import (
 
 var TimeStampFormat = "2006-01-02T15:04:05.000Z07:00"
 
-// func RootDir2() string {
-// 	_, b, _, _ := runtime.Caller(0)
-// 	d := path.Join(path.Dir(b))
-// 	return filepath.Dir(d)
-// }
+func RootDir2() string {
+	_, b, _, _ := runtime.Caller(0)
+	d := path.Join(path.Dir(b))
+	return filepath.Dir(d)
+}
 
 func RootDir() string {
 	ex, err := os.Executable()
