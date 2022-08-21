@@ -37,6 +37,7 @@ type Route struct {
 }
 
 type Server struct {
+	Store            *persistence.InMemoryStore
 	HandlerInfo      gin.HandlerFunc
 	HandlerIndexPage gin.HandlerFunc
 	Handler404       gin.HandlerFunc
@@ -50,6 +51,7 @@ var WSS_PREFIX string = config.WssSetting.Prefix
 var APP_COOKIE *config.Cookie = config.CookieSetting
 
 var defaultServer = &Server{
+	Store: store,
 	HandlerInfo: func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 200, "data": "info", "message": "Ok"})
 	},
