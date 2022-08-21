@@ -30,19 +30,48 @@ import (
 	"github.com/thinkerou/favicon"
 )
 
-type Server struct {
-	Handler404 gin.HandlerFunc
+type Route struct {
+	Method   string
+	Path     string
+	Handlers []gin.HandlerFunc
 }
 
+type Server struct {
+	HandlerInfo      gin.HandlerFunc
+	HandlerIndexPage gin.HandlerFunc
+	Handler404       gin.HandlerFunc
+	Handler500       func(c *gin.Context, err interface{})
+	CustomeRoutes    []Route
+}
+
+var store *persistence.InMemoryStore = persistence.NewInMemoryStore(time.Second)
 var APP_PORT string = config.AppSetting.AppPort
 var WSS_PREFIX string = config.WssSetting.Prefix
 var APP_COOKIE *config.Cookie = config.CookieSetting
 
 var defaultServer = &Server{
+	HandlerInfo: func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"code": 200, "data": "info", "message": "Ok"})
+	},
+	HandlerIndexPage: controller.IndexRouter,
 	Handler404: func(c *gin.Context) {
 		c.HTML(http.StatusNotFound, "404", gin.H{
 			"content": "Page not found",
 		})
+	},
+	Handler500: func(c *gin.Context, err interface{}) {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": errors.Wrap(err, 3).Error()})
+	},
+	CustomeRoutes: []Route{
+		{Method: http.MethodGet, Path: "/info_cache", Handlers: []gin.HandlerFunc{
+			cache.CachePage(store, time.Minute, func(c *gin.Context) {
+				c.JSON(http.StatusOK, gin.H{"code": 200, "data": "hello world, " + fmt.Sprint(time.Now().Unix()), "message": "Ok"})
+			}),
+		}},
+		{Method: http.MethodGet, Path: "/about", Handlers: []gin.HandlerFunc{controller.AboutRouter}},
+		{Method: http.MethodGet, Path: "/labs-bigint", Handlers: []gin.HandlerFunc{actions.BigRouter}},
+		{Method: http.MethodGet, Path: "/labs-ytld", Handlers: []gin.HandlerFunc{actions.YtIdRouter}},
+		{Method: http.MethodGet, Path: "/labs-pem", Handlers: []gin.HandlerFunc{actions.PemRouter}},
 	},
 }
 
@@ -52,8 +81,6 @@ func Setup(starterServer *Server) *gin.Engine {
 
 	// new engine
 	engine := gin.New()
-
-	store := persistence.NewInMemoryStore(time.Second)
 
 	// init html template
 	engine.HTMLRender = ginview.New(goview.Config{
@@ -70,40 +97,29 @@ func Setup(starterServer *Server) *gin.Engine {
 		DisableCache: true,
 	})
 
-	// apply middleware
+	// cookie session
 	if APP_COOKIE.Enable {
 		cookieStore := cookie.NewStore([]byte(APP_COOKIE.Secret))
 		cookieStore.Options(sessions.Options{MaxAge: 60 * 1}) // expire in one minute
 		engine.Use(sessions.Sessions(APP_COOKIE.Name, cookieStore))
 	}
 
+	// apply middleware
 	engine.Use(middleware.Recovery(recoveryHandler)) // error nice handle
 	engine.Use(static.Serve("/static", static.LocalFile("./static", false)))
 	engine.Use(favicon.New("./static/favicon.ico")) // set favicon middleware
 	engine.Use(middleware.CORS(middleware.CORSOptions{}))
 	engine.Use(middleware.AccessFormat())
 
-	// info router
-	engine.GET("/info", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"code": 200, "data": "info", "message": "Ok"})
-	})
+	engine.GET("/info", defaultServer.HandlerInfo) // info router
+	engine.GET("", defaultServer.HandlerIndexPage) // index page
+	engine.GET("/index", defaultServer.HandlerIndexPage)
+	engine.GET("/home", defaultServer.HandlerIndexPage)
 
-	engine.GET("/info_cache", cache.CachePage(store, time.Minute, func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"code": 200, "data": "hello world, " + fmt.Sprint(time.Now().Unix()), "message": "Ok"})
-	}))
-
-	// index page
-	engine.GET("", controller.IndexRouter)
-	engine.GET("/index", controller.IndexRouter)
-	engine.GET("/home", controller.IndexRouter)
-
-	// about page
-	engine.GET("/about", controller.AboutRouter)
-
-	// labs
-	engine.GET("/labs-bigint", actions.BigRouter)
-	engine.GET("/labs-ytld", actions.YtIdRouter)
-	engine.GET("/labs-pem", actions.PemRouter)
+	// customer routes
+	for _, ro := range defaultServer.CustomeRoutes {
+		engine.Handle(ro.Method, ro.Path, ro.Handlers...)
+	}
 
 	if WSS_PREFIX != "" {
 		engine.GET(WSS_PREFIX, wss.WebsocketUpgrade)
@@ -124,5 +140,5 @@ func Setup(starterServer *Server) *gin.Engine {
 }
 
 func recoveryHandler(c *gin.Context, err interface{}) {
-	c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": errors.Wrap(err, 3).Error()})
+	defaultServer.Handler500(c, err)
 }

@@ -27,6 +27,7 @@ type Cookie struct {
 	Enable bool   `mapstructure:"COOKIE_ENABLE"`
 	Name   string `mapstructure:"COOKIE_NAME"`
 	Secret string `mapstructure:"COOKIE_SECRET"`
+	MaxAge int    `mapstructure:"COOKIE_MaxAge"`
 }
 
 func (w *Wss) Wss() string {
@@ -56,6 +57,7 @@ var CookieSetting = &Cookie{
 	Enable: false,
 	Name:   "_mycookie_name",
 	Secret: "_mycookie_secret",
+	MaxAge: 1 * 60,
 }
 
 var RedisConf = &Redis{
@@ -142,7 +144,7 @@ func loadCookieSettings(v1 *viper.Viper, filename string) {
 		os.Exit(3)
 		return
 	} else {
-		log.Println("CookieSetting: Enable=" + strconv.FormatBool(CookieSetting.Enable) + ", Name=" + CookieSetting.Name + ", Secret=" + CookieSetting.Secret)
+		log.Println("CookieSetting: Enable=" + strconv.FormatBool(CookieSetting.Enable) + ", Name=" + CookieSetting.Name + ", Secret=" + CookieSetting.Secret + ", MaxAge=" + fmt.Sprint(CookieSetting.MaxAge))
 	}
 
 }
