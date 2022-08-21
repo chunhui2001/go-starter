@@ -12,6 +12,7 @@ require (
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.5.0
+	github.com/jinzhu/copier v0.3.5
 	github.com/joho/godotenv v1.4.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/robfig/cron v1.2.0
@@ -19,6 +20,7 @@ require (
 	github.com/spf13/viper v1.12.0
 	github.com/thinkerou/favicon v0.1.0
 	github.com/ubiq/go-ubiq v3.0.1+incompatible
+	github.com/ulule/deepcopier v0.0.0-20200430083143-45decc6639b6
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
 

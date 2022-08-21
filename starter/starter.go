@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"strings"
+	_ "strings"
 	"time"
 
 	"github.com/chunhui2001/go-starter/config"
@@ -18,7 +18,7 @@ import (
 
 	"github.com/chunhui2001/go-starter/logger"
 	"github.com/chunhui2001/go-starter/middleware"
-	"github.com/chunhui2001/go-starter/mycache"
+	_ "github.com/chunhui2001/go-starter/mycache"
 
 	"github.com/chunhui2001/go-starter/actions"
 	"github.com/chunhui2001/go-starter/controller"
@@ -26,14 +26,30 @@ import (
 	"github.com/gin-contrib/cache/persistence"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
+	"github.com/jinzhu/copier"
 	"github.com/thinkerou/favicon"
 )
 
-func Setup() *gin.Engine {
+type Server struct {
+	Handler404 gin.HandlerFunc
+}
 
-	APP_PORT := config.AppSetting.AppPort
-	WSS_PREFIX := config.WssSetting.Prefix
-	APP_COOKIE := config.CookieSetting
+var APP_PORT string = config.AppSetting.AppPort
+var WSS_PREFIX string = config.WssSetting.Prefix
+var APP_COOKIE *config.Cookie = config.CookieSetting
+
+var defaultServer = &Server{
+	Handler404: func(c *gin.Context) {
+		c.HTML(http.StatusNotFound, "404", gin.H{
+			"content": "Page not found",
+		})
+	},
+}
+
+func Setup(starterServer *Server) *gin.Engine {
+
+	// copier.Copy(&defaultServer, &starterServer)
+	copier.CopyWithOption(&defaultServer, &starterServer, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 
 	// new engine
 	engine := gin.New()
@@ -98,19 +114,7 @@ func Setup() *gin.Engine {
 		if c.Request.RequestURI == "/favicon.ico" {
 			c.Next()
 		} else {
-			shortId := strings.Trim(strings.TrimSpace(c.Request.RequestURI), "/")
-			if mycache.ShortIdExists(shortId) {
-				controller.IndexRouter(c)
-			} else {
-				session := sessions.Default(c)
-				if session.Get("yourRoomId") != nil && session.Get("yourRoomId") == shortId {
-					controller.IndexRouter(c)
-				} else {
-					c.HTML(http.StatusNotFound, "404", gin.H{
-						"content": "Page not found",
-					})
-				}
-			}
+			defaultServer.Handler404(c)
 		}
 	})
 
