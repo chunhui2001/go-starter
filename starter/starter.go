@@ -102,9 +102,14 @@ func Setup() *gin.Engine {
 			if mycache.ShortIdExists(shortId) {
 				controller.IndexRouter(c)
 			} else {
-				c.HTML(http.StatusNotFound, "404", gin.H{
-					"content": "Page not found",
-				})
+				session := sessions.Default(c)
+				if session.Get("yourRoomId") != nil && session.Get("yourRoomId") == shortId {
+					controller.IndexRouter(c)
+				} else {
+					c.HTML(http.StatusNotFound, "404", gin.H{
+						"content": "Page not found",
+					})
+				}
 			}
 		}
 	})
