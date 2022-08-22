@@ -70,9 +70,9 @@ func Client() *redis.Client {
 	return redisClient
 }
 
-func Set(key string, value string, expirs time.Duration) {
+func Set(key string, value string, expir int) {
 
-	err := redisClient.Set(ctx, key, value, expirs).Err()
+	err := redisClient.Set(ctx, key, value, time.Duration(expir)*time.Second).Err()
 
 	if err != nil {
 		panic(err)
