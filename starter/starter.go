@@ -16,7 +16,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/chunhui2001/go-starter/logger"
 	"github.com/chunhui2001/go-starter/middleware"
 	_ "github.com/chunhui2001/go-starter/mycache"
 
@@ -135,7 +134,7 @@ func Setup(starterServer *Server) *gin.Engine {
 		}
 	})
 
-	logger.Log.Info("Listening and serving HTTP on " + APP_PORT + ", websocket=" + config.WssSetting.Wss())
+	config.Log.Info("Listening and serving HTTP on " + APP_PORT + ", websocket=" + config.WssSetting.Wss())
 
 	return engine
 

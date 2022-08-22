@@ -1,135 +1,80 @@
 package gredis
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
+	_ "strconv"
 	"time"
 
-	"github.com/chunhui2001/go-starter/config"
-	"github.com/chunhui2001/go-starter/logger"
-	"github.com/gomodule/redigo/redis"
+	"github.com/chunhui2001/go-starter/utils"
+	"github.com/go-errors/errors"
+	"github.com/go-redis/redis/v8"
+	"github.com/sirupsen/logrus"
 )
 
-var RedisConn *redis.Pool
+type Redis struct {
+	Enable      bool          `mapstructure:"REDIS_Enable"`
+	Host        string        `mapstructure:"REDIS_Host"`
+	Passwd      string        `mapstructure:"REDIS_Password"`
+	MaxIdle     int           `mapstructure:"REDIS_MaxIdle"`
+	MaxActive   int           `mapstructure:"REDIS_MaxActive"`
+	IdleTimeout time.Duration `mapstructure:"REDIS_IdleTimeout"`
+	Db          int           `mapstructure:"REDIS_DataBase"`
+}
 
-// Setup Initialize the Redis instance
-func init() {
+var (
+	redisClient *redis.Client
+	ctx         context.Context
+	conf        *Redis
+	log         *logrus.Logger
+)
 
-	if config.RedisConf.Enable == false {
+func Init(redisConf *Redis, log *logrus.Logger) {
+
+	conf = redisConf
+
+	if !redisConf.Enable {
 		return
 	}
 
-	REDIS_HOST := config.RedisConf.Host
-	REDIS_Password := config.RedisConf.Passwd
-	REDIS_MaxIdle := config.RedisConf.MaxIdle
-	REDIS_MaxActive := config.RedisConf.MaxActive
-	REDIS_IdleTimeout := config.RedisConf.IdleTimeout
+	ctx = context.Background()
 
-	RedisConn = &redis.Pool{
-
-		MaxIdle:     REDIS_MaxIdle,
-		MaxActive:   REDIS_MaxActive,
-		IdleTimeout: REDIS_IdleTimeout,
-
-		Dial: func() (redis.Conn, error) {
-			c, err := redis.Dial("tcp", REDIS_HOST)
-			if err != nil {
-				logger.Log.Error("connect to redis error: errorMessage=" + fmt.Sprint(err))
-				return nil, err
-			}
-			if REDIS_Password != "" {
-				if _, err := c.Do("AUTH", REDIS_Password); err != nil {
-					c.Close()
-					logger.Log.Error("connect to redis error: errorMessage=" + fmt.Sprint(err))
-					return nil, err
-				}
-			}
-
-			return c, err
-		},
-		TestOnBorrow: func(c redis.Conn, t time.Time) error {
-			_, err := c.Do("PING")
-			logger.Log.Error("connect to redis error: errorMessage=" + fmt.Sprint(err))
-			return err
-		},
+	// Connect to Redis
+	if redisConf.Passwd != "" {
+		redisClient = redis.NewClient(&redis.Options{
+			Addr:     redisConf.Host,
+			DB:       redisConf.Db,
+			Password: redisConf.Passwd,
+		})
+	} else {
+		redisClient = redis.NewClient(&redis.Options{
+			Addr: redisConf.Host,
+			DB:   redisConf.Db,
+		})
 	}
 
-	return
+	if _, err := redisClient.Ping(ctx).Result(); err != nil {
+		log.Error(fmt.Sprintf("Redis client connect failed: Host=%s, errorMessage=%s", redisConf.Host, utils.ErrorToString(err)))
+		return
+	}
+
+	log.Info(fmt.Sprintf("Redis client connected successfully: Host=%s, DB=%d", redisConf.Host, redisConf.Db))
+
 }
 
-// Set a key/value
-func Set(key string, data interface{}, time int) error {
-	conn := RedisConn.Get()
-	defer conn.Close()
-
-	value, err := json.Marshal(data)
-	if err != nil {
-		return err
+func Client() *redis.Client {
+	if !conf.Enable {
+		panic(errors.New("Redis-Not-Enabled"))
 	}
-
-	_, err = conn.Do("SET", key, value)
-	if err != nil {
-		return err
-	}
-
-	_, err = conn.Do("EXPIRE", key, time)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return redisClient
 }
 
-// Exists check a key
-func Exists(key string) bool {
-	conn := RedisConn.Get()
-	defer conn.Close()
+func Set(key string, value string, expirs time.Duration) {
 
-	exists, err := redis.Bool(conn.Do("EXISTS", key))
+	err := redisClient.Set(ctx, key, value, expirs).Err()
+
 	if err != nil {
-		return false
+		panic(err)
 	}
 
-	return exists
-}
-
-// Get get a key
-func Get(key string) ([]byte, error) {
-	conn := RedisConn.Get()
-	defer conn.Close()
-
-	reply, err := redis.Bytes(conn.Do("GET", key))
-	if err != nil {
-		return nil, err
-	}
-
-	return reply, nil
-}
-
-// Delete delete a kye
-func Delete(key string) (bool, error) {
-	conn := RedisConn.Get()
-	defer conn.Close()
-
-	return redis.Bool(conn.Do("DEL", key))
-}
-
-// LikeDeletes batch delete
-func LikeDeletes(key string) error {
-	conn := RedisConn.Get()
-	defer conn.Close()
-
-	keys, err := redis.Strings(conn.Do("KEYS", "*"+key+"*"))
-	if err != nil {
-		return err
-	}
-
-	for _, key := range keys {
-		_, err = Delete(key)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

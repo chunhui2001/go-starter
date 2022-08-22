@@ -5,7 +5,7 @@ import (
 
     "github.com/go-errors/errors"
 
-    "github.com/chunhui2001/go-starter/logger"
+    "github.com/chunhui2001/go-starter/config"
     "github.com/gin-gonic/gin"
 )
 
@@ -19,7 +19,7 @@ func RecoveryWithWriter(f func(c *gin.Context, err interface{}), out io.Writer) 
             if err := recover(); err != nil {
                 //httprequest, _ := httputil.DumpRequest(c.Request, false)
                 goErr := errors.Wrap(err, 3)
-                logger.Log.Error("requestUri=", c.Request.RequestURI, ", errorMessage=", goErr.Error(), ", errorStack=", string(goErr.Stack()))
+                config.Log.Error("requestUri=", c.Request.RequestURI, ", errorMessage=", goErr.Error(), ", errorStack=", string(goErr.Stack()))
 
                 f(c, err)
             }

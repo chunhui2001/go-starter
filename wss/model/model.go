@@ -3,7 +3,7 @@ package model
 import (
 	"encoding/json"
 
-	_ "github.com/chunhui2001/go-starter/logger"
+	_ "github.com/chunhui2001/go-starter/config"
 	"github.com/chunhui2001/go-starter/utils"
 	"github.com/gorilla/websocket"
 )

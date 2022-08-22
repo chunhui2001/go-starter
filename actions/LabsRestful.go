@@ -3,8 +3,8 @@ package actions
 import (
 	"net/http"
 
+	_ "github.com/chunhui2001/go-starter/config"
 	"github.com/chunhui2001/go-starter/gras"
-	_ "github.com/chunhui2001/go-starter/logger"
 	"github.com/chunhui2001/go-starter/utils"
 	"github.com/gin-gonic/gin"
 )

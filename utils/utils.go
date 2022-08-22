@@ -16,9 +16,11 @@ import (
 	"strings"
 	"time"
 
+	gerror "github.com/go-errors/errors"
 	"github.com/ubiq/go-ubiq/common/hexutil"
 )
 
+// 2006-01-02T15:04:05.999Z
 var TimeStampFormat = "2006-01-02T15:04:05.000Z07:00"
 
 func RootDir2() string {
@@ -129,6 +131,10 @@ func ToJsonString(v interface{}) string {
 
 func ToString(s any) string {
 	return fmt.Sprintf("%s", s)
+}
+
+func ErrorToString(err interface{}) string {
+	return gerror.Wrap(err, 2).ErrorStack()
 }
 
 func MapOf(kv ...any) map[string]interface{} {

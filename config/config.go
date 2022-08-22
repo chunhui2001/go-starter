@@ -7,10 +7,27 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/chunhui2001/go-starter/gredis"
 	"github.com/chunhui2001/go-starter/utils"
 	_ "github.com/joho/godotenv"
 	"github.com/spf13/viper"
+	"io"
+	"path"
+	"runtime"
+
+	"github.com/gin-gonic/gin"
+
+	"github.com/sirupsen/logrus"
+	"gopkg.in/natefinch/lumberjack.v2"
+	// https://github.com/gfremex/logrus-kafka-hook
 )
+
+type logWriter struct {
+}
+
+func (writer logWriter) Write(bytes []byte) (int, error) {
+	return fmt.Print(time.Now().Format(utils.TimeStampFormat) + " [STDOUT] " + string(bytes))
+}
 
 type App struct {
 	Env     string `mapstructure:"GIN_ENV"`
@@ -34,17 +51,9 @@ func (w *Wss) Wss() string {
 	return w.Host + w.Prefix
 }
 
-type Redis struct {
-	Enable      bool          `mapstructure:"REDIS_Enable"`
-	Host        string        `mapstructure:"REDIS_Host"`
-	Passwd      string        `mapstructure:"REDIS_Password"`
-	MaxIdle     int           `mapstructure:"REDIS_MaxIdle"`
-	MaxActive   int           `mapstructure:"REDIS_MaxActive"`
-	IdleTimeout time.Duration `mapstructure:"REDIS_IdleTimeout"`
-}
-
 var AppSetting = &App{
-	Env:     "development",
+	// Env:     "development",
+	Env:     "production",
 	AppName: "go-starter",
 	AppPort: "8080",
 }
@@ -60,15 +69,21 @@ var CookieSetting = &Cookie{
 	MaxAge: 1 * 60,
 }
 
-var RedisConf = &Redis{
+var RedisConf = &gredis.Redis{
 	Enable: false,
+	Db:     -1,
+	Passwd: "",
 }
 
+var Log *logrus.Logger
 var filename string = ".env"
 
 // LoadEnvVars will load a ".env[.development|.test]" file if it exists and set ENV vars.
 // Useful in development and test modes. Not used in production.
 func init() {
+
+	log.SetFlags(0)
+	log.SetOutput(new(logWriter))
 
 	var env string = os.Getenv("GIN_ENV")
 	var envfile = ".env." + env
@@ -79,21 +94,73 @@ func init() {
 		log.Println("Configuration loading " + utils.RootDir() + "/" + envfile + " file error, use .env file.")
 	}
 
-	// err := godotenv.Load(filename)
-
-	// if err != nil {
-	// 	log.Println("Configuration loading " + utils.RootDir() + "/" + filename + " file error, errorMessage=" + fmt.Sprint(err) + ".")
-	// 	os.Exit(3)
-	// 	return
-	// }
-
 	v1 := readConfig(filename, map[string]interface{}{})
 
 	loadAppSettings(v1, filename)
+
+	// init log configuration
+	InitLog()
+
 	loadWssSettings(v1, filename)
 	loadRedisSettings(v1, filename)
 	loadCookieSettings(v1, filename)
 
+}
+
+func InitLog() {
+
+	env := AppSetting.Env
+	app := AppSetting.AppName
+
+	log_folder := "/tmp/" + app
+
+	lumberjackLogger := &lumberjack.Logger{
+		Filename:   log_folder + "/mylog.txt",
+		MaxSize:    1, // MB
+		MaxBackups: 10,
+		MaxAge:     30, // days
+		Compress:   true,
+	}
+
+	// assign it to the standard logger
+	mw := io.MultiWriter(os.Stdout, lumberjackLogger)
+
+	Log = logrus.New()
+
+	Log.SetOutput(mw)
+	Log.SetLevel(logrus.DebugLevel)
+	Log.SetReportCaller(true)
+
+	Log.Formatter.(*logrus.TextFormatter).DisableColors = true    // remove colors
+	Log.Formatter.(*logrus.TextFormatter).DisableTimestamp = true // remove timestamp from test output
+
+	Log.SetFormatter(&MyFormatter{
+		TimestampFormat: utils.TimeStampFormat,
+		LogFormat:       "%time% [%lvl%] - %file% >> %msg%\n",
+		CallerPrettyfier: func(frame *runtime.Frame) (function string, file string) {
+			fileName := path.Base(frame.File) + ":" + strconv.Itoa(frame.Line)
+			//return frame.Function, fileName
+			return "", fileName
+		},
+	})
+
+	// config gin
+	if env == "development" {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
+	gin.DisableConsoleColor() //  Disable Console Color
+	gin.DefaultWriter = io.MultiWriter(lumberjackLogger, os.Stdout)
+
+	Log.WithFields(logrus.Fields{
+		"App": app,
+		"Env": env,
+	}).Info("Initialization log completed: appRoot=", utils.RootDir(), ", env="+env)
+
+	// don't forget to close it
+	//defer f.Close()
 }
 
 func loadAppSettings(v1 *viper.Viper, filename string) {
@@ -112,11 +179,15 @@ func loadRedisSettings(v1 *viper.Viper, filename string) {
 	err := v1.Unmarshal(&RedisConf)
 
 	if err != nil {
-		log.Println("viper parse RedisConf error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		Log.Info("viper parse RedisConf error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
 		os.Exit(3)
 		return
 	} else {
-		log.Println("RedisSettings: Enable=" + strconv.FormatBool(RedisConf.Enable) + ", Host=" + RedisConf.Host)
+		if !RedisConf.Enable {
+			Log.Info("RedisSettings: Enable=" + strconv.FormatBool(RedisConf.Enable) + ", Host=" + RedisConf.Host)
+		} else {
+			gredis.Init(RedisConf, Log)
+		}
 	}
 
 }
@@ -126,11 +197,11 @@ func loadWssSettings(v1 *viper.Viper, filename string) {
 	err := v1.Unmarshal(&WssSetting)
 
 	if err != nil {
-		log.Println("viper parse WssSetting error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		Log.Info("viper parse WssSetting error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
 		os.Exit(3)
 		return
 	} else {
-		log.Println("WssSetting: Host=" + WssSetting.Host + ", Prefix=" + WssSetting.Prefix)
+		Log.Info("WssSetting: Host=" + WssSetting.Host + ", Prefix=" + WssSetting.Prefix)
 	}
 
 }
@@ -140,11 +211,11 @@ func loadCookieSettings(v1 *viper.Viper, filename string) {
 	err := v1.Unmarshal(&CookieSetting)
 
 	if err != nil {
-		log.Println("viper parse CookieSetting error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		Log.Info("viper parse CookieSetting error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
 		os.Exit(3)
 		return
 	} else {
-		log.Println("CookieSetting: Enable=" + strconv.FormatBool(CookieSetting.Enable) + ", Name=" + CookieSetting.Name + ", Secret=" + CookieSetting.Secret + ", MaxAge=" + fmt.Sprint(CookieSetting.MaxAge))
+		Log.Info("CookieSetting: Enable=" + strconv.FormatBool(CookieSetting.Enable) + ", Name=" + CookieSetting.Name + ", Secret=" + CookieSetting.Secret + ", MaxAge=" + fmt.Sprint(CookieSetting.MaxAge))
 	}
 
 }
