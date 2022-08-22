@@ -11,6 +11,9 @@
 
 {{define "scripts"}}
 <script type="text/javascript">
+
+    // jQuery.noConflict();
+
     var ws;
 
     $(function() {
@@ -29,12 +32,16 @@
             
             try {
                 
-                var messageData = JSON.parse(e.data);
-                
-                if (messageData.topic == 'server_ping') {
-                    $("#_server_time").html(messageData.message);
+                if (e.data.isJSON()) {
+                    var messageData = JSON.parse(e.data);
+                    
+                    if (messageData.topic == 'server_ping') {
+                        $("#_server_time").html(messageData.message);
+                    } else {
+                        console.info(message)
+                    }
                 } else {
-                    console.warn(message)
+                    console.info(e.data)
                 }
 
             } catch (err) {
