@@ -39,6 +39,7 @@ func Init(redisConf *Redis, log *logrus.Logger) {
 
 	ctx = context.Background()
 
+	// opt, err := redis.ParseURL("redis://<user>:<pass>@localhost:6379/<db>")
 	// Connect to Redis
 	if redisConf.Passwd != "" {
 		redisClient = redis.NewClient(&redis.Options{
