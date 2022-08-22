@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/viper"
 	"io"
 	"path"
+	"path/filepath"
 	"runtime"
 
 	"github.com/gin-gonic/gin"
@@ -33,6 +34,7 @@ type App struct {
 	Env     string `mapstructure:"GIN_ENV"`
 	AppName string `mapstructure:"APP_NAME"`
 	AppPort string `mapstructure:"APP_PORT"`
+	LogFile string `mapstructure:"LOG_FILE"`
 }
 
 type Wss struct {
@@ -56,6 +58,7 @@ var AppSetting = &App{
 	Env:     "production",
 	AppName: "go-starter",
 	AppPort: "8080",
+	LogFile: "",
 }
 
 var WssSetting = &Wss{
@@ -88,10 +91,10 @@ func init() {
 	var env string = os.Getenv("GIN_ENV")
 	var envfile = ".env." + env
 
-	if exists, _ := utils.FileExists(utils.RootDir() + "/" + envfile); exists == true {
+	if exists, _ := utils.FileExists(filepath.Join(utils.RootDir(), envfile)); exists == true {
 		filename = envfile
 	} else {
-		log.Println("Configuration loading " + utils.RootDir() + "/" + envfile + " file error, use .env file.")
+		log.Println("Configuration loading " + filepath.Join(utils.RootDir(), envfile) + " file error, use .env file.")
 	}
 
 	v1 := readConfig(filename, map[string]interface{}{})
@@ -112,10 +115,10 @@ func InitLog() {
 	env := AppSetting.Env
 	app := AppSetting.AppName
 
-	log_folder := "/tmp/" + app
+	log_file := filepath.Join(utils.TempDir(), app, "mylog.txt")
 
 	lumberjackLogger := &lumberjack.Logger{
-		Filename:   log_folder + "/mylog.txt",
+		Filename:   log_file,
 		MaxSize:    1, // MB
 		MaxBackups: 10,
 		MaxAge:     30, // days
@@ -157,7 +160,7 @@ func InitLog() {
 	Log.WithFields(logrus.Fields{
 		"App": app,
 		"Env": env,
-	}).Info("Initialization log completed: appRoot=", utils.RootDir(), ", env="+env)
+	}).Info("Initialization log completed: appRoot=", utils.RootDir(), ", logFile=", log_file)
 
 	// don't forget to close it
 	//defer f.Close()
@@ -235,7 +238,7 @@ func readConfig(filename string, defaults map[string]interface{}) *viper.Viper {
 		os.Exit(3)
 		return nil
 	}
-	log.Println("viper Configuration loaded " + utils.RootDir() + "/" + filename + " successful.")
+	log.Println("viper Configuration loaded " + filepath.Join(utils.RootDir(), filename) + " successful.")
 	return v
 }
 

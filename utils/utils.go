@@ -154,3 +154,7 @@ func MapOf(kv ...any) map[string]interface{} {
 func StringToBytes(str string) []byte {
 	return []byte(str)
 }
+
+func TempDir() string {
+	return os.TempDir()
+}
