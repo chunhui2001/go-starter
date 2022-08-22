@@ -13,9 +13,9 @@ func AccessFormat() gin.HandlerFunc {
 	return gin.LoggerWithConfig(gin.LoggerConfig{
 		SkipPaths: []string{"/favicon.ico", "/static"}, Formatter: func(param gin.LogFormatterParams) string {
 			// your custom format
-			return fmt.Sprintf("[%s] %s - Access %s \"%s %s %s %d %s\"\n",
-				"INFO",
+			return fmt.Sprintf("%s [%s] - Access %s \"%s %s %s %d %s\"\n",
 				param.TimeStamp.Format(utils.TimeStampFormat),
+				"INFO",
 				param.ClientIP,
 				param.Method,
 				param.Path,

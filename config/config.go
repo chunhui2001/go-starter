@@ -27,7 +27,7 @@ type logWriter struct {
 }
 
 func (writer logWriter) Write(bytes []byte) (int, error) {
-	return fmt.Print(time.Now().Format(utils.TimeStampFormat) + " [STDOUT] " + string(bytes))
+	return fmt.Print(time.Now().Format(utils.TimeStampFormat) + " [STDOUT] - " + string(bytes))
 }
 
 type App struct {
