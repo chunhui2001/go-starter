@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/chunhui2001/go-starter/gredis"
@@ -110,6 +111,36 @@ func init() {
 
 }
 
+type CallInfo struct {
+	packageName string
+	fileName    string
+	funcName    string
+	line        int
+}
+
+func retrieveCallInfo() *CallInfo {
+	pc, file, line, _ := runtime.Caller(2)
+	_, fileName := path.Split(file)
+	parts := strings.Split(runtime.FuncForPC(pc).Name(), ".")
+	pl := len(parts)
+	packageName := ""
+	funcName := parts[pl-1]
+
+	if parts[pl-2][0] == '(' {
+		funcName = parts[pl-2] + "." + funcName
+		packageName = strings.Join(parts[0:pl-2], ".")
+	} else {
+		packageName = strings.Join(parts[0:pl-1], ".")
+	}
+
+	return &CallInfo{
+		packageName: packageName,
+		fileName:    fileName,
+		funcName:    funcName,
+		line:        line,
+	}
+}
+
 func InitLog() {
 
 	env := AppSetting.Env
@@ -141,9 +172,7 @@ func InitLog() {
 		TimestampFormat: utils.TimeStampFormat,
 		LogFormat:       "%time% [%lvl%] - %file% >> %msg%\n",
 		CallerPrettyfier: func(frame *runtime.Frame) (function string, file string) {
-			fileName := path.Base(frame.File) + ":" + strconv.Itoa(frame.Line)
-			//return frame.Function, fileName
-			return "", fileName
+			return "", fmt.Sprintf("%s() %s:%d", frame.Function, path.Base(frame.File), frame.Line)
 		},
 	})
 
