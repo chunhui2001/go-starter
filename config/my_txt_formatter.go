@@ -17,7 +17,7 @@ const (
 )
 
 // MyFormatter implements logrus.Formatter interface.
-type MyFormatter struct {
+type MyTxtFormatter struct {
 	// Timestamp format
 	TimestampFormat string
 	// Available standard keys: time, msg, lvl
@@ -28,7 +28,7 @@ type MyFormatter struct {
 }
 
 // Format building log message.
-func (f *MyFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+func (f *MyTxtFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	output := f.LogFormat
 

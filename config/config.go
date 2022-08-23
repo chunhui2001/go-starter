@@ -150,10 +150,7 @@ func InitLog() {
 	myLog.SetLevel(logrus.DebugLevel)
 	myLog.SetReportCaller(true)
 
-	myLog.Formatter.(*logrus.TextFormatter).DisableColors = true    // remove colors
-	myLog.Formatter.(*logrus.TextFormatter).DisableTimestamp = true // remove timestamp from test output
-
-	myLog.SetFormatter(&MyFormatter{
+	myLog.SetFormatter(&MyTxtFormatter{
 		TimestampFormat: utils.TimeStampFormat,
 		LogFormat:       "%time% [%lvl%] - %file% >> %msg%\n",
 		CallerPrettyfier: func(frame *runtime.Frame) (function string, file string) {
@@ -177,7 +174,8 @@ func InitLog() {
 	hook, err := lkh.NewKafkaHook(
 		"kh",
 		[]logrus.Level{logrus.InfoLevel, logrus.WarnLevel, logrus.ErrorLevel},
-		&logrus.JSONFormatter{},
+		// &logrus.JSONFormatter{},
+		&MyJSONFormatter{},
 		kafkaServer,
 	)
 
@@ -187,7 +185,9 @@ func InitLog() {
 
 	myLog.Hooks.Add(hook)
 
+	// logrus.WithField("app_name", []string{"go-starter"})
 	Log = myLog.WithField("topics", []string{"topic_1"})
+
 	Log.Info("Initialization log completed: appRoot=", utils.RootDir(), ", logFile=", log_file)
 
 }
