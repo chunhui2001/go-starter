@@ -67,11 +67,11 @@ var (
 	redisClient redis.Cmdable
 	ctx         context.Context
 	conf        *GRedis
-	logger      *logrus.Logger
+	logger      *logrus.Entry
 )
 
 // opt, err := redis.ParseURL("redis://<user>:<pass>@localhost:6379/<db>")
-func Init(redisConf *GRedis, log *logrus.Logger) {
+func Init(redisConf *GRedis, log *logrus.Entry) {
 
 	conf = redisConf
 	logger = log

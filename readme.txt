@@ -61,3 +61,8 @@ https://www.digitalocean.com/community/tutorials/how-to-make-http-requests-in-go
 ### http2curl
 https://github.com/moul/http2curl
 
+### log to kafka
+https://github.com/gfremex/logrus-kafka-hook
+
+
+

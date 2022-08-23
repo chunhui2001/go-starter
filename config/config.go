@@ -8,20 +8,21 @@ import (
 	_ "strings"
 	"time"
 
-	"github.com/chunhui2001/go-starter/gredis"
-	"github.com/chunhui2001/go-starter/utils"
-	_ "github.com/joho/godotenv"
-	"github.com/spf13/viper"
 	"io"
 	"path"
 	"path/filepath"
 	"runtime"
 
+	"github.com/chunhui2001/go-starter/gredis"
+	"github.com/chunhui2001/go-starter/utils"
+	_ "github.com/joho/godotenv"
+	"github.com/spf13/viper"
+
 	"github.com/gin-gonic/gin"
 
+	lkh "github.com/gfremex/logrus-kafka-hook"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
-	// https://github.com/gfremex/logrus-kafka-hook
 )
 
 type logWriter struct {
@@ -35,7 +36,7 @@ type App struct {
 	Env     string `mapstructure:"GIN_ENV"`
 	AppName string `mapstructure:"APP_NAME"`
 	AppPort string `mapstructure:"APP_PORT"`
-	LogFile string `mapstructure:"LOG_FILE"`
+	LogFile string `mapstructure:"APP_LOG_FILE"`
 }
 
 type Wss struct {
@@ -86,7 +87,7 @@ var RedisConf = &gredis.GRedis{
 	RouteRandomly:  false,
 }
 
-var Log *logrus.Logger
+var Log *logrus.Entry
 var filename string = ".env"
 
 // LoadEnvVars will load a ".env[.development|.test]" file if it exists and set ENV vars.
@@ -143,16 +144,16 @@ func InitLog() {
 	// assign it to the standard logger
 	mw := io.MultiWriter(os.Stdout, lumberjackLogger)
 
-	Log = logrus.New()
+	myLog := logrus.New()
 
-	Log.SetOutput(mw)
-	Log.SetLevel(logrus.DebugLevel)
-	Log.SetReportCaller(true)
+	myLog.SetOutput(mw)
+	myLog.SetLevel(logrus.DebugLevel)
+	myLog.SetReportCaller(true)
 
-	Log.Formatter.(*logrus.TextFormatter).DisableColors = true    // remove colors
-	Log.Formatter.(*logrus.TextFormatter).DisableTimestamp = true // remove timestamp from test output
+	myLog.Formatter.(*logrus.TextFormatter).DisableColors = true    // remove colors
+	myLog.Formatter.(*logrus.TextFormatter).DisableTimestamp = true // remove timestamp from test output
 
-	Log.SetFormatter(&MyFormatter{
+	myLog.SetFormatter(&MyFormatter{
 		TimestampFormat: utils.TimeStampFormat,
 		LogFormat:       "%time% [%lvl%] - %file% >> %msg%\n",
 		CallerPrettyfier: func(frame *runtime.Frame) (function string, file string) {
@@ -170,13 +171,25 @@ func InitLog() {
 	gin.DisableConsoleColor() //  Disable Console Color
 	gin.DefaultWriter = io.MultiWriter(lumberjackLogger, os.Stdout)
 
-	Log.WithFields(logrus.Fields{
-		"App": app,
-		"Env": env,
-	}).Info("Initialization log completed: appRoot=", utils.RootDir(), ", logFile=", log_file)
+	kafkaServerAddr := "127.0.0.1:9092"
+	kafkaServer := []string{kafkaServerAddr}
 
-	// don't forget to close it
-	//defer f.Close()
+	hook, err := lkh.NewKafkaHook(
+		"kh",
+		[]logrus.Level{logrus.InfoLevel, logrus.WarnLevel, logrus.ErrorLevel},
+		&logrus.JSONFormatter{},
+		kafkaServer,
+	)
+
+	if err != nil {
+		myLog.Error(fmt.Sprintf("Kafka Append Initialization failed: kafkaServer=%s, errorMessage=%s", kafkaServerAddr, utils.ErrorToString(err)))
+	}
+
+	myLog.Hooks.Add(hook)
+
+	Log = myLog.WithField("topics", []string{"topic_1"})
+	Log.Info("Initialization log completed: appRoot=", utils.RootDir(), ", logFile=", log_file)
+
 }
 
 func loadAppSettings(v1 *viper.Viper, filename string) {
