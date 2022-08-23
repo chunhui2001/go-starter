@@ -39,6 +39,7 @@ type App struct {
 }
 
 type Wss struct {
+	Enable bool   `mapstructure:"WSS_ENABLE"`
 	Prefix string `mapstructure:"WSS_PREFIX"`
 	Host   string `mapstructure:"WSS_HOST"`
 }
@@ -63,6 +64,7 @@ var AppSetting = &App{
 }
 
 var WssSetting = &Wss{
+	Enable: false,
 	Prefix: "",
 }
 
@@ -73,10 +75,15 @@ var CookieSetting = &Cookie{
 	MaxAge: 1 * 60,
 }
 
-var RedisConf = &gredis.Redis{
-	Enable: false,
-	Db:     -1,
-	Passwd: "",
+var RedisConf = &gredis.GRedis{
+	Enable:         false,
+	MasterName:     "",
+	Host:           "127.0.0.1:6379",
+	Addrs:          "",
+	Db:             -1,
+	Passwd:         "",
+	RouteByLatency: false,
+	RouteRandomly:  false,
 }
 
 var Log *logrus.Logger
