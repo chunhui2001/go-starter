@@ -175,12 +175,12 @@ func InitLog() {
 		"kh",
 		[]logrus.Level{logrus.InfoLevel, logrus.WarnLevel, logrus.ErrorLevel},
 		// &logrus.JSONFormatter{},
-		&MyJSONFormatter{},
+		&MyJSONFormatter{PrettyPrint: true},
 		kafkaServer,
 	)
 
 	if err != nil {
-		myLog.Error(fmt.Sprintf("Kafka Append Initialization failed: kafkaServer=%s, errorMessage=%s", kafkaServerAddr, utils.ErrorToString(err)))
+		myLog.WithError(err).Error(fmt.Sprintf("Kafka Append Initialization failed: kafkaServer=%s, errorMessage=%s", kafkaServerAddr, utils.ErrorToString(err)))
 	}
 
 	myLog.Hooks.Add(hook)
