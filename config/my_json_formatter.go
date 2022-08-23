@@ -36,9 +36,6 @@ type MyJSONFormatter struct {
 	// DisableHTMLEscape allows disabling html escaping in output
 	DisableHTMLEscape bool
 
-	// DataKey allows users to put all the log entry parameters into a nested dictionary at a given key.
-	DataKey string
-
 	// FieldMap allows users to customize the names of keys for default fields.
 	// As an example:
 	// formatter := &MyJSONFormatter{
@@ -64,7 +61,7 @@ type MyJSONFormatter struct {
 // Format renders a single log entry
 func (f *MyJSONFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
-	data := make(logrus.Fields, len(entry.Data)+4+2)
+	data := make(logrus.Fields, len(entry.Data)+4+3)
 
 	data["app"] = "go-starter"
 	data["env"] = "testing"
@@ -79,12 +76,6 @@ func (f *MyJSONFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		default:
 			data[k] = v
 		}
-	}
-
-	if f.DataKey != "" {
-		newData := make(logrus.Fields, 4)
-		newData[f.DataKey] = data
-		data = newData
 	}
 
 	timestampFormat := f.TimestampFormat
