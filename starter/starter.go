@@ -80,6 +80,12 @@ func Setup(starterServer *Server) *gin.Engine {
 
 	copier.CopyWithOption(&defaultServer, &starterServer, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 
+	if config.AppSetting.Env == "development" {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	// new engine
 	engine := gin.New()
 

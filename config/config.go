@@ -128,7 +128,6 @@ type CallInfo struct {
 
 func InitLog() {
 
-	env := AppSetting.Env
 	app := AppSetting.AppName
 
 	log_file := filepath.Join(utils.TempDir(), app, "mylog.txt")
@@ -158,16 +157,10 @@ func InitLog() {
 		},
 	})
 
-	// config gin
-	if env == "development" {
-		gin.SetMode(gin.DebugMode)
-	} else {
-		gin.SetMode(gin.ReleaseMode)
-	}
-
 	gin.DisableConsoleColor() //  Disable Console Color
 	gin.DefaultWriter = io.MultiWriter(lumberjackLogger, os.Stdout)
 
+	kafkaLogTopic := "topic_1"
 	kafkaServerAddr := "127.0.0.1:9092"
 	kafkaServer := []string{kafkaServerAddr}
 
@@ -185,10 +178,9 @@ func InitLog() {
 
 	myLog.Hooks.Add(hook)
 
-	// logrus.WithField("app_name", []string{"go-starter"})
-	Log = myLog.WithField("topics", []string{"topic_1"})
+	Log = myLog.WithField("topics", []string{kafkaLogTopic})
 
-	Log.Info("Initialization log completed: appRoot=", utils.RootDir(), ", logFile=", log_file)
+	Log.Info("Initialization logger completed: kafkaSever=", kafkaServerAddr, ", logTopic=", kafkaLogTopic, ", logFile=", log_file)
 
 }
 
@@ -199,7 +191,7 @@ func loadAppSettings(v1 *viper.Viper, filename string) {
 		os.Exit(3)
 		return
 	} else {
-		log.Println("AppSetting: Env=" + AppSetting.Env + ", AppName=" + AppSetting.AppName + ", AppPort=" + AppSetting.AppPort)
+		log.Println("AppSetting: Env=" + AppSetting.Env + ", AppName=" + AppSetting.AppName + ", AppPort=" + AppSetting.AppPort + ", appRoot=" + utils.RootDir())
 	}
 }
 
