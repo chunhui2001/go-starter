@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"strings"
+	_ "strings"
 	"time"
 
 	"github.com/chunhui2001/go-starter/gredis"
@@ -76,7 +76,7 @@ var CookieSetting = &Cookie{
 }
 
 var RedisConf = &gredis.GRedis{
-	Enable:         false,
+	Mode:           gredis.Disabled,
 	MasterName:     "",
 	Host:           "127.0.0.1:6379",
 	Addrs:          "",
@@ -123,29 +123,6 @@ type CallInfo struct {
 	fileName    string
 	funcName    string
 	line        int
-}
-
-func retrieveCallInfo() *CallInfo {
-	pc, file, line, _ := runtime.Caller(2)
-	_, fileName := path.Split(file)
-	parts := strings.Split(runtime.FuncForPC(pc).Name(), ".")
-	pl := len(parts)
-	packageName := ""
-	funcName := parts[pl-1]
-
-	if parts[pl-2][0] == '(' {
-		funcName = parts[pl-2] + "." + funcName
-		packageName = strings.Join(parts[0:pl-2], ".")
-	} else {
-		packageName = strings.Join(parts[0:pl-1], ".")
-	}
-
-	return &CallInfo{
-		packageName: packageName,
-		fileName:    fileName,
-		funcName:    funcName,
-		line:        line,
-	}
 }
 
 func InitLog() {
@@ -222,8 +199,8 @@ func loadRedisSettings(v1 *viper.Viper, filename string) {
 		os.Exit(3)
 		return
 	} else {
-		if !RedisConf.Enable {
-			Log.Info("RedisSettings: Enable=" + strconv.FormatBool(RedisConf.Enable) + ", Host=" + RedisConf.Host)
+		if RedisConf.Mode == 0 {
+			Log.Info("RedisSettings: Mode=" + utils.ToString(RedisConf.Mode) + ", Host=" + RedisConf.Host)
 		} else {
 			gredis.Init(RedisConf, Log)
 		}

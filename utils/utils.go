@@ -12,6 +12,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"strings"
 	"time"
@@ -130,7 +131,10 @@ func ToJsonString(v interface{}) string {
 }
 
 func ToString(s any) string {
-	return fmt.Sprintf("%s", s)
+	if reflect.TypeOf(s).String() == "string" {
+		return fmt.Sprintf("%s", s)
+	}
+	return fmt.Sprintf("%d", s)
 }
 
 func ErrorToString(err interface{}) string {
