@@ -168,7 +168,13 @@ func InitLog() {
 		"kh",
 		[]logrus.Level{logrus.InfoLevel, logrus.WarnLevel, logrus.ErrorLevel},
 		// &logrus.JSONFormatter{},
-		&MyJSONFormatter{PrettyPrint: true},
+		&MyJSONFormatter{
+			PrettyPrint: false,
+			FieldMap: FieldMap{
+				"time": "@timestamp",
+				"msg":  "@message",
+			},
+		},
 		kafkaServer,
 	)
 

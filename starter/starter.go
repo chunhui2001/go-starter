@@ -116,7 +116,7 @@ func Setup(starterServer *Server) *gin.Engine {
 	engine.Use(static.Serve("/static", static.LocalFile("./static", false)))
 	engine.Use(favicon.New("./static/favicon.ico")) // set favicon middleware
 	engine.Use(middleware.CORS(middleware.CORSOptions{}))
-	engine.Use(middleware.AccessFormat())
+	engine.Use(middleware.AccessLog())
 
 	engine.GET("/info", defaultServer.HandlerInfo) // info router
 	engine.GET("", defaultServer.HandlerIndexPage) // index page
