@@ -216,7 +216,8 @@ func InitLog() {
 			[]logrus.Level{logrus.InfoLevel, logrus.WarnLevel, logrus.ErrorLevel},
 			// &logrus.JSONFormatter{},
 			&MyJSONFormatter{
-				PrettyPrint: false,
+				TimestampFormat: utils.TimeStampFormat,
+				PrettyPrint:     false,
 				FieldMap: FieldMap{
 					"time": "@timestamp",
 					"msg":  "@message",
