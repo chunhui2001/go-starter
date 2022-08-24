@@ -18,6 +18,7 @@ services:
     ports:
       - 4000:8080
     environment:
+      - TZ=Asia/Shanghai
       - GIN_ENV=production
       #- GIN_ENV=staging
     #entrypoint: ["/bin/sh", "-c", "while true; do echo 1 >/dev/null 2>/dev/null; sleep 1; done"]

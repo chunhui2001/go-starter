@@ -18,6 +18,9 @@ FROM alpine:latest
 
 RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 
+RUN apk add -U tzdata && ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+RUN echo Asia/Shanghai > /etc/timezone
+
 RUN mkdir -p /dist
 WORKDIR /dist
 COPY --from=builder /dist/app .
