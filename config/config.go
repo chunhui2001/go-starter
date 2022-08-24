@@ -2,10 +2,11 @@ package config
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
-	_ "strings"
+	"strings"
 	"time"
 
 	"io"
@@ -52,6 +53,13 @@ type Cookie struct {
 	MaxAge int    `mapstructure:"COOKIE_MaxAge"`
 }
 
+type LogConf struct {
+	Output      string `mapstructure:"LOG_OUTPUT"`
+	FilePath    string `mapstructure:"LOG_FILE_PATH"`
+	KafkaServer string `mapstructure:"LOG_KAFKA_SERVER"`
+	KafkaTopic  string `mapstructure:"LOG_KAFKA_TOPIC"`
+}
+
 func (w *Wss) Wss() string {
 	return w.Host + w.Prefix
 }
@@ -62,6 +70,36 @@ var AppSetting = &App{
 	AppName: "go-starter",
 	AppPort: "8080",
 	LogFile: "",
+}
+
+var LogSettings = &LogConf{
+	Output: "console",
+}
+
+func (l *LogConf) Console() bool {
+	return strings.Contains(l.Output, "console")
+}
+
+func (l *LogConf) File() bool {
+	return strings.Contains(l.Output, "file")
+}
+
+func (l *LogConf) Kafka() bool {
+	return strings.Contains(l.Output, "kafka")
+}
+
+func (l *LogConf) LumberjackLogger() *lumberjack.Logger {
+	return &lumberjack.Logger{
+		Filename:   l.LogFile(),
+		MaxSize:    1, // MB
+		MaxBackups: 10,
+		MaxAge:     30, // days
+		Compress:   true,
+	}
+}
+
+func (l *LogConf) LogFile() string {
+	return filepath.Join(utils.TempDir(), AppSetting.AppName, "mylog.txt")
 }
 
 var WssSetting = &Wss{
@@ -109,6 +147,7 @@ func init() {
 	v1 := readConfig(filename, map[string]interface{}{})
 
 	loadAppSettings(v1, filename)
+	loadLoggerSettings(v1, filename)
 
 	// init log configuration
 	InitLog()
@@ -119,33 +158,43 @@ func init() {
 
 }
 
-type CallInfo struct {
-	packageName string
-	fileName    string
-	funcName    string
-	line        int
-}
-
 func InitLog() {
-
-	app := AppSetting.AppName
-
-	log_file := filepath.Join(utils.TempDir(), app, "mylog.txt")
-
-	lumberjackLogger := &lumberjack.Logger{
-		Filename:   log_file,
-		MaxSize:    1, // MB
-		MaxBackups: 10,
-		MaxAge:     30, // days
-		Compress:   true,
-	}
-
-	// assign it to the standard logger
-	mw := io.MultiWriter(os.Stdout, lumberjackLogger)
 
 	myLog := logrus.New()
 
-	myLog.SetOutput(mw)
+	if LogSettings.File() && LogSettings.Console() {
+
+		lumberjackLogger := LogSettings.LumberjackLogger()
+
+		// assign it to the standard logger
+		myLog.SetOutput(io.MultiWriter(os.Stdout, lumberjackLogger))
+		// gin log config
+		gin.DisableConsoleColor() //  Disable Console Color
+		gin.DefaultWriter = io.MultiWriter(lumberjackLogger, os.Stdout)
+
+	} else if LogSettings.Console() {
+
+		// assign it to the standard logger
+		myLog.SetOutput(io.MultiWriter(os.Stdout))
+
+		// gin log config
+		gin.DisableConsoleColor() //  Disable Console Color
+		gin.DefaultWriter = io.MultiWriter(os.Stdout)
+
+	} else if LogSettings.File() {
+
+		lumberjackLogger := LogSettings.LumberjackLogger()
+
+		// assign it to the standard logger
+		myLog.SetOutput(io.MultiWriter(lumberjackLogger))
+		// gin log config
+		gin.DisableConsoleColor() //  Disable Console Color
+		gin.DefaultWriter = io.MultiWriter(lumberjackLogger)
+
+	} else {
+		myLog.Out = ioutil.Discard
+	}
+
 	myLog.SetLevel(logrus.DebugLevel)
 	myLog.SetReportCaller(true)
 
@@ -157,47 +206,59 @@ func InitLog() {
 		},
 	})
 
-	gin.DisableConsoleColor() //  Disable Console Color
-	gin.DefaultWriter = io.MultiWriter(lumberjackLogger, os.Stdout)
+	if LogSettings.Kafka() {
 
-	kafkaLogTopic := "topic_1"
-	kafkaServerAddr := "127.0.0.1:9092"
-	kafkaServer := []string{kafkaServerAddr}
+		kafkaLogTopic := LogSettings.KafkaTopic
+		kafkaServerAddr := LogSettings.KafkaServer
 
-	hook, err := lkh.NewKafkaHook(
-		"kh",
-		[]logrus.Level{logrus.InfoLevel, logrus.WarnLevel, logrus.ErrorLevel},
-		// &logrus.JSONFormatter{},
-		&MyJSONFormatter{
-			PrettyPrint: false,
-			FieldMap: FieldMap{
-				"time": "@timestamp",
-				"msg":  "@message",
+		hook, err := lkh.NewKafkaHook(
+			"kh",
+			[]logrus.Level{logrus.InfoLevel, logrus.WarnLevel, logrus.ErrorLevel},
+			// &logrus.JSONFormatter{},
+			&MyJSONFormatter{
+				PrettyPrint: false,
+				FieldMap: FieldMap{
+					"time": "@timestamp",
+					"msg":  "@message",
+				},
 			},
-		},
-		kafkaServer,
-	)
+			strings.Split(kafkaServerAddr, ","),
+		)
 
-	if err != nil {
-		myLog.WithError(err).Error(fmt.Sprintf("Kafka Append Initialization failed: kafkaServer=%s, errorMessage=%s", kafkaServerAddr, utils.ErrorToString(err)))
+		if err != nil {
+			myLog.WithError(err).Error(fmt.Sprintf("Kafka Append Initialization failed: kafkaServer=%s, errorMessage=%s", kafkaServerAddr, utils.ErrorToString(err)))
+		}
+
+		myLog.Hooks.Add(hook)
+
+		Log = myLog.WithField("topics", []string{kafkaLogTopic})
+		Log.Info("Initialization logger completed: kafkaSever=", LogSettings.KafkaServer, ", logTopic=", LogSettings.KafkaTopic)
+
+	} else {
+		Log = logrus.NewEntry(myLog)
 	}
-
-	myLog.Hooks.Add(hook)
-
-	Log = myLog.WithField("topics", []string{kafkaLogTopic})
-
-	Log.Info("Initialization logger completed: kafkaSever=", kafkaServerAddr, ", logTopic=", kafkaLogTopic, ", logFile=", log_file)
 
 }
 
 func loadAppSettings(v1 *viper.Viper, filename string) {
 	err := v1.Unmarshal(&AppSetting)
 	if err != nil {
-		log.Println("viper parse AppSettings error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		log.Println("viper parse AppSettings error: configFile=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
 		os.Exit(3)
 		return
 	} else {
 		log.Println("AppSetting: Env=" + AppSetting.Env + ", AppName=" + AppSetting.AppName + ", AppPort=" + AppSetting.AppPort + ", appRoot=" + utils.RootDir())
+	}
+}
+
+func loadLoggerSettings(v1 *viper.Viper, filename string) {
+	err := v1.Unmarshal(&LogSettings)
+	if err != nil {
+		log.Println("viper parse LogSettings error: configFile=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		os.Exit(3)
+		return
+	} else {
+		log.Println("LogSettings: Output=" + LogSettings.Output + ", logFile=" + LogSettings.LogFile())
 	}
 }
 
