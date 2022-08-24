@@ -49,3 +49,11 @@ func PemRouter(c *gin.Context) {
 	c.Writer.Write(data)
 
 }
+
+func PadLeftRouter(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"data":    utils.PadLeft("chui", "..", 3),
+		"message": "Ok",
+	})
+}

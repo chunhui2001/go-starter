@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/chunhui2001/go-starter/gmongo"
 	"github.com/chunhui2001/go-starter/gredis"
 	"github.com/chunhui2001/go-starter/utils"
 	_ "github.com/joho/godotenv"
@@ -21,6 +22,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	_ "github.com/chunhui2001/go-starter/gmongo"
 	lkh "github.com/gfremex/logrus-kafka-hook"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -74,6 +76,12 @@ var AppSetting = &App{
 
 var LogSettings = &LogConf{
 	Output: "console",
+}
+
+var MongoDBSettings = &gmongo.MongoDBConf{
+	Enable:   false,
+	URI:      "mongodb://localhost:27017",
+	Database: "my_default_db",
 }
 
 func (l *LogConf) Console() bool {
@@ -154,6 +162,7 @@ func init() {
 
 	loadWssSettings(v1, filename)
 	loadRedisSettings(v1, filename)
+	loadMongoDBSettings(v1, filename)
 	loadCookieSettings(v1, filename)
 
 }
@@ -272,10 +281,27 @@ func loadRedisSettings(v1 *viper.Viper, filename string) {
 		os.Exit(3)
 		return
 	} else {
-		if RedisConf.Mode == 0 {
-			Log.Info("RedisSettings: Mode=" + utils.ToString(RedisConf.Mode) + ", Host=" + RedisConf.Host)
+		if RedisConf.Mode == gredis.Disabled {
+			Log.Info("Redis-Not-Enabled: Mode=" + utils.ToString(RedisConf.Mode) + ", Host=" + RedisConf.Host)
 		} else {
 			gredis.Init(RedisConf, Log)
+		}
+	}
+
+}
+func loadMongoDBSettings(v1 *viper.Viper, filename string) {
+
+	err := v1.Unmarshal(&MongoDBSettings)
+
+	if err != nil {
+		Log.Info("viper parse MongoDBSettings error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		os.Exit(3)
+		return
+	} else {
+		if !MongoDBSettings.Enable {
+			Log.Info("MongoDb-Not-Enabled: Enabled=" + utils.ToString(MongoDBSettings.Enable) + ", Host=" + RedisConf.Host)
+		} else {
+			gmongo.Init(MongoDBSettings, Log)
 		}
 	}
 

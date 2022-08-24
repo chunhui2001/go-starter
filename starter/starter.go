@@ -73,6 +73,7 @@ var defaultServer = &Server{
 		{Method: http.MethodGet, Path: "/labs-bigint", Handlers: []gin.HandlerFunc{actions.BigRouter}},
 		{Method: http.MethodGet, Path: "/labs-ytld", Handlers: []gin.HandlerFunc{actions.YtIdRouter}},
 		{Method: http.MethodGet, Path: "/labs-pem", Handlers: []gin.HandlerFunc{actions.PemRouter}},
+		{Method: http.MethodGet, Path: "/labs-leftpad", Handlers: []gin.HandlerFunc{actions.PadLeftRouter}},
 	},
 }
 

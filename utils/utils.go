@@ -134,6 +134,9 @@ func ToString(s any) string {
 	if reflect.TypeOf(s).String() == "string" {
 		return fmt.Sprintf("%s", s)
 	}
+	if reflect.TypeOf(s).String() == "bool" {
+		return fmt.Sprintf("%t", s)
+	}
 	return fmt.Sprintf("%d", s)
 }
 
@@ -161,4 +164,11 @@ func StringToBytes(str string) []byte {
 
 func TempDir() string {
 	return os.TempDir()
+}
+
+// https://github.com/git-time-metric/gtm/blob/master/util/string.go
+func PadLeft(s string, padStr string, maxLen int) string {
+	var padCountInt = 1 + ((maxLen - len(padStr)) / len(padStr))
+	var retStr = strings.Repeat(padStr, padCountInt) + s
+	return retStr[(len(retStr) - maxLen):]
 }
