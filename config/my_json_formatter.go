@@ -6,10 +6,13 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/chunhui2001/go-starter/config"
 	"github.com/sirupsen/logrus"
 )
 
 type fieldKey string
+
+var AppSetting *config.App = config.AppSetting
 
 // FieldMap allows customization of the key names for default fields.
 type FieldMap map[fieldKey]string
@@ -63,8 +66,8 @@ func (f *MyJSONFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	data := make(logrus.Fields, len(entry.Data)+4+3)
 
-	data["app"] = "go-starter"
-	data["env"] = "testing"
+	data["app"] = AppSetting.AppName
+	data["env"] = AppSetting.Env
 	data["capation_gen"] = 1
 
 	for k, v := range entry.Data {

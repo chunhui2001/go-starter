@@ -59,6 +59,7 @@ func PadLeftRouter(c *gin.Context) {
 		"message": "Ok",
 	})
 }
+
 func RedisPubRouter(c *gin.Context) {
 
 	channel := c.Query("channel")

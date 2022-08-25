@@ -241,8 +241,11 @@ func LoopMessage(pubSub *redis.PubSub, channel string, handler MessageHandler) {
 		if err != nil {
 			logger.Error(fmt.Sprintf("Redis-ReceiveMessage-Error: channel=%s, errorMessage=%s", channel, utils.ErrorToString(err)))
 		} else {
-			logger.Info("Redis-ReceivedMessage: channel=" + msg.Channel + ", payload=" + msg.Payload)
-			handler(channel, msg.Payload)
+			if handler == nil {
+				logger.Info("Redis-ReceivedMessage: channel=" + msg.Channel + ", payload=" + msg.Payload)
+			} else {
+				handler(channel, msg.Payload)
+			}
 		}
 	}
 }
