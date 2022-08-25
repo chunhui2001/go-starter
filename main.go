@@ -41,7 +41,9 @@ func main() {
 	Redis_Conf := config.RedisConf
 
 	for _, channel := range strings.Split(Redis_Conf.SubChannels, ",") {
-		gredis.Sub(channel)
+		gredis.Sub(channel, func(channel string, payload string) {
+			config.Log.Info("收到了消息: channel=" + channel + ", payload=" + payload)
+		})
 	}
 
 	r.Run(config.AppSetting.AppPort)

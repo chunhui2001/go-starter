@@ -36,6 +36,8 @@ func (s REDIS_Mode) String() string {
 	return "unknown"
 }
 
+type MessageHandler func(channel string, payload string)
+
 type GRedis struct {
 	Mode           REDIS_Mode    `mapstructure:"REDIS_Mode"` // 0: disable, 1:single, 2:sentinel, 3:cluster
 	Host           string        `mapstructure:"REDIS_Host"`
@@ -209,7 +211,7 @@ func Pub(channel string, payload string) {
 	}
 }
 
-func Sub(channel string) {
+func Sub(channel string, handler MessageHandler) {
 
 	if conf.Mode == Disabled {
 		panic(errors.New("Redis-Not-Enabled"))
@@ -229,17 +231,18 @@ func Sub(channel string) {
 
 	logger.Info("Redis-Subscribe-A-Channel: channel=" + channel)
 
-	go LoopMessage(pubSub, channel)
+	go LoopMessage(pubSub, channel, handler)
 
 }
 
-func LoopMessage(pubSub *redis.PubSub, channel string) {
+func LoopMessage(pubSub *redis.PubSub, channel string, handler MessageHandler) {
 	for {
 		msg, err := pubSub.ReceiveMessage(ctx)
 		if err != nil {
 			logger.Error(fmt.Sprintf("Redis-ReceiveMessage-Error: channel=%s, errorMessage=%s", channel, utils.ErrorToString(err)))
 		} else {
 			logger.Info("Redis-ReceivedMessage: channel=" + msg.Channel + ", payload=" + msg.Payload)
+			handler(channel, msg.Payload)
 		}
 	}
 }
