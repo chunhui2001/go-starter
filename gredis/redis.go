@@ -73,6 +73,7 @@ var (
 	ctx          context.Context
 	conf         *GRedis
 	logger       *logrus.Entry
+	connected    bool
 )
 
 // opt, err := redis.ParseURL("redis://<user>:<pass>@localhost:6379/<db>")
@@ -159,6 +160,7 @@ func Ping() {
 
 	if _, err := redisCmd.Ping(ctx).Result(); err != nil {
 		logger.Error(fmt.Sprintf("Redis client connect failed: %s, errorMessage=%s", serverInfo, utils.ErrorToString(err)))
+		connected = false
 		return
 	}
 
@@ -167,6 +169,8 @@ func Ping() {
 	} else {
 		logger.Info(fmt.Sprintf("Redis client connected successfully: %s", serverInfo) + ", SubChannels=" + conf.SubChannels)
 	}
+
+	connected = true
 
 }
 
@@ -206,15 +210,22 @@ func Pub(channel string, payload string) {
 	}
 
 	err := Client().Publish(ctx, channel, payload).Err()
+
 	if err != nil {
 		logger.Error(fmt.Sprintf("Redis-Publish-Error: channel=%s, errorMessage=%s", channel, utils.ErrorToString(err)))
 	}
+
 }
 
 func Sub(channel string, handler MessageHandler) {
 
 	if conf.Mode == Disabled {
 		panic(errors.New("Redis-Not-Enabled"))
+	}
+
+	if !connected {
+		logger.Info("Redis-Not-Connected: connected=" + utils.ToString(connected))
+		return
 	}
 
 	var pubSub *redis.PubSub
@@ -236,6 +247,7 @@ func Sub(channel string, handler MessageHandler) {
 }
 
 func LoopMessage(pubSub *redis.PubSub, channel string, handler MessageHandler) {
+
 	for {
 		msg, err := pubSub.ReceiveMessage(ctx)
 		if err != nil {
@@ -248,4 +260,5 @@ func LoopMessage(pubSub *redis.PubSub, channel string, handler MessageHandler) {
 			}
 		}
 	}
+
 }

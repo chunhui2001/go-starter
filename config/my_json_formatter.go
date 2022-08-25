@@ -6,13 +6,10 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/chunhui2001/go-starter/config"
 	"github.com/sirupsen/logrus"
 )
 
 type fieldKey string
-
-var AppSetting *config.App = config.AppSetting
 
 // FieldMap allows customization of the key names for default fields.
 type FieldMap map[fieldKey]string
@@ -59,6 +56,10 @@ type MyJSONFormatter struct {
 
 	// PrettyPrint will indent all json logs
 	PrettyPrint bool
+
+	AppName     string
+	Env         string
+	CapationGen int
 }
 
 // Format renders a single log entry
@@ -66,9 +67,9 @@ func (f *MyJSONFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	data := make(logrus.Fields, len(entry.Data)+4+3)
 
-	data["app"] = AppSetting.AppName
-	data["env"] = AppSetting.Env
-	data["capation_gen"] = 1
+	data["app"] = f.AppName
+	data["env"] = f.Env
+	data["capation_gen"] = f.CapationGen
 
 	for k, v := range entry.Data {
 		switch v := v.(type) {

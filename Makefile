@@ -2,7 +2,7 @@
 ### 当前 Makefile 文件物理路径
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
-e 	?=production
+e 	?=testing
 c 	?=10000
 
 # make tidy
@@ -18,11 +18,11 @@ get:
 	go get
 
 # make run e=development 
-run:
+start:
 	GIN_ENV=$(e) go run .
 
 # make dev
-dev:
+run:
 	gin -i --appPort 8080 --port 3000 run main.go
 
 # build docker image

@@ -228,6 +228,9 @@ func InitLog() {
 			&MyJSONFormatter{
 				TimestampFormat: utils.TimeStampFormat,
 				PrettyPrint:     true,
+				AppName:         AppSetting.AppName,
+				Env:             AppSetting.Env,
+				CapationGen:     1,
 				FieldMap: FieldMap{
 					"time": "@timestamp",
 					"msg":  "@message",
