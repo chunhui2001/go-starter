@@ -226,7 +226,7 @@ func InitLog() {
 			// &logrus.JSONFormatter{},
 			&MyJSONFormatter{
 				TimestampFormat: utils.TimeStampFormat,
-				PrettyPrint:     false,
+				PrettyPrint:     true,
 				FieldMap: FieldMap{
 					"time": "@timestamp",
 					"msg":  "@message",
@@ -236,13 +236,13 @@ func InitLog() {
 		)
 
 		if err != nil {
-			myLog.WithError(err).Error(fmt.Sprintf("Kafka Append Initialization failed: kafkaServer=%s, errorMessage=%s", kafkaServerAddr, utils.ErrorToString(err)))
+			myLog.WithError(err).Error(fmt.Sprintf("Kafka Append Initialization failed: kafkaServer=%s, errorMessage=%s", kafkaServerAddr, err.Error()))
+			Log = logrus.NewEntry(myLog)
+		} else {
+			myLog.Hooks.Add(hook)
+			Log = myLog.WithField("topics", []string{kafkaLogTopic})
+			Log.Info("Initialization logger completed: kafkaSever=", LogSettings.KafkaServer, ", logTopic=", LogSettings.KafkaTopic)
 		}
-
-		myLog.Hooks.Add(hook)
-
-		Log = myLog.WithField("topics", []string{kafkaLogTopic})
-		Log.Info("Initialization logger completed: kafkaSever=", LogSettings.KafkaServer, ", logTopic=", LogSettings.KafkaTopic)
 
 	} else {
 		Log = logrus.NewEntry(myLog)

@@ -72,7 +72,7 @@ func (f *MyJSONFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		case error:
 			// Otherwise errors are ignored by `encoding/json`
 			// https://github.com/sirupsen/logrus/issues/137
-			data[k] = v.Error()
+			data[k] = string(v.Error())
 		default:
 			data[k] = v
 		}
@@ -83,10 +83,6 @@ func (f *MyJSONFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	if timestampFormat == "" {
 		timestampFormat = defaultTimestampFormat
 	}
-
-	// if entry.err != "" {
-	// 	data[f.FieldMap.resolve(FieldKeyLogrusError)] = entry.err
-	// }
 
 	if !f.DisableTimestamp {
 		data[f.FieldMap.resolve(logrus.FieldKeyTime)] = entry.Time.Format(timestampFormat)
