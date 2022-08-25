@@ -249,7 +249,9 @@ func Sub(channel string, handler MessageHandler) {
 func LoopMessage(pubSub *redis.PubSub, channel string, handler MessageHandler) {
 
 	for {
+
 		msg, err := pubSub.ReceiveMessage(ctx)
+
 		if err != nil {
 			logger.Error(fmt.Sprintf("Redis-ReceiveMessage-Error: channel=%s, errorMessage=%s", channel, utils.ErrorToString(err)))
 		} else {
@@ -259,6 +261,7 @@ func LoopMessage(pubSub *redis.PubSub, channel string, handler MessageHandler) {
 				handler(channel, msg.Payload)
 			}
 		}
+
 	}
 
 }
