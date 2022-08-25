@@ -3,6 +3,7 @@ module github.com/chunhui2001/go-starter
 go 1.18
 
 require (
+	github.com/fatih/structs v1.1.0
 	github.com/foolin/goview v0.3.0
 	github.com/gfremex/logrus-kafka-hook v0.0.0-20180109031623-f62e125fcbfe
 	github.com/gin-contrib/cache v1.2.0
@@ -21,6 +22,7 @@ require (
 	github.com/spf13/viper v1.12.0
 	github.com/thinkerou/favicon v0.1.0
 	github.com/ubiq/go-ubiq v3.0.1+incompatible
+	go.mongodb.org/mongo-driver v1.10.1
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
 
@@ -79,7 +81,6 @@ require (
 	github.com/xdg-go/scram v1.1.1 // indirect
 	github.com/xdg-go/stringprep v1.0.3 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a // indirect
-	go.mongodb.org/mongo-driver v1.10.1 // indirect
 	golang.org/x/crypto v0.0.0-20220817201139-bc19a97f63c8 // indirect
 	golang.org/x/net v0.0.0-20220822230855-b0a4917ee28c // indirect
 	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde // indirect

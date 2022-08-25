@@ -74,6 +74,8 @@ var defaultServer = &Server{
 		{Method: http.MethodGet, Path: "/labs-ytld", Handlers: []gin.HandlerFunc{actions.YtIdRouter}},
 		{Method: http.MethodGet, Path: "/labs-pem", Handlers: []gin.HandlerFunc{actions.PemRouter}},
 		{Method: http.MethodGet, Path: "/labs-leftpad", Handlers: []gin.HandlerFunc{actions.PadLeftRouter}},
+		{Method: http.MethodPost, Path: "/demo/album-create", Handlers: []gin.HandlerFunc{actions.AlbumCreateRouter}},
+		{Method: http.MethodGet, Path: "/demo/album-get", Handlers: []gin.HandlerFunc{actions.AlbumGetRouter}},
 	},
 }
 

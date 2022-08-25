@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/chunhui2001/go-starter/utils"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -51,11 +52,11 @@ func Init(mongoConf *MongoDBConf, log *logrus.Entry) {
 
 	logger.Info(fmt.Sprintf("MongoDB successfully connected: Server=%s, Database=%s", mongoConn.GetURI(), mongoConf.Database))
 
-	defer mongoClient.Disconnect(ctx)
+	// defer mongoClient.Disconnect(ctx)
 
 }
 
-func InsertOne(collectionName string, document map[string]interface{}) primitive.ObjectID {
+func InsertOne(collectionName string, document *map[string]interface{}) {
 
 	collection := mongoDatabase.Collection(collectionName)
 	res, err := collection.InsertOne(ctx, document)
@@ -64,18 +65,20 @@ func InsertOne(collectionName string, document map[string]interface{}) primitive
 		panic(err)
 	}
 
-	// return res.InsertedID.(primitive.ObjectID).Hex()
-	return res.InsertedID.(primitive.ObjectID)
+	FindOne(collectionName, res.InsertedID.(primitive.ObjectID).Hex(), document)
 
 }
 
 // f := &foo{}
 // f, ok := baz.(*foo)
-func FindOne(collectionName string, objectid string, result map[string]interface{}) {
+func FindOne(collectionName string, objectid string, document *map[string]interface{}) {
 
-	err := mongoDatabase.Collection(collectionName).FindOne(ctx, bson.M{"_id": objectid}).Decode(&result)
+	oid, _ := primitive.ObjectIDFromHex(objectid)
+
+	err := mongoDatabase.Collection(collectionName).FindOne(ctx, bson.M{"_id": oid}).Decode(document)
 
 	if err != nil {
+		logger.Error(utils.ErrorToString(err))
 		panic(err)
 	}
 
@@ -113,21 +116,19 @@ func Find(collectionName string, filter map[string]interface{}) []interface{} {
 
 	defer cursor.Close(ctx)
 
-	var interfaceSlice []interface{} = make([]interface{}, 0)
-	var i int = 0
+	var interfaceSlice []interface{}
 
 	for cursor.Next(ctx) {
 
 		var result bson.D
+
 		err := cursor.Decode(&result)
 
 		if err != nil {
 			panic(err)
 		}
 
-		interfaceSlice[i] = result
-
-		i++
+		interfaceSlice = append(interfaceSlice, result)
 
 	}
 
