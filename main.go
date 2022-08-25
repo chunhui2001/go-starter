@@ -2,10 +2,11 @@ package main
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/chunhui2001/go-starter/config"
 	"github.com/chunhui2001/go-starter/controller"
-	_ "github.com/chunhui2001/go-starter/gredis"
+	"github.com/chunhui2001/go-starter/gredis"
 	"github.com/chunhui2001/go-starter/starter"
 	"github.com/gin-gonic/gin"
 )
@@ -34,6 +35,15 @@ func init() {
 }
 
 func main() {
+
 	r := starter.Setup(starterServer)
+
+	Redis_Conf := config.RedisConf
+
+	for _, channel := range strings.Split(Redis_Conf.SubChannels, ",") {
+		gredis.Sub(channel)
+	}
+
 	r.Run(config.AppSetting.AppPort)
+
 }

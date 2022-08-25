@@ -1,10 +1,12 @@
 package actions
 
 import (
+	"io/ioutil"
 	"net/http"
 
 	_ "github.com/chunhui2001/go-starter/config"
 	"github.com/chunhui2001/go-starter/gras"
+	"github.com/chunhui2001/go-starter/gredis"
 	"github.com/chunhui2001/go-starter/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -56,4 +58,21 @@ func PadLeftRouter(c *gin.Context) {
 		"data":    utils.PadLeft("chui", "..", 3),
 		"message": "Ok",
 	})
+}
+func RedisPubRouter(c *gin.Context) {
+
+	channel := c.Query("channel")
+	payload, err := ioutil.ReadAll(c.Request.Body)
+
+	if err != nil {
+		panic(err)
+	}
+
+	gredis.Pub(channel, string(payload))
+	c.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"data":    true,
+		"message": "Ok",
+	})
+
 }

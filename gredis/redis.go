@@ -48,6 +48,7 @@ type GRedis struct {
 	IdleTimeout    time.Duration `mapstructure:"REDIS_IdleTimeout"`
 	RouteByLatency bool          `mapstructure:"REDIS_RouteByLatency"`
 	RouteRandomly  bool          `mapstructure:"REDIS_RouteRandomly"`
+	SubChannels    string        `mapstructure:"REDIS_SUB_CHANNELS"`
 }
 
 func (r *GRedis) ServerAddrs() string {
@@ -64,10 +65,12 @@ func (r *GRedis) ServerAddrs() string {
 }
 
 var (
-	redisClient redis.Cmdable
-	ctx         context.Context
-	conf        *GRedis
-	logger      *logrus.Entry
+	redisCmd     redis.Cmdable
+	redisClient  *redis.Client
+	redisCluster *redis.ClusterClient
+	ctx          context.Context
+	conf         *GRedis
+	logger       *logrus.Entry
 )
 
 // opt, err := redis.ParseURL("redis://<user>:<pass>@localhost:6379/<db>")
@@ -96,6 +99,7 @@ func Init(redisConf *GRedis, log *logrus.Entry) {
 				DB:   conf.Db,
 			})
 		}
+		redisCmd = redisClient
 	} else if conf.Mode == Sentinel || conf.Mode == Cluster {
 
 		var addrs []string = strings.Split(conf.Addrs, ",")
@@ -103,34 +107,40 @@ func Init(redisConf *GRedis, log *logrus.Entry) {
 		if conf.Mode == Sentinel {
 
 			if conf.RouteByLatency || conf.RouteRandomly {
-				redisClient = redis.NewFailoverClusterClient(&redis.FailoverOptions{
+				redisCluster = redis.NewFailoverClusterClient(&redis.FailoverOptions{
 					MasterName:     conf.MasterName,
 					SentinelAddrs:  addrs,
 					RouteByLatency: conf.RouteByLatency,
 					RouteRandomly:  conf.RouteRandomly,
 				})
+				redisCmd = redisCluster
 			} else {
 				redisClient = redis.NewFailoverClient(&redis.FailoverOptions{
 					MasterName:    conf.MasterName,
 					SentinelAddrs: addrs,
 				})
+				redisCmd = redisClient
 			}
+
 		} else if conf.Mode == Cluster {
 			if conf.RouteByLatency || conf.RouteRandomly {
-				redisClient = redis.NewClusterClient(&redis.ClusterOptions{
+				redisCluster = redis.NewClusterClient(&redis.ClusterOptions{
 					Addrs:          addrs,
 					RouteByLatency: conf.RouteByLatency,
 					RouteRandomly:  conf.RouteRandomly,
 				})
+				redisCmd = redisCluster
 			} else {
-				redisClient = redis.NewClusterClient(&redis.ClusterOptions{
+				redisCluster = redis.NewClusterClient(&redis.ClusterOptions{
 					Addrs: addrs,
 				})
+				redisCmd = redisCluster
 			}
 		}
 	}
 
 	Ping()
+
 }
 
 func Ping() {
@@ -145,12 +155,16 @@ func Ping() {
 		serverInfo = fmt.Sprintf("Mode=%s, ServerAddrs=%s", conf.Mode.String(), conf.ServerAddrs())
 	}
 
-	if _, err := redisClient.Ping(ctx).Result(); err != nil {
+	if _, err := redisCmd.Ping(ctx).Result(); err != nil {
 		logger.Error(fmt.Sprintf("Redis client connect failed: %s, errorMessage=%s", serverInfo, utils.ErrorToString(err)))
 		return
 	}
 
-	logger.Info(fmt.Sprintf("Redis client connected successfully: %s", serverInfo))
+	if conf.SubChannels != "" {
+		logger.Info(fmt.Sprintf("Redis client connected successfully: %s", serverInfo))
+	} else {
+		logger.Info(fmt.Sprintf("Redis client connected successfully: %s", serverInfo) + ", SubChannels=" + conf.SubChannels)
+	}
 
 }
 
@@ -158,7 +172,7 @@ func Client() redis.Cmdable {
 	if conf.Mode == Disabled {
 		panic(errors.New("Redis-Not-Enabled"))
 	}
-	return redisClient
+	return redisCmd
 }
 
 func Set(key string, value string, expir int) {
@@ -181,4 +195,51 @@ func Get(key string) []byte {
 
 	return data
 
+}
+
+func Pub(channel string, payload string) {
+
+	if conf.Mode == Disabled {
+		panic(errors.New("Redis-Not-Enabled"))
+	}
+
+	err := Client().Publish(ctx, channel, payload).Err()
+	if err != nil {
+		logger.Error(fmt.Sprintf("Redis-Publish-Error: channel=%s, errorMessage=%s", channel, utils.ErrorToString(err)))
+	}
+}
+
+func Sub(channel string) {
+
+	if conf.Mode == Disabled {
+		panic(errors.New("Redis-Not-Enabled"))
+	}
+
+	var pubSub *redis.PubSub
+
+	if redisClient != nil {
+		pubSub = redisClient.Subscribe(ctx, channel)
+	} else if redisCluster != nil {
+		pubSub = redisCluster.Subscribe(ctx, channel)
+	} else {
+		panic(errors.New("Redis-Client-Not-Initializable"))
+	}
+
+	// defer pubSub.Close()
+
+	logger.Info("Redis-Subscribe-A-Channel: channel=" + channel)
+
+	go LoopMessage(pubSub, channel)
+
+}
+
+func LoopMessage(pubSub *redis.PubSub, channel string) {
+	for {
+		msg, err := pubSub.ReceiveMessage(ctx)
+		if err != nil {
+			logger.Error(fmt.Sprintf("Redis-ReceiveMessage-Error: channel=%s, errorMessage=%s", channel, utils.ErrorToString(err)))
+		} else {
+			logger.Info("Redis-ReceivedMessage: channel=" + msg.Channel + ", payload=" + msg.Payload)
+		}
+	}
 }

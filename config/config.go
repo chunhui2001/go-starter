@@ -131,6 +131,7 @@ var RedisConf = &gredis.GRedis{
 	Passwd:         "",
 	RouteByLatency: false,
 	RouteRandomly:  false,
+	SubChannels:    "",
 }
 
 var Log *logrus.Entry
