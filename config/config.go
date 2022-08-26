@@ -227,7 +227,7 @@ func InitLog() {
 			// &logrus.JSONFormatter{},
 			&MyJSONFormatter{
 				TimestampFormat: utils.TimeStampFormat,
-				PrettyPrint:     true,
+				PrettyPrint:     false,
 				AppName:         AppSetting.AppName,
 				Env:             AppSetting.Env,
 				CapationGen:     1,
