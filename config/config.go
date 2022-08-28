@@ -39,7 +39,6 @@ type App struct {
 	Env     string `mapstructure:"GIN_ENV"`
 	AppName string `mapstructure:"APP_NAME"`
 	AppPort string `mapstructure:"APP_PORT"`
-	LogFile string `mapstructure:"APP_LOG_FILE"`
 }
 
 type Wss struct {
@@ -71,7 +70,6 @@ var AppSetting = &App{
 	Env:     "production",
 	AppName: "go-starter",
 	AppPort: "8080",
-	LogFile: "",
 }
 
 var LogSettings = &LogConf{
@@ -96,6 +94,11 @@ func (l *LogConf) Kafka() bool {
 	return strings.Contains(l.Output, "kafka")
 }
 
+func (l *LogConf) LogFile() string {
+	// return filepath.Join(utils.TempDir(), AppSetting.AppName, "mylog.txt")
+	return filepath.Join(l.FilePath, AppSetting.AppName, "mylog.txt")
+}
+
 func (l *LogConf) LumberjackLogger() *lumberjack.Logger {
 	return &lumberjack.Logger{
 		Filename:   l.LogFile(),
@@ -104,10 +107,6 @@ func (l *LogConf) LumberjackLogger() *lumberjack.Logger {
 		MaxAge:     30, // days
 		Compress:   true,
 	}
-}
-
-func (l *LogConf) LogFile() string {
-	return filepath.Join(utils.TempDir(), AppSetting.AppName, "mylog.txt")
 }
 
 var WssSetting = &Wss{
