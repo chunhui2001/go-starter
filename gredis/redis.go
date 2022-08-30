@@ -258,7 +258,7 @@ func LoopMessage(pubSub *redis.PubSub, channel string, handler MessageHandler) {
 			if handler == nil {
 				logger.Info("Redis-ReceivedMessage: channel=" + msg.Channel + ", payload=" + msg.Payload)
 			} else {
-				handler(channel, msg.Payload)
+				go handler(channel, msg.Payload)
 			}
 		}
 

@@ -48,3 +48,4 @@ package-lock.json
 gin-bin
 go-starter
 vendor
+*.debug
