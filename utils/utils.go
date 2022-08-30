@@ -172,3 +172,7 @@ func PadLeft(s string, padStr string, maxLen int) string {
 	var retStr = strings.Repeat(padStr, padCountInt) + s
 	return retStr[(len(retStr) - maxLen):]
 }
+
+func TrimRight(s string) string {
+	return strings.TrimSuffix(s, ",")
+}

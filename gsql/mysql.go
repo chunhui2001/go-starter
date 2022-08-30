@@ -19,10 +19,10 @@ func Init(log *logrus.Entry) {
 
 	logger = log
 
-	connectionString := "root:Cc@tcp(localhost:3306)/mydb?timeout=90s&interpolateParams=true"
+	dns := "root:Cc@tcp(localhost:3306)/mydb?timeout=90s&interpolateParams=true"
 	// connectionString := "root:Cc@tcp(localhost:3306)/mydb?timeout=90s"
 
-	db, err := sql.Open("mysql", connectionString)
+	db, err := sql.Open("mysql", dns)
 
 	if err != nil {
 		panic(err)
@@ -36,7 +36,7 @@ func Init(log *logrus.Entry) {
 	err = db.Ping()
 
 	if err != nil {
-		logger.Error(fmt.Sprintf("Mysql-Client-Connect-Error: connectionString=%s, errorMessage=%s", connectionString, utils.ErrorToString(err)))
+		logger.Error(fmt.Sprintf("Mysql-Client-Connect-Error: dns=%s, errorMessage=%s", dns, utils.ErrorToString(err)))
 		return
 	}
 
@@ -44,13 +44,9 @@ func Init(log *logrus.Entry) {
 
 	logger.Info(fmt.Sprintf("Mysql-Client-Connected-Successful"))
 
-	CreateTable(`create table if not exists book(isbn varchar(14), title varchar(200), price int, primary key(isbn))`)
-	Insert(`insert into book(isbn, title, price) values(?, ?, ?)`, "978-4798161490", "MySQL徹底入門 第4版", 4180)
-	Insert(`insert into book(isbn, title, price) values(?, ?, ?)`, "978-4798161491", "MySQL徹底入門 第4版", 4180)
-	Insert(`insert into book(isbn, title, price) values(?, ?, ?)`, "978-4798161492", "MySQL徹底入門 第4版", 4180)
-
 }
 
+// CreateTable(`create table if not exists book(isbn varchar(14), title varchar(200), price int, primary key(isbn))`)
 func CreateTable(ddl string) {
 
 	_, err := dbClient.Exec(ddl)
@@ -63,6 +59,43 @@ func CreateTable(ddl string) {
 
 }
 
+// sqlStr := "INSERT INTO test(n1, n2, n3) VALUES "
+// vals := []interface{}{}
+
+// for _, row := range data {
+//    sqlStr += "(?, ?, ?),"
+//    vals = append(vals, row["v1"], row["v2"], row["v3"])
+// }
+
+// //trim the last ,
+// sqlStr = strings.TrimSuffix(sqlStr, ",")
+
+// //Replacing ? with $n for postgres
+// sqlStr = ReplaceSQL(sqlStr, "?")
+
+// //prepare the statement
+// stmt, _ := db.Prepare(sqlStr)
+
+// //format all vals at once
+// res, _ := stmt.Exec(vals...)
+func Exec(sqlStr string, args ...any) sql.Result {
+
+	// prepare the statement
+	stmt, _ := dbClient.Prepare(sqlStr)
+
+	// format all args at once
+	result, err := stmt.Exec(args...)
+
+	if err != nil {
+		logger.Error(fmt.Sprintf("Mysql-Insert-Error: sqlStr=%s, errorMessage=%s", sqlStr, string(err.Error())))
+		return nil
+	}
+
+	return result
+
+}
+
+// Insert(`insert into book(isbn, title, price) values(?, ?, ?)`, "978-4798161495", "MySQL徹底入門 第4版", 4180)
 func Insert(sql string, args ...any) sql.Result {
 
 	result, err := dbClient.Exec(sql, args...)
