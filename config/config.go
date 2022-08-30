@@ -138,6 +138,10 @@ var RedisConf = &gredis.GRedis{
 	SubChannels:    "",
 }
 
+var MySqlConf = &gsql.MySql{
+	Enable: false,
+}
+
 var Log *logrus.Entry
 var filename string = ".env"
 
@@ -311,7 +315,21 @@ func loadRedisSettings(v1 *viper.Viper, filename string) {
 }
 
 func loadMySqlSettings(v1 *viper.Viper, filename string) {
-	gsql.Init(Log)
+
+	err := v1.Unmarshal(&MySqlConf)
+
+	if err != nil {
+		Log.Info("viper parse MySqlConf error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		os.Exit(3)
+		return
+	} else {
+		if MySqlConf.Enable == false {
+			Log.Info("MySql-Not-Enabled: Enabled=" + utils.ToString(MySqlConf.Enable))
+		} else {
+			gsql.Init(MySqlConf, Log)
+		}
+	}
+
 }
 
 func loadMongoDBSettings(v1 *viper.Viper, filename string) {

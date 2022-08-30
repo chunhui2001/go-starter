@@ -13,6 +13,7 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"runtime"
 	"strings"
 	"time"
@@ -175,4 +176,13 @@ func PadLeft(s string, padStr string, maxLen int) string {
 
 func TrimRight(s string) string {
 	return strings.TrimSuffix(s, ",")
+}
+
+func Split(s string, sep string) []string {
+	return strings.Split(s, sep)
+}
+
+func Matches(s string, regx string) [][]string {
+	re := regexp.MustCompile(regx)
+	return re.FindAllStringSubmatch(s, -1)
 }

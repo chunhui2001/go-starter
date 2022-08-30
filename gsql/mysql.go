@@ -5,23 +5,27 @@ import (
 	"fmt"
 	"time"
 
-	_ "github.com/chunhui2001/go-starter/utils"
+	"github.com/chunhui2001/go-starter/utils"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
 )
+
+type MySql struct {
+	Enable bool   `mapstructure:"MYSQL_Enable"`
+	Dns    string `mapstructure:"MYSQL_DNS"`
+}
 
 var (
 	dbClient *sql.DB
 	logger   *logrus.Entry
 )
 
-func Init(log *logrus.Entry) {
+func Init(mySqlConf *MySql, log *logrus.Entry) {
 
 	logger = log
-
-	dns := "root:Cc@tcp(localhost:3316)/mydb?timeout=90s&interpolateParams=true"
-	// connectionString := "root:Cc@tcp(localhost:3306)/mydb?timeout=90s"
-
+	dns := mySqlConf.Dns
+	hostMatch := utils.Matches(dns, `\(([0-9\.a-zA-Z_]+:[0-9]+)?\)/([A-Za-z0-9_]+)`)
+	hostName := hostMatch[0][1] + "/" + hostMatch[0][2]
 	db, err := sql.Open("mysql", dns)
 
 	if err != nil {
@@ -36,13 +40,13 @@ func Init(log *logrus.Entry) {
 	err = db.Ping()
 
 	if err != nil {
-		logger.Error(fmt.Sprintf("Mysql-Client-Connect-Error: errorMessage=%s", string(err.Error())))
+		logger.Error(fmt.Sprintf("Mysql-Client-Connect-Error: MySqlServer=%s, errorMessage=%s", hostName, string(err.Error())))
 		return
 	}
 
 	dbClient = db
 
-	logger.Info(fmt.Sprintf("Mysql-Client-Connected-Successful"))
+	logger.Info(fmt.Sprintf("Mysql-Client-Connected-Successful: MySqlServer=%s", hostName))
 
 }
 
