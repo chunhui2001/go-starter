@@ -16,6 +16,7 @@ import (
 
 	"github.com/chunhui2001/go-starter/gmongo"
 	"github.com/chunhui2001/go-starter/gredis"
+	"github.com/chunhui2001/go-starter/gsql"
 	"github.com/chunhui2001/go-starter/utils"
 	_ "github.com/joho/godotenv"
 	"github.com/spf13/viper"
@@ -170,6 +171,7 @@ func init() {
 	loadRedisSettings(v1, filename)
 	loadMongoDBSettings(v1, filename)
 	loadCookieSettings(v1, filename)
+	loadMySqlSettings(v1, filename)
 
 }
 
@@ -307,6 +309,11 @@ func loadRedisSettings(v1 *viper.Viper, filename string) {
 	}
 
 }
+
+func loadMySqlSettings(v1 *viper.Viper, filename string) {
+	gsql.Init(Log)
+}
+
 func loadMongoDBSettings(v1 *viper.Viper, filename string) {
 
 	err := v1.Unmarshal(&MongoDBSettings)

@@ -159,15 +159,15 @@ func Ping() {
 	}
 
 	if _, err := redisCmd.Ping(ctx).Result(); err != nil {
-		logger.Error(fmt.Sprintf("Redis client connect failed: %s, errorMessage=%s", serverInfo, utils.ErrorToString(err)))
+		logger.Error(fmt.Sprintf("Redis-Client-Connect-Failed: %s, errorMessage=%s", serverInfo, utils.ErrorToString(err)))
 		connected = false
 		return
 	}
 
 	if conf.SubChannels != "" {
-		logger.Info(fmt.Sprintf("Redis client connected successfully: %s", serverInfo))
+		logger.Info(fmt.Sprintf("Redis-Client-Connect-Successfully: %s", serverInfo))
 	} else {
-		logger.Info(fmt.Sprintf("Redis client connected successfully: %s", serverInfo) + ", SubChannels=" + conf.SubChannels)
+		logger.Info(fmt.Sprintf("Redis-Client-Connect-Successfully: %s", serverInfo) + ", SubChannels=" + conf.SubChannels)
 	}
 
 	connected = true
