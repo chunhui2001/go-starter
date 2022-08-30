@@ -211,7 +211,16 @@ func InitLog() {
 		TimestampFormat: utils.TimeStampFormat,
 		LogFormat:       "%time% [%lvl%] - %file% >> %msg%\n",
 		CallerPrettyfier: func(frame *runtime.Frame) (function string, file string) {
-			return "", fmt.Sprintf("%s() %s:%d", frame.Function, path.Base(frame.File), frame.Line)
+			lineMessage := fmt.Sprintf("%s() %s:%d", frame.Function, path.Base(frame.File), frame.Line)
+			lineLength := len(lineMessage)
+
+			if lineLength > 60 {
+				lineMessage = "....." + string(lineMessage[lineLength-56:lineLength-1])
+			} else if lineLength < 60 {
+				lineMessage = " " + lineMessage
+			}
+
+			return "", "[" + lineMessage + "]"
 		},
 	})
 
