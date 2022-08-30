@@ -18,11 +18,11 @@ services:
     ports:
       - 4000:8080
     environment:
-      - TZ=Asia/Shanghai
+      #- TZ=Asia/Shanghai
+      - TZ=UTC
       - GIN_ENV=production
-      #- GIN_ENV=staging
     #entrypoint: ["/bin/sh", "-c", "while true; do echo 1 >/dev/null 2>/dev/null; sleep 1; done"]
-    #entrypoint: ["/dist/app"]
+    entrypoint: ["/dist/app"]
     volumes:
       - ./static:/dist/static:ro
       - ./views:/dist/views:ro
