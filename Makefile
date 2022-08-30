@@ -2,8 +2,10 @@
 ### 当前 Makefile 文件物理路径
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
-e 	?=testing
-c 	?=10000
+e 		?=testing
+c 		?=10000
+#zone 	?=Asia/Shanghai
+zone 	?=UTC
 
 # make tidy
 tidy:
@@ -23,7 +25,7 @@ start:
 
 # make dev
 run:
-	gin -i --appPort 8080 --port 3000 run main.go
+	TZ=$(zone) GIN_ENV=$(e) gin -i --appPort 8080 --port 3000 run main.go
 
 # build docker image
 build: tidy

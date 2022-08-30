@@ -28,17 +28,20 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
+var timeStampFormat = "2006-01-02T15:04:05Z07:00"
+
 type logWriter struct {
 }
 
 func (writer logWriter) Write(bytes []byte) (int, error) {
-	return fmt.Print(time.Now().Format(utils.TimeStampFormat) + " [STDOUT] - " + string(bytes))
+	return fmt.Print(time.Now().Format(timeStampFormat) + " [STDOUT] - " + string(bytes))
 }
 
 type App struct {
-	Env     string `mapstructure:"GIN_ENV"`
-	AppName string `mapstructure:"APP_NAME"`
-	AppPort string `mapstructure:"APP_PORT"`
+	Env      string `mapstructure:"GIN_ENV"`
+	AppName  string `mapstructure:"APP_NAME"`
+	AppPort  string `mapstructure:"APP_PORT"`
+	TimeZone string `mapstructure:"APP_TIMEZONE"`
 }
 
 type Wss struct {
@@ -67,9 +70,10 @@ func (w *Wss) Wss() string {
 
 var AppSetting = &App{
 	// Env:     "development",
-	Env:     "production",
-	AppName: "go-starter",
-	AppPort: "8080",
+	Env:      "production",
+	AppName:  "go-starter",
+	AppPort:  "8080",
+	TimeZone: map[bool]string{true: os.Getenv("TZ"), false: "UTC"}[os.Getenv("TZ") != ""],
 }
 
 var LogSettings = &LogConf{
@@ -140,6 +144,8 @@ var filename string = ".env"
 // Useful in development and test modes. Not used in production.
 func init() {
 
+	os.Setenv("TZ", AppSetting.TimeZone)
+
 	log.SetFlags(0)
 	log.SetOutput(new(logWriter))
 
@@ -208,19 +214,19 @@ func InitLog() {
 	myLog.SetReportCaller(true)
 
 	myLog.SetFormatter(&MyTxtFormatter{
-		TimestampFormat: utils.TimeStampFormat,
-		LogFormat:       "%time% [%lvl%] - %file% >> %msg%\n",
+		TimestampFormat: timeStampFormat,
+		LogFormat:       "%time% [%lvl%] - %file% > %msg%\n",
 		CallerPrettyfier: func(frame *runtime.Frame) (function string, file string) {
 			lineMessage := fmt.Sprintf("%s() %s:%d", frame.Function, path.Base(frame.File), frame.Line)
 			lineLength := len(lineMessage)
-
-			if lineLength > 60 {
-				lineMessage = "....." + string(lineMessage[lineLength-56:lineLength-1])
-			} else if lineLength < 60 {
-				lineMessage = " " + lineMessage
+			lineMaxLength := 36
+			if lineLength > lineMaxLength {
+				lineMessage = "....." + string(lineMessage[lineLength-lineMaxLength+4:lineLength-1])
+			} else if lineLength < lineMaxLength {
+				lineMessage = utils.PadLeft(lineMessage, " ", lineMaxLength)
 			}
 
-			return "", "[" + lineMessage + "]"
+			return "", "{" + lineMessage + "}"
 		},
 	})
 
@@ -234,7 +240,7 @@ func InitLog() {
 			[]logrus.Level{logrus.InfoLevel, logrus.WarnLevel, logrus.ErrorLevel},
 			// &logrus.JSONFormatter{},
 			&MyJSONFormatter{
-				TimestampFormat: utils.TimeStampFormat,
+				TimestampFormat: timeStampFormat,
 				PrettyPrint:     false,
 				AppName:         AppSetting.AppName,
 				Env:             AppSetting.Env,
@@ -269,7 +275,7 @@ func loadAppSettings(v1 *viper.Viper, filename string) {
 		os.Exit(3)
 		return
 	} else {
-		log.Println("AppSetting: Env=" + AppSetting.Env + ", AppName=" + AppSetting.AppName + ", AppPort=" + AppSetting.AppPort + ", appRoot=" + utils.RootDir())
+		log.Println("AppSetting: TimeZone=" + AppSetting.TimeZone + " Env=" + AppSetting.Env + ", AppName=" + AppSetting.AppName + ", AppPort=" + AppSetting.AppPort + ", appRoot=" + utils.RootDir())
 	}
 }
 
