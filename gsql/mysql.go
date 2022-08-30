@@ -37,14 +37,14 @@ func Init(mySqlConf *MySql, log *logrus.Entry) {
 	db.SetMaxOpenConns(10)
 	db.SetMaxIdleConns(10)
 
-	err = db.Ping()
+	dbClient = db
+
+	err = dbClient.Ping()
 
 	if err != nil {
 		logger.Error(fmt.Sprintf("Mysql-Client-Connect-Error: MySqlServer=%s, errorMessage=%s", hostName, string(err.Error())))
 		return
 	}
-
-	dbClient = db
 
 	logger.Info(fmt.Sprintf("Mysql-Client-Connected-Successful: MySqlServer=%s", hostName))
 

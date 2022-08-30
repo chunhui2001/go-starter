@@ -186,3 +186,24 @@ func Matches(s string, regx string) [][]string {
 	re := regexp.MustCompile(regx)
 	return re.FindAllStringSubmatch(s, -1)
 }
+
+// params := getParams(`(?P<Year>\d{4})-(?P<Month>\d{2})-(?P<Day>\d{2})`, `2015-05-27`)
+// fmt.Println(params)
+// ### and the output will be:
+// map[Year:2015 Month:05 Day:27]
+func MatchesGroup(regEx, str string) (paramsMap map[string]string) {
+
+	var compRegEx = regexp.MustCompile(regEx)
+	match := compRegEx.FindStringSubmatch(str)
+
+	paramsMap = make(map[string]string)
+
+	for i, name := range compRegEx.SubexpNames() {
+		if i > 0 && i <= len(match) {
+			paramsMap[name] = match[i]
+		}
+	}
+
+	return paramsMap
+
+}

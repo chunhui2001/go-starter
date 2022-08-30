@@ -165,9 +165,9 @@ func Ping() {
 	}
 
 	if conf.SubChannels != "" {
-		logger.Info(fmt.Sprintf("Redis-Client-Connect-Successfully: %s", serverInfo))
+		logger.Info(fmt.Sprintf("Redis-Client-Connected-Successfully: %s", serverInfo))
 	} else {
-		logger.Info(fmt.Sprintf("Redis-Client-Connect-Successfully: %s", serverInfo) + ", SubChannels=" + conf.SubChannels)
+		logger.Info(fmt.Sprintf("Redis-Client-Connected-Successfully: %s", serverInfo) + ", SubChannels=" + conf.SubChannels)
 	}
 
 	connected = true

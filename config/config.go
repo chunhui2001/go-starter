@@ -17,6 +17,7 @@ import (
 	"github.com/chunhui2001/go-starter/gmongo"
 	"github.com/chunhui2001/go-starter/gredis"
 	"github.com/chunhui2001/go-starter/gsql"
+	_ "github.com/chunhui2001/go-starter/gzk"
 	"github.com/chunhui2001/go-starter/utils"
 	_ "github.com/joho/godotenv"
 	"github.com/spf13/viper"
