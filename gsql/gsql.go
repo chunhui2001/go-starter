@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/chunhui2001/go-starter/utils"
+	_ "github.com/chunhui2001/go-starter/utils"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
 )
@@ -19,7 +19,7 @@ func Init(log *logrus.Entry) {
 
 	logger = log
 
-	dns := "root:Cc@tcp(localhost:3306)/mydb?timeout=90s&interpolateParams=true"
+	dns := "root:Cc@tcp(localhost:3316)/mydb?timeout=90s&interpolateParams=true"
 	// connectionString := "root:Cc@tcp(localhost:3306)/mydb?timeout=90s"
 
 	db, err := sql.Open("mysql", dns)
@@ -36,7 +36,7 @@ func Init(log *logrus.Entry) {
 	err = db.Ping()
 
 	if err != nil {
-		logger.Error(fmt.Sprintf("Mysql-Client-Connect-Error: dns=%s, errorMessage=%s", dns, utils.ErrorToString(err)))
+		logger.Error(fmt.Sprintf("Mysql-Client-Connect-Error: errorMessage=%s", string(err.Error())))
 		return
 	}
 
@@ -52,7 +52,7 @@ func CreateTable(ddl string) {
 	_, err := dbClient.Exec(ddl)
 
 	if err != nil {
-		logger.Error(fmt.Sprintf("Mysql-Create-Table-Error: ddl=%s, errorMessage=%s", ddl, utils.ErrorToString(err)))
+		logger.Error(fmt.Sprintf("Mysql-Create-Table-Error: ddl=%s, errorMessage=%s", ddl, string(err.Error())))
 	}
 
 	logger.Info(fmt.Sprintf("Mysql-Create-Table-Successful"))

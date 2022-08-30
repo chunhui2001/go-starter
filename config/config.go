@@ -223,7 +223,7 @@ func InitLog() {
 			lineLength := len(lineMessage)
 			lineMaxLength := 36
 			if lineLength > lineMaxLength {
-				lineMessage = "....." + string(lineMessage[lineLength-lineMaxLength+4:lineLength-1])
+				lineMessage = "....." + string(lineMessage[lineLength-lineMaxLength+4:lineLength])
 			} else if lineLength < lineMaxLength {
 				lineMessage = utils.PadLeft(lineMessage, " ", lineMaxLength)
 			}
