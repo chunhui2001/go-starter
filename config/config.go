@@ -301,7 +301,7 @@ func loadAppSettings(v1 *viper.Viper, filename string) {
 		os.Exit(3)
 		return
 	} else {
-		log.Println("AppSetting: TimeZone=" + AppSetting.TimeZone + ", Env=" + AppSetting.Env + ", AppName=" + AppSetting.AppName + ", AppPort=" + AppSetting.AppPort + ", appRoot=" + utils.RootDir())
+		log.Println("AppSetting: TimeZone=" + AppSetting.TimeZone + ", GIN_ENV=" + AppSetting.Env + ", AppName=" + AppSetting.AppName + ", AppPort=" + AppSetting.AppPort + ", appRoot=" + utils.RootDir())
 	}
 }
 
