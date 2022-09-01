@@ -30,7 +30,7 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-var timeStampFormat = "2006-01-02T15:04:05Z07:00"
+var timeStampFormat = "2006-01-02T15:04:05.000Z07:00"
 
 type logWriter struct {
 }
@@ -66,6 +66,15 @@ type LogConf struct {
 	KafkaTopic  string `mapstructure:"LOG_KAFKA_TOPIC"`
 }
 
+type WebPageConf struct {
+	Enable    bool   `mapstructure:"WEB_PAGE_Enable"`
+	Root      string `mapstructure:"WEB_PAGE_ROOT"`
+	Master    string `mapstructure:"WEB_PAGE_MASTER"`
+	Extension string `mapstructure:"WEB_PAGE_Extension"`
+	LoginUrl  string `mapstructure:"WEB_PAGE_LOGIN"`
+	SignUpUrl string `mapstructure:"WEB_PAGE_SIGNUP"`
+}
+
 func (w *Wss) Wss() string {
 	return w.Host + w.Prefix
 }
@@ -80,6 +89,15 @@ var AppSetting = &App{
 
 var LogSettings = &LogConf{
 	Output: "console",
+}
+
+var WebPageSettings = &WebPageConf{
+	Enable:    false,
+	Root:      "views",
+	Master:    "layouts/master",
+	Extension: ".html",
+	LoginUrl:  "/login",
+	SignUpUrl: "/signup",
 }
 
 var MongoDBSettings = &gmongo.MongoDBConf{
@@ -102,7 +120,7 @@ func (l *LogConf) Kafka() bool {
 
 func (l *LogConf) LogFile() string {
 	// return filepath.Join(utils.TempDir(), AppSetting.AppName, "mylog.txt")
-	return filepath.Join(l.FilePath, AppSetting.AppName, "mylog.txt")
+	return filepath.Join(l.FilePath, AppSetting.AppName, "applog.txt")
 }
 
 func (l *LogConf) LumberjackLogger() *lumberjack.Logger {
@@ -172,6 +190,7 @@ func init() {
 	// init log configuration
 	InitLog()
 
+	loadWebPageSettings(v1, filename)
 	loadWssSettings(v1, filename)
 	loadRedisSettings(v1, filename)
 	loadMongoDBSettings(v1, filename)
@@ -282,7 +301,7 @@ func loadAppSettings(v1 *viper.Viper, filename string) {
 		os.Exit(3)
 		return
 	} else {
-		log.Println("AppSetting: TimeZone=" + AppSetting.TimeZone + ", Env=" + AppSetting.Env + ", AppName=" + AppSetting.AppName + ", AppPort=" + AppSetting.AppPort + ", appRoot=" + utils.RootDir())
+		log.Println("AppSetting: TimeZone=" + AppSetting.TimeZone + ", GIN_ENV=" + AppSetting.Env + ", AppName=" + AppSetting.AppName + ", AppPort=" + AppSetting.AppPort + ", appRoot=" + utils.RootDir())
 	}
 }
 
@@ -365,6 +384,20 @@ func loadWssSettings(v1 *viper.Viper, filename string) {
 
 }
 
+func loadWebPageSettings(v1 *viper.Viper, filename string) {
+
+	err := v1.Unmarshal(&WebPageSettings)
+
+	if err != nil {
+		Log.Info("viper parse WebPageSettings error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		os.Exit(3)
+		return
+	} else {
+		Log.Info("WebPageSettings: Enable=" + utils.ToString(WebPageSettings.Enable) + ", Root=" + filepath.Join(utils.RootDir(), WebPageSettings.Root))
+	}
+
+}
+
 func loadCookieSettings(v1 *viper.Viper, filename string) {
 
 	err := v1.Unmarshal(&CookieSetting)
@@ -387,7 +420,7 @@ func readConfig(filename string, defaults map[string]interface{}) *viper.Viper {
 	v.AddConfigPath(utils.RootDir())
 	v.SetConfigName(filename)
 	v.SetConfigType("env")
-	// v.AutomaticEnv()
+	v.AutomaticEnv() // 将读取当前目录下的 .env 配置文件或环境变量, .env 优先级最高
 	err := v.ReadInConfig()
 	if err != nil {
 		log.Println("viper loaded error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")

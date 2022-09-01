@@ -14,10 +14,12 @@ import (
 var (
 	starterServer *starter.Server
 	APP_COOKIE    *config.Cookie
+	WEB_PAGE_CONF *config.WebPageConf
 )
 
 func init() {
 
+	WEB_PAGE_CONF = config.WebPageSettings
 	APP_COOKIE = config.CookieSetting
 
 	starterServer = &starter.Server{
@@ -26,9 +28,17 @@ func init() {
 		},
 		HandlerIndexPage: controller.IndexRouter,
 		Handler404: func(c *gin.Context) {
-			c.HTML(http.StatusNotFound, "404", gin.H{
-				"content": "Page not found",
-			})
+			if WEB_PAGE_CONF.Enable {
+				c.HTML(http.StatusOK, "404", gin.H{
+					"requestUrl": c.Request.URL.Path,
+					"content":    "Page not found",
+				})
+			} else {
+				c.JSON(http.StatusNotFound, gin.H{
+					"code":    http.StatusNotFound,
+					"message": "Page not found",
+				})
+			}
 		},
 	}
 
