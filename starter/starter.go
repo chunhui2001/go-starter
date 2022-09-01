@@ -48,6 +48,7 @@ var store *persistence.InMemoryStore = persistence.NewInMemoryStore(time.Second)
 var APP_PORT string = config.AppSetting.AppPort
 var WSS_PREFIX string = config.WssSetting.Prefix
 var APP_COOKIE *config.Cookie = config.CookieSetting
+var WEB_PAGE_CONF *config.WebPageConf = config.WebPageSettings
 
 var defaultServer = &Server{
 	Store: store,
@@ -56,9 +57,17 @@ var defaultServer = &Server{
 	},
 	HandlerIndexPage: controller.IndexRouter,
 	Handler404: func(c *gin.Context) {
-		c.HTML(http.StatusNotFound, "404", gin.H{
-			"content": "Page not found",
-		})
+		if WEB_PAGE_CONF.Enable {
+			c.HTML(http.StatusNotFound, "404", gin.H{
+				"requestUrl": c.Request.URL.Path,
+				"content":    "Page not found",
+			})
+		} else {
+			c.JSON(http.StatusOK, gin.H{
+				"code":    http.StatusNotFound,
+				"message": "Page not found",
+			})
+		}
 	},
 	Handler500: func(c *gin.Context, err interface{}) {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": errors.Wrap(err, 3).Error()})
@@ -93,20 +102,22 @@ func Setup(starterServer *Server) *gin.Engine {
 	// new engine
 	engine := gin.New()
 
-	// init html template
-	engine.HTMLRender = ginview.New(goview.Config{
-		Root:      "views",
-		Extension: ".html",
-		Master:    "layouts/master",
-		//Partials:  []string{"partials/ad"},
-		Funcs: template.FuncMap{
-			"sub": func(a, b int) int {
-				return a - b
+	if WEB_PAGE_CONF.Enable {
+		// init html template
+		engine.HTMLRender = ginview.New(goview.Config{
+			Root:      WEB_PAGE_CONF.Root,
+			Extension: WEB_PAGE_CONF.Extension,
+			Master:    WEB_PAGE_CONF.Master,
+			//Partials:  []string{"partials/ad"},
+			Funcs: template.FuncMap{
+				"sub": func(a, b int) int {
+					return a - b
+				},
+				// more funcs
 			},
-			// more funcs
-		},
-		DisableCache: true,
-	})
+			DisableCache: true,
+		})
+	}
 
 	// cookie session
 	if APP_COOKIE.Enable {
@@ -122,10 +133,22 @@ func Setup(starterServer *Server) *gin.Engine {
 	engine.Use(middleware.CORS(middleware.CORSOptions{}))
 	engine.Use(middleware.AccessLog())
 
-	engine.GET("/info", defaultServer.HandlerInfo) // info router
-	engine.GET("", defaultServer.HandlerIndexPage) // index page
-	engine.GET("/index", defaultServer.HandlerIndexPage)
-	engine.GET("/home", defaultServer.HandlerIndexPage)
+	if WEB_PAGE_CONF.Enable {
+
+		engine.GET("/info", defaultServer.HandlerInfo) // info router
+		engine.GET("", defaultServer.HandlerIndexPage) // index page
+		engine.GET("/index", defaultServer.HandlerIndexPage)
+		engine.GET("/home", defaultServer.HandlerIndexPage)
+
+		if WEB_PAGE_CONF.LoginUrl != "" {
+			engine.GET(WEB_PAGE_CONF.LoginUrl, controller.LoginHandler)
+		}
+
+		if WEB_PAGE_CONF.SignUpUrl != "" {
+			engine.GET(WEB_PAGE_CONF.SignUpUrl, controller.SignUpHandler)
+		}
+
+	}
 
 	// customer routes
 	for _, ro := range defaultServer.CustomeRoutes {

@@ -2,10 +2,11 @@
 ### 当前 Makefile 文件物理路径
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
-e 		?=testing
+e 		?=local
 c 		?=10000
 #zone 	?=Asia/Shanghai
 zone 	?=UTC
+WSS_HOST	?=ws://127.0.0.1:8080
 
 # make tidy
 tidy:
@@ -20,12 +21,12 @@ get:
 	go get
 
 # make run e=development 
-start:
+run:
 	GIN_ENV=$(e) go run .
 
 # make dev
-run:
-	TZ=$(zone) GIN_ENV=$(e) gin -i --appPort 8080 --port 3000 run main.go
+dev:
+	TZ=$(zone) GIN_ENV=$(e) WSS_HOST=$(WSS_HOST) gin -i --appPort 8080 --port 3000 run main.go
 
 # build docker image
 build: tidy
