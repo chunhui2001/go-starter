@@ -30,6 +30,7 @@ require (
 )
 
 require (
+	github.com/JGLTechnologies/gin-rate-limit v1.5.1 // indirect
 	github.com/Shopify/sarama v1.36.0 // indirect
 	github.com/bradfitz/gomemcache v0.0.0-20220106215444-fb4bf637b56d // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect

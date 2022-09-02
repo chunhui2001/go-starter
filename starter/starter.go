@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/chunhui2001/go-starter/config"
+	"github.com/chunhui2001/go-starter/gredis"
 	"github.com/chunhui2001/go-starter/wss"
 	"github.com/foolin/goview"
 	"github.com/foolin/goview/supports/ginview"
@@ -19,6 +20,7 @@ import (
 	"github.com/chunhui2001/go-starter/middleware"
 	_ "github.com/chunhui2001/go-starter/mycache"
 
+	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
 	"github.com/chunhui2001/go-starter/controller"
 	"github.com/gin-contrib/cache"
 	"github.com/gin-contrib/cache/persistence"
@@ -48,6 +50,14 @@ var APP_PORT string = config.AppSetting.AppPort
 var WSS_PREFIX string = config.WssSetting.Prefix
 var APP_COOKIE *config.Cookie = config.CookieSetting
 var WEB_PAGE_CONF *config.WebPageConf = config.WebPageSettings
+
+func rateLimitKeyFunc(c *gin.Context) string {
+	return c.ClientIP()
+}
+
+func errorHandler(c *gin.Context, info ratelimit.Info) {
+	c.String(429, "Too many requests. Try again in "+time.Until(info.ResetTime).String())
+}
 
 var defaultServer = &Server{
 	Store: store,
@@ -118,6 +128,22 @@ func Setup(starterServer *Server) *gin.Engine {
 		engine.Use(sessions.Sessions(APP_COOKIE.Name, cookieStore))
 	}
 
+	// RateLimit: This makes it so each ip can only make 5 requests per second
+	ratelimitMiddleWare := ratelimit.RateLimiter(
+		// ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
+		// 	Rate:  time.Second,
+		// 	Limit: 5,
+		// }),
+		ratelimit.RedisStore(&ratelimit.RedisOptions{
+			RedisClient: gredis.Client(),
+			Rate:        time.Second,
+			Limit:       5,
+		}),
+		&ratelimit.Options{
+			ErrorHandler: errorHandler,
+			KeyFunc:      rateLimitKeyFunc,
+		})
+
 	// apply middleware
 	engine.Use(middleware.Recovery(recoveryHandler)) // error nice handle
 	engine.Use(static.Serve("/static", static.LocalFile("./static", false)))
@@ -127,10 +153,10 @@ func Setup(starterServer *Server) *gin.Engine {
 
 	if WEB_PAGE_CONF.Enable {
 
-		engine.GET("/info", defaultServer.HandlerInfo) // info router
-		engine.GET("", defaultServer.HandlerIndexPage) // index page
-		engine.GET("/index", defaultServer.HandlerIndexPage)
-		engine.GET("/home", defaultServer.HandlerIndexPage)
+		engine.GET("/info", ratelimitMiddleWare, defaultServer.HandlerInfo) // info router
+		engine.GET("", ratelimitMiddleWare, defaultServer.HandlerIndexPage) // index page
+		engine.GET("/index", ratelimitMiddleWare, defaultServer.HandlerIndexPage)
+		engine.GET("/home", ratelimitMiddleWare, defaultServer.HandlerIndexPage)
 
 		if WEB_PAGE_CONF.LoginUrl != "" {
 			engine.GET(WEB_PAGE_CONF.LoginUrl, controller.LoginHandler)

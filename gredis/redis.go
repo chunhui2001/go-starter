@@ -67,13 +67,13 @@ func (r *GRedis) ServerAddrs() string {
 }
 
 var (
-	redisCmd     redis.Cmdable
-	redisClient  *redis.Client
-	redisCluster *redis.ClusterClient
-	ctx          context.Context
-	conf         *GRedis
-	logger       *logrus.Entry
-	connected    bool
+	universalClient redis.UniversalClient
+	redisClient     *redis.Client
+	redisCluster    *redis.ClusterClient
+	ctx             context.Context
+	conf            *GRedis
+	logger          *logrus.Entry
+	connected       bool
 )
 
 // opt, err := redis.ParseURL("redis://<user>:<pass>@localhost:6379/<db>")
@@ -102,7 +102,7 @@ func Init(redisConf *GRedis, log *logrus.Entry) {
 				DB:   conf.Db,
 			})
 		}
-		redisCmd = redisClient
+		universalClient = redisClient
 	} else if conf.Mode == Sentinel || conf.Mode == Cluster {
 
 		var addrs []string = strings.Split(conf.Addrs, ",")
@@ -116,13 +116,13 @@ func Init(redisConf *GRedis, log *logrus.Entry) {
 					RouteByLatency: conf.RouteByLatency,
 					RouteRandomly:  conf.RouteRandomly,
 				})
-				redisCmd = redisCluster
+				universalClient = redisCluster
 			} else {
 				redisClient = redis.NewFailoverClient(&redis.FailoverOptions{
 					MasterName:    conf.MasterName,
 					SentinelAddrs: addrs,
 				})
-				redisCmd = redisClient
+				universalClient = redisClient
 			}
 
 		} else if conf.Mode == Cluster {
@@ -132,12 +132,12 @@ func Init(redisConf *GRedis, log *logrus.Entry) {
 					RouteByLatency: conf.RouteByLatency,
 					RouteRandomly:  conf.RouteRandomly,
 				})
-				redisCmd = redisCluster
+				universalClient = redisCluster
 			} else {
 				redisCluster = redis.NewClusterClient(&redis.ClusterOptions{
 					Addrs: addrs,
 				})
-				redisCmd = redisCluster
+				universalClient = redisCluster
 			}
 		}
 	}
@@ -158,7 +158,7 @@ func Ping() {
 		serverInfo = fmt.Sprintf("Mode=%s, ServerAddrs=%s", conf.Mode.String(), conf.ServerAddrs())
 	}
 
-	if _, err := redisCmd.Ping(ctx).Result(); err != nil {
+	if _, err := universalClient.Ping(ctx).Result(); err != nil {
 		logger.Error(fmt.Sprintf("Redis-Client-Connect-Failed: %s, errorMessage=%s", serverInfo, utils.ErrorToString(err)))
 		connected = false
 		return
@@ -174,11 +174,11 @@ func Ping() {
 
 }
 
-func Client() redis.Cmdable {
-	if conf.Mode == Disabled {
+func Client() redis.UniversalClient {
+	if conf == nil || conf.Mode == Disabled {
 		panic(errors.New("Redis-Not-Enabled"))
 	}
-	return redisCmd
+	return universalClient
 }
 
 func Set(key string, value string, expir int) {
