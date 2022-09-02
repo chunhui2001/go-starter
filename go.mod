@@ -3,6 +3,7 @@ module github.com/chunhui2001/go-starter
 go 1.18
 
 require (
+	github.com/JGLTechnologies/gin-rate-limit v1.5.1
 	github.com/fatih/structs v1.1.0
 	github.com/foolin/goview v0.3.0
 	github.com/gfremex/logrus-kafka-hook v0.0.0-20180109031623-f62e125fcbfe
@@ -30,7 +31,6 @@ require (
 )
 
 require (
-	github.com/JGLTechnologies/gin-rate-limit v1.5.1 // indirect
 	github.com/Shopify/sarama v1.36.0 // indirect
 	github.com/bradfitz/gomemcache v0.0.0-20220106215444-fb4bf637b56d // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
