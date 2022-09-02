@@ -207,3 +207,10 @@ func MatchesGroup(regEx, str string) (paramsMap map[string]string) {
 	return paramsMap
 
 }
+
+func IfNull(obj any, defaultValue interface{}) interface{} {
+	if obj == nil {
+		return defaultValue
+	}
+	return obj
+}

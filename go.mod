@@ -26,6 +26,7 @@ require (
 	github.com/ubiq/go-ubiq v3.0.1+incompatible
 	go.mongodb.org/mongo-driver v1.10.1
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
+	moul.io/http2curl v1.0.0
 )
 
 require (
@@ -73,6 +74,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/robfig/go-cache v0.0.0-20130306151617-9fc39e0dbf62 // indirect
+	github.com/smartystreets/goconvey v1.7.2 // indirect
 	github.com/spf13/afero v1.9.2 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect

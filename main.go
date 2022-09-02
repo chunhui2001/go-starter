@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/chunhui2001/go-starter/actions"
 	"github.com/chunhui2001/go-starter/config"
 	"github.com/chunhui2001/go-starter/controller"
 	"github.com/chunhui2001/go-starter/gredis"
@@ -57,6 +58,16 @@ func main() {
 			})
 		}
 	}
+
+	// simples
+	r.GET("/httpclient-simple", actions.HttpClientSimpleRouter)
+	r.GET("/labs-bigint", actions.BigRouter)
+	r.GET("/labs-ytld", actions.YtIdRouter)
+	r.GET("/labs-pem", actions.PemRouter)
+	r.GET("/labs-leftpad", actions.PadLeftRouter)
+	r.POST("/labs-redis-pub", actions.RedisPubRouter)
+	r.POST("/demo/album-create", actions.AlbumCreateRouter)
+	r.GET("/demo/album-get", actions.AlbumGetRouter)
 
 	r.Run(config.AppSetting.AppPort)
 

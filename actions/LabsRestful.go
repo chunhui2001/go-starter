@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	_ "github.com/chunhui2001/go-starter/config"
+	"github.com/chunhui2001/go-starter/ghttp"
 	"github.com/chunhui2001/go-starter/gras"
 	"github.com/chunhui2001/go-starter/gredis"
 	"github.com/chunhui2001/go-starter/utils"
@@ -73,6 +74,18 @@ func RedisPubRouter(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
 		"data":    true,
+		"message": "Ok",
+	})
+
+}
+
+func HttpClientSimpleRouter(c *gin.Context) {
+
+	httpResult := ghttp.SendRequest(ghttp.GET("https://www.google.com"))
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"data":    httpResult.ResponseBody,
 		"message": "Ok",
 	})
 

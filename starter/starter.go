@@ -19,7 +19,6 @@ import (
 	"github.com/chunhui2001/go-starter/middleware"
 	_ "github.com/chunhui2001/go-starter/mycache"
 
-	"github.com/chunhui2001/go-starter/actions"
 	"github.com/chunhui2001/go-starter/controller"
 	"github.com/gin-contrib/cache"
 	"github.com/gin-contrib/cache/persistence"
@@ -79,13 +78,6 @@ var defaultServer = &Server{
 			}),
 		}},
 		{Method: http.MethodGet, Path: "/about", Handlers: []gin.HandlerFunc{controller.AboutRouter}},
-		{Method: http.MethodGet, Path: "/labs-bigint", Handlers: []gin.HandlerFunc{actions.BigRouter}},
-		{Method: http.MethodGet, Path: "/labs-ytld", Handlers: []gin.HandlerFunc{actions.YtIdRouter}},
-		{Method: http.MethodGet, Path: "/labs-pem", Handlers: []gin.HandlerFunc{actions.PemRouter}},
-		{Method: http.MethodGet, Path: "/labs-leftpad", Handlers: []gin.HandlerFunc{actions.PadLeftRouter}},
-		{Method: http.MethodPost, Path: "/labs-redis-pub", Handlers: []gin.HandlerFunc{actions.RedisPubRouter}},
-		{Method: http.MethodPost, Path: "/demo/album-create", Handlers: []gin.HandlerFunc{actions.AlbumCreateRouter}},
-		{Method: http.MethodGet, Path: "/demo/album-get", Handlers: []gin.HandlerFunc{actions.AlbumGetRouter}},
 	},
 }
 
