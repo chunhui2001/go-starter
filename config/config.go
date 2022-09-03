@@ -464,9 +464,9 @@ func loadCookieSettings(v1 *viper.Viper, filename string) {
 		return
 	} else {
 		if CookieSetting.Enable {
-			configLoggerLines = append(configLoggerLines, []string{"CookieSetting", "Enable=" + strconv.FormatBool(CookieSetting.Enable) + ", Name=" + CookieSetting.Name + ", Secret=" + CookieSetting.Secret + ", MaxAge=" + fmt.Sprint(CookieSetting.MaxAge)})
+			configLoggerLines = append(configLoggerLines, []string{"CookieSetting", "Enabled=" + strconv.FormatBool(CookieSetting.Enable) + ", Name=" + CookieSetting.Name + ", Secret=" + CookieSetting.Secret + ", MaxAge=" + fmt.Sprint(CookieSetting.MaxAge)})
 		} else {
-			configLoggerLines = append(configLoggerLines, []string{"CookieSetting", "Enable=" + strconv.FormatBool(CookieSetting.Enable)})
+			configLoggerLines = append(configLoggerLines, []string{"CookieSetting", "Enabled=" + strconv.FormatBool(CookieSetting.Enable)})
 		}
 
 	}
