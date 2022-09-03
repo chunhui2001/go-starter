@@ -8,8 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chunhui2001/go-starter/config"
+	"github.com/chunhui2001/go-starter/utils"
 	_ "github.com/chunhui2001/go-starter/utils"
+	"github.com/sirupsen/logrus"
 	"moul.io/http2curl"
 )
 
@@ -19,17 +20,12 @@ const (
 	JSONBody ContentType = "application/json"
 )
 
-var (
-	logger             = config.Log
-	defaultTimeOut int = 5 // * time.Second
-)
-
 var DefaultTransport http.RoundTripper = &http.Transport{
-	MaxIdleConns:        100,
-	IdleConnTimeout:     90 * time.Second,
+	MaxIdleConns:        maxIdleConns,
+	IdleConnTimeout:     time.Duration(idleConnTimeout) * time.Second,
 	DisableCompression:  true,
-	MaxIdleConnsPerHost: 100,
-	MaxConnsPerHost:     100,
+	MaxIdleConnsPerHost: maxIdleConnsPerHost,
+	MaxConnsPerHost:     maxConnsPerHost,
 }
 
 type HttpClient struct {
@@ -39,6 +35,34 @@ type HttpClient struct {
 	RequestBody string
 	ContentType ContentType // ghttp.JSONBody
 	TimeOut     int         // 30 * time.Second
+}
+
+var (
+	logger              *logrus.Entry
+	myHttpClient        *http.Client
+	defaultTimeOut      int = 5 // * time.Second
+	maxIdleConns        int = 100
+	idleConnTimeout     int = 90
+	maxIdleConnsPerHost int = 100
+	maxConnsPerHost     int = 100
+)
+
+func Init(log *logrus.Entry) {
+
+	logger = log
+
+	myHttpClient = &http.Client{
+		Transport: DefaultTransport,
+		Timeout:   time.Duration(defaultTimeOut) * time.Second,
+	}
+
+	logger.Info("Initialization-a-HttpClient: " +
+		"TimeOut=" + utils.ToString(defaultTimeOut) + "s, " +
+		"maxIdleConns=" + utils.ToString(maxIdleConns) + ", " +
+		"idleConnTimeout=" + utils.ToString(idleConnTimeout) + "s, " +
+		"maxIdleConnsPerHost=" + utils.ToString(maxIdleConnsPerHost) + ", " +
+		"maxConnsPerHost=" + utils.ToString(maxConnsPerHost))
+
 }
 
 func NEW(method string, url string) *HttpClient {
@@ -101,11 +125,6 @@ func (r *HttpResult) Success() bool {
 */
 func SendRequest(httpClient *HttpClient) *HttpResult {
 
-	client := &http.Client{
-		Transport: DefaultTransport,
-		Timeout:   time.Duration(httpClient.TimeOut) * time.Second,
-	}
-
 	var req *http.Request
 	var res *http.Response
 	var err error
@@ -129,7 +148,7 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 		}
 	}
 
-	res, err = client.Do(req)
+	res, err = myHttpClient.Do(req)
 	command, _ := http2curl.GetCurlCommand(req)
 
 	if err != nil {

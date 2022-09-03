@@ -15,6 +15,7 @@ import (
 	"runtime"
 
 	"github.com/chunhui2001/go-starter/ges"
+	"github.com/chunhui2001/go-starter/ghttp"
 	"github.com/chunhui2001/go-starter/gmongo"
 	"github.com/chunhui2001/go-starter/gredis"
 	"github.com/chunhui2001/go-starter/gsql"
@@ -207,6 +208,8 @@ func init() {
 	loadEsSettings(v1, filename)
 
 	printConfigLogLines()
+
+	ghttp.Init(Log)
 
 }
 
