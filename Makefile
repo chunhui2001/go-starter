@@ -14,6 +14,7 @@ tidy:
 
 # make install mod=github.com/codegangsta/gin
 install:
+	go get $(mod)
 	go install $(mod)
 
 # make get
