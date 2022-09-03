@@ -37,6 +37,23 @@ type HttpClient struct {
 	TimeOut     int         // 30 * time.Second
 }
 
+type HttpResult struct {
+	Status       int
+	Message      string
+	ResponseBody []byte
+	Error        error
+}
+
+func (r *HttpResult) Success() bool {
+	if r.Error != nil {
+		return false
+	}
+	if r.Status < 200 || r.Status > 300 {
+		return false
+	}
+	return true
+}
+
 var (
 	logger              *logrus.Entry
 	myHttpClient        *http.Client
@@ -112,23 +129,6 @@ func (c *HttpClient) Query(queryParams map[string]interface{}) *HttpClient {
 	return c
 }
 
-type HttpResult struct {
-	Status       int
-	Message      string
-	ResponseBody string
-	Error        error
-}
-
-func (r *HttpResult) Success() bool {
-	if r.Error != nil {
-		return false
-	}
-	if r.Status < 200 || r.Status > 300 {
-		return false
-	}
-	return true
-}
-
 /*
 	ghttp.Post(&ghttp.HttpClient{
 		Method: http.MethodPost,
@@ -202,7 +202,7 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 
 	return &HttpResult{
 		Status:       res.StatusCode,
-		ResponseBody: string(resBody),
+		ResponseBody: resBody,
 	}
 
 }

@@ -97,7 +97,7 @@ func HttpClientSimpleRouter(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
-		"data":    httpResult.ResponseBody,
+		"data":    string(httpResult.ResponseBody),
 		"message": "Ok",
 	})
 

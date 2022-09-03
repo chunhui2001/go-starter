@@ -128,7 +128,6 @@ func (l *LogConf) Kafka() bool {
 }
 
 func (l *LogConf) LogFile() string {
-	// return filepath.Join(utils.TempDir(), AppSetting.AppName, "mylog.txt")
 	return filepath.Join(l.FilePath, AppSetting.AppName, "applog.txt")
 }
 

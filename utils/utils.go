@@ -131,6 +131,14 @@ func ToJsonString(v interface{}) string {
 	return string(b)
 }
 
+func AsMap(buf []byte) (*map[string]interface{}, error) {
+	var m map[string]interface{}
+	if err := json.Unmarshal(buf, &m); err != nil {
+		return nil, err
+	}
+	return &m, nil
+}
+
 func ToString(s any) string {
 	if reflect.TypeOf(s).String() == "string" {
 		return fmt.Sprintf("%s", s)
