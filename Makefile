@@ -31,7 +31,7 @@ dev:
 
 # build docker image
 build:
-	docker rmi -f go-starter:1.0 && docker build . -t go-starter:1.0
+	docker rmi -f go-starter:1.0 && docker build . -t go-starter:1.0  -m 4g
 
 Built:
 	go build -o ./app ./main.go
