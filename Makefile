@@ -29,7 +29,7 @@ dev:
 	TZ=$(zone) GIN_ENV=$(e) WSS_HOST=$(WSS_HOST) gin -i --appPort 8080 --port 3000 run main.go
 
 # build docker image
-build: tidy
+build:
 	docker rmi -f go-starter:1.0 && docker build . -t go-starter:1.0
 
 # docker up
