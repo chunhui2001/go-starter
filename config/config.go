@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/chunhui2001/go-starter/ges"
 	"github.com/chunhui2001/go-starter/gmongo"
 	"github.com/chunhui2001/go-starter/gredis"
 	"github.com/chunhui2001/go-starter/gsql"
@@ -26,11 +27,13 @@ import (
 
 	_ "github.com/chunhui2001/go-starter/gmongo"
 	lkh "github.com/gfremex/logrus-kafka-hook"
+	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 var timeStampFormat = "2006-01-02T15:04:05.000Z07:00"
+var configLoggerLines [][]string = [][]string{}
 
 type logWriter struct {
 }
@@ -104,6 +107,11 @@ var MongoDBSettings = &gmongo.MongoDBConf{
 	Enable:   false,
 	URI:      "mongodb://localhost:27017",
 	Database: "my_default_db",
+}
+
+var EsSettings = &ges.ESConf{
+	Enable:  false,
+	Servers: "http://localhost:9200",
 }
 
 func (l *LogConf) Console() bool {
@@ -196,7 +204,33 @@ func init() {
 	loadMongoDBSettings(v1, filename)
 	loadCookieSettings(v1, filename)
 	loadMySqlSettings(v1, filename)
+	loadEsSettings(v1, filename)
 
+	printConfigLogLines()
+
+}
+
+func printConfigLogLines() {
+
+	tableString := &strings.Builder{}
+	table := tablewriter.NewWriter(tableString)
+	table.SetBorders(tablewriter.Border{Left: true, Top: true, Right: true, Bottom: true})
+	table.SetRowLine(true)
+	table.SetAutoWrapText(false)
+	table.SetColumnAlignment([]int{tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_LEFT})
+
+	for _, v := range configLoggerLines {
+		table.Append(v)
+	}
+
+	table.Render() // Send output
+	tableLines := utils.Split(tableString.String(), "\n")
+
+	for _, line := range tableLines {
+		if line != "" {
+			Log.Info(line)
+		}
+	}
 }
 
 func InitLog() {
@@ -249,7 +283,7 @@ func InitLog() {
 			if lineLength > lineMaxLength {
 				lineMessage = "....." + string(lineMessage[lineLength-lineMaxLength+4:lineLength])
 			} else if lineLength < lineMaxLength {
-				lineMessage = utils.PadLeft(lineMessage, " ", lineMaxLength)
+				lineMessage = utils.PadLeft(lineMessage, " ", lineMaxLength+1)
 			}
 
 			return "", "{" + lineMessage + "}"
@@ -325,9 +359,8 @@ func loadRedisSettings(v1 *viper.Viper, filename string) {
 		os.Exit(3)
 		return
 	} else {
-		if RedisConf.Disabled() {
-			Log.Info("Redis-Not-Enabled: Mode=" + RedisConf.Mode.String())
-		} else {
+		configLoggerLines = append(configLoggerLines, []string{"RedisSettings", "Mode=" + RedisConf.Mode.String()})
+		if !RedisConf.Disabled() {
 			gredis.Init(RedisConf, Log)
 		}
 	}
@@ -343,10 +376,26 @@ func loadMySqlSettings(v1 *viper.Viper, filename string) {
 		os.Exit(3)
 		return
 	} else {
-		if MySqlConf.Enable == false {
-			Log.Info("MySql-Not-Enabled: Enabled=" + utils.ToString(MySqlConf.Enable))
-		} else {
+		configLoggerLines = append(configLoggerLines, []string{"MySqlSettings", "Enabled=" + utils.ToString(MySqlConf.Enable)})
+		if MySqlConf.Enable != false {
 			gsql.Init(MySqlConf, Log)
+		}
+	}
+
+}
+
+func loadEsSettings(v1 *viper.Viper, filename string) {
+
+	err := v1.Unmarshal(&EsSettings)
+
+	if err != nil {
+		Log.Info("viper parse ESConf error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		os.Exit(3)
+		return
+	} else {
+		configLoggerLines = append(configLoggerLines, []string{"EsSettings", "Enabled=" + utils.ToString(EsSettings.Enable)})
+		if EsSettings.Enable != false {
+			ges.Init(EsSettings, Log)
 		}
 	}
 
@@ -361,9 +410,8 @@ func loadMongoDBSettings(v1 *viper.Viper, filename string) {
 		os.Exit(3)
 		return
 	} else {
-		if !MongoDBSettings.Enable {
-			Log.Info("MongoDb-Not-Enabled: Enabled=" + utils.ToString(MongoDBSettings.Enable))
-		} else {
+		configLoggerLines = append(configLoggerLines, []string{"MongoDbSettings", "Enabled=" + utils.ToString(MongoDBSettings.Enable)})
+		if MongoDBSettings.Enable {
 			gmongo.Init(MongoDBSettings, Log)
 		}
 	}
@@ -380,9 +428,9 @@ func loadWssSettings(v1 *viper.Viper, filename string) {
 		return
 	} else {
 		if WssSetting.Enable {
-			Log.Info("WssSetting: Enable=" + utils.ToString(WssSetting.Enable) + "Host=" + WssSetting.Host + ", Prefix=" + WssSetting.Prefix)
+			configLoggerLines = append(configLoggerLines, []string{"WssSetting", "Enable=" + utils.ToString(WssSetting.Enable) + ", Host=" + WssSetting.Host + ", Prefix=" + WssSetting.Prefix})
 		} else {
-			Log.Info("WssSetting: Enable=" + utils.ToString(WssSetting.Enable))
+			configLoggerLines = append(configLoggerLines, []string{"WssSetting", "Enable=" + utils.ToString(WssSetting.Enable)})
 		}
 	}
 
@@ -398,9 +446,9 @@ func loadWebPageSettings(v1 *viper.Viper, filename string) {
 		return
 	} else {
 		if WebPageSettings.Enable {
-			Log.Info("WebPageSettings: Enable=" + utils.ToString(WebPageSettings.Enable) + ", Root=" + filepath.Join(utils.RootDir(), WebPageSettings.Root))
+			configLoggerLines = append(configLoggerLines, []string{"WebPageSettings", "Enable=" + utils.ToString(WebPageSettings.Enable) + ", Root=" + filepath.Join(utils.RootDir(), WebPageSettings.Root)})
 		} else {
-			Log.Info("WebPageSettings: Enable=" + utils.ToString(WebPageSettings.Enable))
+			configLoggerLines = append(configLoggerLines, []string{"WebPageSettings", "Enable=" + utils.ToString(WebPageSettings.Enable)})
 		}
 	}
 
@@ -416,9 +464,9 @@ func loadCookieSettings(v1 *viper.Viper, filename string) {
 		return
 	} else {
 		if CookieSetting.Enable {
-			Log.Info("CookieSetting: Enable=" + strconv.FormatBool(CookieSetting.Enable) + ", Name=" + CookieSetting.Name + ", Secret=" + CookieSetting.Secret + ", MaxAge=" + fmt.Sprint(CookieSetting.MaxAge))
+			configLoggerLines = append(configLoggerLines, []string{"CookieSetting", "Enable=" + strconv.FormatBool(CookieSetting.Enable) + ", Name=" + CookieSetting.Name + ", Secret=" + CookieSetting.Secret + ", MaxAge=" + fmt.Sprint(CookieSetting.MaxAge)})
 		} else {
-			Log.Info("CookieSetting: Enable=" + strconv.FormatBool(CookieSetting.Enable))
+			configLoggerLines = append(configLoggerLines, []string{"CookieSetting", "Enable=" + strconv.FormatBool(CookieSetting.Enable)})
 		}
 
 	}
