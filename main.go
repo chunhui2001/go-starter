@@ -66,6 +66,7 @@ func main() {
 	r.GET("/labs-pem", actions.PemRouter)
 	r.GET("/labs-leftpad", actions.PadLeftRouter)
 	r.POST("/labs-redis-pub", actions.RedisPubRouter)
+	r.POST("/labs-upload-file", actions.UploadFileRouterOne)
 	r.POST("/demo/album-create", actions.AlbumCreateRouter)
 	r.GET("/demo/album-get", actions.AlbumGetRouter)
 
