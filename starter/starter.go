@@ -162,7 +162,11 @@ func Setup(starterServer *Server) *gin.Engine {
 
 	if ok, _ := utils.FileExists(filepath.Join(utils.RootDir(), "static")); ok {
 		engine.Use(static.Serve("/static", static.LocalFile("./static", false)))
-		engine.Use(favicon.New("./static/favicon.ico")) // set favicon middleware
+		if ok, _ := utils.FileExists(filepath.Join(utils.RootDir(), "static/favicon.ico")); ok {
+			engine.Use(favicon.New("./static/favicon.ico")) // set favicon middleware
+		} else {
+			config.Log.Warn("static/favicon.ico file not exists" + config.WssSetting.Wss())
+		}
 	} else {
 		config.Log.Warn("static folder not exists" + config.WssSetting.Wss())
 	}
