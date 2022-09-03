@@ -172,7 +172,9 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 
 	}
 
+	start := time.Now()
 	res, err = myHttpClient.Do(req)
+	latency := time.Now().Sub(start)
 	command, _ := http2curl.GetCurlCommand(req)
 
 	if err != nil {
@@ -198,7 +200,7 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 
 	logger.Info(
 		fmt.Sprintf(
-			"HttpRequest-Successful: StatusCode=%d, Curl=%s", res.StatusCode, command))
+			"HttpRequest-Successful: Latency=%s, StatusCode=%d, Curl=%s", latency, res.StatusCode, command))
 
 	return &HttpResult{
 		Status:       res.StatusCode,
