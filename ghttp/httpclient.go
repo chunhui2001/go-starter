@@ -95,8 +95,20 @@ func (c *HttpClient) SetContentType(contentType ContentType) *HttpClient {
 	return c
 }
 
-func (c *HttpClient) SetQueryParams(queryParams map[string]interface{}) *HttpClient {
-	c.QueryParams = queryParams
+func (c *HttpClient) Query(queryParams map[string]interface{}) *HttpClient {
+
+	if queryParams == nil || len(queryParams) == 0 {
+		return c
+	}
+
+	if c.QueryParams == nil {
+		c.QueryParams = queryParams
+	} else {
+		for k, v := range queryParams {
+			c.QueryParams[k] = v
+		}
+	}
+
 	return c
 }
 
@@ -146,6 +158,18 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 		return &HttpResult{
 			Error: err,
 		}
+	}
+
+	if httpClient.QueryParams != nil && len(httpClient.QueryParams) > 0 {
+
+		q := req.URL.Query()
+
+		for k, v := range httpClient.QueryParams {
+			q.Add(k, utils.ToString(v))
+		}
+
+		req.URL.RawQuery = q.Encode()
+
 	}
 
 	res, err = myHttpClient.Do(req)

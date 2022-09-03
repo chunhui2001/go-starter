@@ -81,7 +81,7 @@ func RedisPubRouter(c *gin.Context) {
 
 func HttpClientSimpleRouter(c *gin.Context) {
 
-	httpResult := ghttp.SendRequest(ghttp.GET("https://www.google.com"))
+	httpResult := ghttp.SendRequest(ghttp.GET("https://www.google.com?fff=gg").Query(utils.MapOf("a", "b", "v", "你好")))
 
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,

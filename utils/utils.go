@@ -147,6 +147,14 @@ func ErrorToString(err interface{}) string {
 
 func MapOf(kv ...any) map[string]interface{} {
 
+	if kv == nil {
+		return nil
+	}
+
+	if len(kv)%2 != 0 {
+		panic(errors.New("Invalid map size: currentSize=" + ToString(len(kv))))
+	}
+
 	m := make(map[string]interface{})
 
 	for i := 0; i < len(kv); i++ {
