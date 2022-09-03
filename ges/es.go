@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/chunhui2001/go-starter/utils"
 	"github.com/elastic/go-elasticsearch/v8"
-	_ "github.com/elastic/go-elasticsearch/v8/esapi"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"strings"

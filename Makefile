@@ -33,6 +33,13 @@ dev:
 build:
 	docker rmi -f go-starter:1.0 && docker build . -t go-starter:1.0
 
+Built:
+	go build -o ./app ./main.go
+
+Build:
+	docker build -f ./Dockerfile-Build . -t go-starter:Build
+	docker run -dit --name go-starter-Build go-starter:Build
+
 # docker up
 up: rm
 	docker-compose -f docker-compose.yml up -d
