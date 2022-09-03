@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"path/filepath"
 	_ "strings"
 	"time"
 
 	"github.com/chunhui2001/go-starter/config"
 	"github.com/chunhui2001/go-starter/gredis"
+	"github.com/chunhui2001/go-starter/utils"
 	"github.com/chunhui2001/go-starter/wss"
 	"github.com/foolin/goview"
 	"github.com/foolin/goview/supports/ginview"
@@ -97,7 +99,9 @@ var (
 
 func Setup(starterServer *Server) *gin.Engine {
 
-	copier.CopyWithOption(&defaultServer, &starterServer, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	if starterServer != nil {
+		copier.CopyWithOption(&defaultServer, &starterServer, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	}
 
 	if APP_Setting.Env == "development" {
 		gin.SetMode(gin.DebugMode)
@@ -155,8 +159,14 @@ func Setup(starterServer *Server) *gin.Engine {
 
 	// apply middleware
 	engine.Use(middleware.Recovery(recoveryHandler)) // error nice handle
-	engine.Use(static.Serve("/static", static.LocalFile("./static", false)))
-	engine.Use(favicon.New("./static/favicon.ico")) // set favicon middleware
+
+	if ok, _ := utils.FileExists(filepath.Join(utils.RootDir(), "static")); ok {
+		engine.Use(static.Serve("/static", static.LocalFile("./static", false)))
+		engine.Use(favicon.New("./static/favicon.ico")) // set favicon middleware
+	} else {
+		config.Log.Warn("static folder not exists" + config.WssSetting.Wss())
+	}
+
 	engine.Use(middleware.CORS(middleware.CORSOptions{}))
 	engine.Use(middleware.AccessLog())
 
