@@ -45,12 +45,6 @@ type Server struct {
 	CustomeRoutes    []Route
 }
 
-var store *persistence.InMemoryStore = persistence.NewInMemoryStore(time.Second)
-var APP_PORT string = config.AppSetting.AppPort
-var WSS_PREFIX string = config.WssSetting.Prefix
-var APP_COOKIE *config.Cookie = config.CookieSetting
-var WEB_PAGE_CONF *config.WebPageConf = config.WebPageSettings
-
 func rateLimitKeyFunc(c *gin.Context) string {
 	return c.ClientIP()
 }
@@ -91,11 +85,21 @@ var defaultServer = &Server{
 	},
 }
 
+var (
+	APP_Setting   *config.AppConf            = config.AppSetting
+	APP_PORT      string                     = config.AppSetting.AppPort
+	WSS_Conf      *config.Wss                = config.WssSetting
+	APP_COOKIE    *config.Cookie             = config.CookieSetting
+	WEB_PAGE_CONF *config.WebPageConf        = config.WebPageSettings
+	store         *persistence.InMemoryStore = persistence.NewInMemoryStore(time.Second)
+	Redis_Setting *gredis.GRedis             = config.RedisConf
+)
+
 func Setup(starterServer *Server) *gin.Engine {
 
 	copier.CopyWithOption(&defaultServer, &starterServer, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 
-	if config.AppSetting.Env == "development" {
+	if APP_Setting.Env == "development" {
 		gin.SetMode(gin.DebugMode)
 	} else {
 		gin.SetMode(gin.ReleaseMode)
@@ -128,17 +132,22 @@ func Setup(starterServer *Server) *gin.Engine {
 		engine.Use(sessions.Sessions(APP_COOKIE.Name, cookieStore))
 	}
 
-	// RateLimit: This makes it so each ip can only make 5 requests per second
-	ratelimitMiddleWare := ratelimit.RateLimiter(
-		// ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
-		// 	Rate:  time.Second,
-		// 	Limit: 5,
-		// }),
-		ratelimit.RedisStore(&ratelimit.RedisOptions{
+	var rateLimitStore ratelimit.Store = ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
+		Rate:  time.Second,
+		Limit: 5,
+	})
+
+	if !Redis_Setting.Disabled() {
+		rateLimitStore = ratelimit.RedisStore(&ratelimit.RedisOptions{
 			RedisClient: gredis.Client(),
 			Rate:        time.Second,
 			Limit:       5,
-		}),
+		})
+	}
+
+	// RateLimit: This makes it so each ip can only make 5 requests per second
+	ratelimitMiddleWare := ratelimit.RateLimiter(
+		rateLimitStore,
 		&ratelimit.Options{
 			ErrorHandler: errorHandler,
 			KeyFunc:      rateLimitKeyFunc,
@@ -173,8 +182,8 @@ func Setup(starterServer *Server) *gin.Engine {
 		engine.Handle(ro.Method, ro.Path, ro.Handlers...)
 	}
 
-	if WSS_PREFIX != "" {
-		engine.GET(WSS_PREFIX, wss.WebsocketUpgrade)
+	if WSS_Conf.Enable {
+		engine.GET(WSS_Conf.Prefix, wss.WebsocketUpgrade)
 	}
 
 	engine.NoRoute(func(c *gin.Context) {
@@ -185,7 +194,11 @@ func Setup(starterServer *Server) *gin.Engine {
 		}
 	})
 
-	config.Log.Info("Listening and serving HTTP on " + APP_PORT + ", websocket=" + config.WssSetting.Wss())
+	config.Log.Info("Listening and serving HTTP on " + APP_PORT)
+
+	if WSS_Conf.Enable {
+		config.Log.Info("Startup a websocket server running on " + config.WssSetting.Wss())
+	}
 
 	return engine
 

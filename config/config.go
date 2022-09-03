@@ -39,7 +39,7 @@ func (writer logWriter) Write(bytes []byte) (int, error) {
 	return fmt.Print(time.Now().Format(timeStampFormat) + " [STDOUT] - " + string(bytes))
 }
 
-type App struct {
+type AppConf struct {
 	Env      string `mapstructure:"GIN_ENV"`
 	AppName  string `mapstructure:"APP_NAME"`
 	AppPort  string `mapstructure:"APP_PORT"`
@@ -79,7 +79,7 @@ func (w *Wss) Wss() string {
 	return w.Host + w.Prefix
 }
 
-var AppSetting = &App{
+var AppSetting = &AppConf{
 	// Env:     "development",
 	Env:      "production",
 	AppName:  "go-starter",
@@ -325,8 +325,8 @@ func loadRedisSettings(v1 *viper.Viper, filename string) {
 		os.Exit(3)
 		return
 	} else {
-		if RedisConf.Mode == gredis.Disabled {
-			Log.Info("Redis-Not-Enabled: Mode=" + utils.ToString(RedisConf.Mode) + ", Host=" + RedisConf.Host)
+		if RedisConf.Disabled() {
+			Log.Info("Redis-Not-Enabled: Mode=" + RedisConf.Mode.String())
 		} else {
 			gredis.Init(RedisConf, Log)
 		}
@@ -362,7 +362,7 @@ func loadMongoDBSettings(v1 *viper.Viper, filename string) {
 		return
 	} else {
 		if !MongoDBSettings.Enable {
-			Log.Info("MongoDb-Not-Enabled: Enabled=" + utils.ToString(MongoDBSettings.Enable) + ", Host=" + RedisConf.Host)
+			Log.Info("MongoDb-Not-Enabled: Enabled=" + utils.ToString(MongoDBSettings.Enable))
 		} else {
 			gmongo.Init(MongoDBSettings, Log)
 		}
@@ -379,7 +379,11 @@ func loadWssSettings(v1 *viper.Viper, filename string) {
 		os.Exit(3)
 		return
 	} else {
-		Log.Info("WssSetting: Host=" + WssSetting.Host + ", Prefix=" + WssSetting.Prefix)
+		if WssSetting.Enable {
+			Log.Info("WssSetting: Enable=" + utils.ToString(WssSetting.Enable) + "Host=" + WssSetting.Host + ", Prefix=" + WssSetting.Prefix)
+		} else {
+			Log.Info("WssSetting: Enable=" + utils.ToString(WssSetting.Enable))
+		}
 	}
 
 }
@@ -393,7 +397,11 @@ func loadWebPageSettings(v1 *viper.Viper, filename string) {
 		os.Exit(3)
 		return
 	} else {
-		Log.Info("WebPageSettings: Enable=" + utils.ToString(WebPageSettings.Enable) + ", Root=" + filepath.Join(utils.RootDir(), WebPageSettings.Root))
+		if WebPageSettings.Enable {
+			Log.Info("WebPageSettings: Enable=" + utils.ToString(WebPageSettings.Enable) + ", Root=" + filepath.Join(utils.RootDir(), WebPageSettings.Root))
+		} else {
+			Log.Info("WebPageSettings: Enable=" + utils.ToString(WebPageSettings.Enable))
+		}
 	}
 
 }
@@ -407,7 +415,12 @@ func loadCookieSettings(v1 *viper.Viper, filename string) {
 		os.Exit(3)
 		return
 	} else {
-		Log.Info("CookieSetting: Enable=" + strconv.FormatBool(CookieSetting.Enable) + ", Name=" + CookieSetting.Name + ", Secret=" + CookieSetting.Secret + ", MaxAge=" + fmt.Sprint(CookieSetting.MaxAge))
+		if CookieSetting.Enable {
+			Log.Info("CookieSetting: Enable=" + strconv.FormatBool(CookieSetting.Enable) + ", Name=" + CookieSetting.Name + ", Secret=" + CookieSetting.Secret + ", MaxAge=" + fmt.Sprint(CookieSetting.MaxAge))
+		} else {
+			Log.Info("CookieSetting: Enable=" + strconv.FormatBool(CookieSetting.Enable))
+		}
+
 	}
 
 }

@@ -36,6 +36,10 @@ func (s REDIS_Mode) String() string {
 	return "unknown"
 }
 
+func (r *GRedis) Disabled() bool {
+	return r.Mode == Disabled
+}
+
 type MessageHandler func(channel string, payload string)
 
 type GRedis struct {
