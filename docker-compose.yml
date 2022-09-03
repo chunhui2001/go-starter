@@ -21,7 +21,7 @@ services:
       #- TZ=Asia/Shanghai
       - TZ=UTC
       - GIN_ENV=production
-      - WSS_HOST=ws://127.0.0.1:4000
+      - WSS_HOST=ws://192.168.0.101:4000
     #entrypoint: ["/bin/sh", "-c", "while true; do echo 1 >/dev/null 2>/dev/null; sleep 1; done"]
     entrypoint: ["/dist/app"]
     volumes:
