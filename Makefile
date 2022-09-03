@@ -49,6 +49,8 @@ rm:
 clear:
 	go clean --modcache
 	rm -rf `go env GOPATH`/bin/go-starter
+	rm -rf `go env GOPATH`/bin/*
+	ls -alh `go env GOPATH`/bin/
 
 # show install utils
 list:
