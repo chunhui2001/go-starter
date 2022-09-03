@@ -170,9 +170,11 @@ func Setup(starterServer *Server) *gin.Engine {
 	engine.Use(middleware.CORS(middleware.CORSOptions{}))
 	engine.Use(middleware.AccessLog())
 
+	// default info
+	engine.GET("/info", ratelimitMiddleWare, defaultServer.HandlerInfo) // info router
+
 	if WEB_PAGE_CONF.Enable {
 
-		engine.GET("/info", ratelimitMiddleWare, defaultServer.HandlerInfo) // info router
 		engine.GET("", ratelimitMiddleWare, defaultServer.HandlerIndexPage) // index page
 		engine.GET("/index", ratelimitMiddleWare, defaultServer.HandlerIndexPage)
 		engine.GET("/home", ratelimitMiddleWare, defaultServer.HandlerIndexPage)
