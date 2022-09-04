@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bufio"
 	"bytes"
+	"context"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -17,6 +18,7 @@ import (
 	"github.com/chunhui2001/go-starter/ghttp"
 	"github.com/chunhui2001/go-starter/gras"
 	"github.com/chunhui2001/go-starter/gredis"
+	"github.com/chunhui2001/go-starter/gwss"
 	"github.com/chunhui2001/go-starter/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -153,6 +155,19 @@ func UploadFileRouterMany(c *gin.Context) {
 	// if err != nil {
 	// 	panic(err)
 	// }
+
+	c.JSON(http.StatusOK, R{Data: true}.Success())
+
+}
+
+func WsClientSimple(c *gin.Context) {
+
+	connectId := c.Query("connectId")
+	serverAddress := c.Query("serverAddress")
+
+	gwss.New(connectId, serverAddress).Connect(func(ctx context.Context, client *gwss.Client, messageBuf []byte) {
+		logger.Infof(`WebSocket-Receive-a-Message: connectId=%s, message=%s`, client.ConnectId, string(messageBuf))
+	})
 
 	c.JSON(http.StatusOK, R{Data: true}.Success())
 

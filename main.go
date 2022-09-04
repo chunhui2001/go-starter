@@ -65,6 +65,7 @@ func main() {
 	r.GET("/labs-leftpad", actions.PadLeftRouter)
 	r.POST("/labs-redis-pub", actions.RedisPubRouter)
 	r.POST("/labs-upload-file", actions.UploadFileRouterOne)
+	r.POST("/websocket-client-simple", actions.WsClientSimple)
 	r.POST("/demo/album-create", actions.AlbumCreateRouter)
 	r.GET("/demo/album-get", actions.AlbumGetRouter)
 	r.POST("/demo/binding-body", actions.BodyBindHandler)
