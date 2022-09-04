@@ -3,10 +3,11 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/chunhui2001/go-starter/config"
 	"github.com/chunhui2001/go-starter/utils"
 	"github.com/gorilla/websocket"
-	"time"
 )
 
 var (
@@ -85,8 +86,8 @@ func (s *Server) DetectedClientPong() {
 		var t time.Duration
 
 		if client.LastPong.IsZero() {
-			logger.Infof("connection Duration1: %s, %s, %s", client.ID, t, utils.ToDateTimeUTCString(client.LastPong))
 			t = time.Now().Sub(client.CreatedAt)
+			logger.Infof("connection Duration1: %s, %s, %s", client.ID, t, utils.ToDateTimeUTCString(client.LastPong))
 		} else {
 			t = time.Now().Sub(client.LastPong)
 			logger.Infof("connection Duration2: %s", t)
@@ -109,7 +110,7 @@ func (s *Server) ReceiveClientPong(client *Client, message string) {
 		if sub.Topic == server_ping {
 			for _, c := range *sub.Clients {
 				if c.ID == client.ID {
-					c.LastPong = utils.DateTimeParse(message)
+					(&c).LastPong = utils.DateTimeParse(message)
 					logger.Infof("ReceiveClientPong1: ID=%s, currTime=%s", client.ID, utils.ToDateTimeUTCString(c.LastPong))
 					break
 				}
@@ -122,7 +123,7 @@ func (s *Server) ReceiveClientPong(client *Client, message string) {
 	for _, sub := range s.Subscriptions {
 		if sub.Topic == server_ping {
 			for _, c := range *sub.Clients {
-				logger.Infof("ReceiveClientPong2: ID=%s, currTime=%s", client.ID, utils.ToDateTimeUTCString(c.LastPong))
+				logger.Infof("ReceiveClientPong2: ID=%s, currTime=%s", c.ID, utils.ToDateTimeUTCString(c.LastPong))
 			}
 			break
 		}

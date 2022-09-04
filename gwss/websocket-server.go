@@ -30,9 +30,6 @@ func init() {
 
 	cron.Add("* * * * * *", func() {
 		server.ServerPing()
-	})
-
-	cron.Add("* * * * * *", func() {
 		server.DetectedClientPong()
 	})
 
