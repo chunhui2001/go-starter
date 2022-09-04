@@ -64,5 +64,8 @@ https://github.com/moul/http2curl
 ### log to kafka
 https://github.com/gfremex/logrus-kafka-hook
 
+### Gin binding in Go: A tutorial with examples
+https://blog.logrocket.com/gin-binding-in-go-a-tutorial-with-examples/
+
 
 

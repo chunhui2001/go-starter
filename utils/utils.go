@@ -230,3 +230,10 @@ func IfNull(obj any, defaultValue interface{}) interface{} {
 	}
 	return obj
 }
+
+func IfElse(b bool, obj any, defaultValue any) any {
+	if b {
+		return defaultValue
+	}
+	return obj
+}

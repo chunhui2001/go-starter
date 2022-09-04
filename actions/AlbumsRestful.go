@@ -3,16 +3,17 @@ package actions
 import (
 	"net/http"
 
-	// "encoding/json"
+	. "github.com/chunhui2001/go-starter/commons"
 	_ "github.com/chunhui2001/go-starter/config"
 	"github.com/chunhui2001/go-starter/gmongo"
 	"github.com/fatih/structs"
 	"go.mongodb.org/mongo-driver/bson"
 
-	// "github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
-	// "go.mongodb.org/mongo-driver/bson"
-	// "github.com/mitchellh/mapstructure"
+)
+
+var (
+// logger = config.Log
 )
 
 type AlbumBook struct {
@@ -20,6 +21,11 @@ type AlbumBook struct {
 	Name   string `json:"name" bson:"name" binding:"required"`
 	Title  string `json:"title" bson:"title" binding:"required"`
 	Author string `json:"author" bson:"author" binding:"required"`
+}
+
+type Body struct {
+	Product string `json:"product" binding:"required,alpha"`
+	Price   uint   `json:"price" binding:"required,gte=10,lte=1000"`
 }
 
 func AlbumCreateRouter(c *gin.Context) {
@@ -65,5 +71,18 @@ func AlbumGetRouter(c *gin.Context) {
 		"data":    data,
 		"message": "Ok",
 	})
+
+}
+
+func BodyBindHandler(c *gin.Context) {
+
+	body := Body{}
+
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(500, R{Error: err}.Fail(400))
+		return
+	}
+
+	c.JSON(http.StatusAccepted, R{Data: &body}.Success())
 
 }

@@ -69,6 +69,7 @@ func main() {
 	r.POST("/labs-upload-file", actions.UploadFileRouterOne)
 	r.POST("/demo/album-create", actions.AlbumCreateRouter)
 	r.GET("/demo/album-get", actions.AlbumGetRouter)
+	r.POST("/demo/binding-body", actions.BodyBindHandler)
 
 	r.Run(config.AppSetting.AppPort)
 
