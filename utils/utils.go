@@ -59,6 +59,10 @@ func DateTimeUTCString() string {
 	return time.Now().Format(TimeStampFormat)
 }
 
+func ToDateTimeUTCString(tm time.Time) string {
+	return tm.Format(TimeStampFormat)
+}
+
 func BigIntRandom() *big.Int {
 	// Max value, a 130-bits integer, i.e 2^130 - 1
 	var max *big.Int = big.NewInt(0).Exp(big.NewInt(2), big.NewInt(130), nil)

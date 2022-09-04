@@ -10,6 +10,8 @@ import (
 
 	. "github.com/chunhui2001/go-starter/commons"
 	"github.com/chunhui2001/go-starter/config"
+	"github.com/chunhui2001/go-starter/controller"
+	"github.com/chunhui2001/go-starter/core"
 	"github.com/chunhui2001/go-starter/gredis"
 	"github.com/chunhui2001/go-starter/utils"
 	"github.com/chunhui2001/go-starter/wss"
@@ -24,13 +26,11 @@ import (
 	_ "github.com/chunhui2001/go-starter/mycache"
 
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
-	"github.com/chunhui2001/go-starter/controller"
 	"github.com/gin-contrib/cache"
 	"github.com/gin-contrib/cache/persistence"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/jinzhu/copier"
-	"github.com/thinkerou/favicon"
 )
 
 type Route struct {
@@ -160,15 +160,11 @@ func Setup(starterServer *Server) *gin.Engine {
 
 	if ok, _ := utils.FileExists(filepath.Join(utils.RootDir(), "static")); ok {
 		engine.Use(static.Serve("/static", static.LocalFile("./static", false)))
-		if ok, _ := utils.FileExists(filepath.Join(utils.RootDir(), "static/favicon.ico")); ok {
-			engine.Use(favicon.New("./static/favicon.ico")) // set favicon middleware
-		} else {
-			config.Log.Warn("static/favicon.ico file not exists" + config.WssSetting.Wss())
-		}
 	} else {
 		config.Log.Warn("static folder not exists" + config.WssSetting.Wss())
 	}
 
+	engine.Use(core.Favicon("./static/favicon.ico")) // set favicon middleware
 	engine.Use(middleware.CORS(middleware.CORSOptions{}))
 	engine.Use(middleware.AccessLog())
 

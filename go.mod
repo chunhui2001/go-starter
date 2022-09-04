@@ -19,6 +19,7 @@ require (
 	github.com/go-zookeeper/zk v1.0.3
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.5.0
+	github.com/hhsnopek/etag v0.0.0-20171206181245-aea95f647346
 	github.com/jinzhu/copier v0.3.5
 	github.com/joho/godotenv v1.4.0
 	github.com/olekukonko/tablewriter v0.0.5
@@ -26,7 +27,6 @@ require (
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.12.0
-	github.com/thinkerou/favicon v0.1.0
 	github.com/ubiq/go-ubiq v3.0.1+incompatible
 	go.mongodb.org/mongo-driver v1.10.1
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
@@ -85,6 +85,7 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.4.0 // indirect
+	github.com/tj/assert v0.0.3 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.1 // indirect
