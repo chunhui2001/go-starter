@@ -66,6 +66,14 @@ func main() {
 	r.POST("/labs-redis-pub", actions.RedisPubRouter)
 	r.POST("/labs-upload-file", actions.UploadFileRouterOne)
 	r.GET("/labs-update-struct-pointer", actions.UpdateStructPointer)
+
+	r.GET("/labs-redis-get", actions.RedisGetRouter)
+	r.GET("/labs-redis-set", actions.RedisSetRouter)
+	r.GET("/labs-redis-lpush", actions.RedisLpushRouter)
+	r.GET("/labs-redis-del", actions.RedisDelRouter)
+	r.GET("/labs-redis-hset", actions.RedisHsetRouter)
+	r.GET("/labs-redis-hsetnx", actions.RedisDelRouter)
+
 	r.POST("/websocket-client-simple", actions.WsClientSimple)
 	r.POST("/demo/album-create", actions.AlbumCreateRouter)
 	r.GET("/demo/album-get", actions.AlbumGetRouter)

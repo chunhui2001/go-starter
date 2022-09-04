@@ -160,12 +160,23 @@ func AsMap(buf []byte) map[string]interface{} {
 	return m
 }
 
+func StrToInt(str string) int {
+	intVar, err := strconv.Atoi(str)
+	if err != nil {
+		// ...
+	}
+	return intVar
+}
+
 func ToString(s any) string {
 	if reflect.TypeOf(s).String() == "string" {
 		return fmt.Sprintf("%s", s)
 	}
 	if reflect.TypeOf(s).String() == "bool" {
 		return fmt.Sprintf("%t", s)
+	}
+	if reflect.TypeOf(s).String() == "[]uint8" {
+		return fmt.Sprintf("%s", string(s.([]byte)))
 	}
 	return fmt.Sprintf("%d", s)
 }

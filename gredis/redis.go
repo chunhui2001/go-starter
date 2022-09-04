@@ -185,25 +185,152 @@ func Client() redis.UniversalClient {
 	return universalClient
 }
 
-func Set(key string, value string, expir int) {
-
-	err := Client().Set(ctx, key, value, time.Duration(expir)*time.Second).Err()
-
-	if err != nil {
+func Del(key ...string) {
+	if err := Client().Del(ctx, key...).Err(); err != nil {
 		panic(err)
 	}
+}
+
+// expir 0 代表无过期时间
+func Set(key string, value string, expir int) {
+	if err := Client().Set(ctx, key, value, time.Duration(expir)*time.Second).Err(); err != nil {
+		panic(err)
+	}
+}
+
+func Get(key string) string {
+
+	val, err := Client().Get(ctx, key).Result()
+
+	switch {
+	case err == redis.Nil:
+		return ""
+	case err != nil:
+		logger.Errorf(`Redis-Get-Key-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
+		return ""
+	case val == "":
+		return ""
+	}
+
+	return val
 
 }
 
-func Get(key string) []byte {
-
-	data, err := Client().Get(ctx, key).Bytes()
-
-	if err != nil {
+func Lpush(key string, values ...interface{}) {
+	if err := Client().LPush(ctx, key, values...).Err(); err != nil {
 		panic(err)
 	}
+}
 
-	return data
+func Rpush(key string, values ...interface{}) {
+	if err := Client().RPush(ctx, key, values...).Err(); err != nil {
+		panic(err)
+	}
+}
+
+func Lpop(key string) string {
+
+	val, err := Client().LPop(ctx, key).Result()
+
+	switch {
+	case err == redis.Nil:
+		return ""
+	case err != nil:
+		logger.Errorf(`Redis-Lpop-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
+		return ""
+	}
+
+	return val
+
+}
+
+func Rpop(key string) string {
+
+	val, err := Client().RPop(ctx, key).Result()
+
+	switch {
+	case err == redis.Nil:
+		return ""
+	case err != nil:
+		logger.Errorf(`Redis-Rpop-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
+		return ""
+	}
+
+	return val
+
+}
+
+func Llen(key string) int64 {
+
+	val, err := Client().LLen(ctx, key).Result()
+
+	switch {
+	case err == redis.Nil:
+		return 0
+	case err != nil:
+		logger.Errorf(`Redis-Rpop-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
+		return 0
+	}
+
+	return val
+
+}
+
+func Hset(key string, values ...interface{}) {
+	if err := Client().HSet(ctx, key, values...).Err(); err != nil {
+		panic(err)
+	}
+}
+
+func Hget(key string, field string) string {
+
+	val, err := Client().HGet(ctx, key, field).Result()
+
+	switch {
+	case err == redis.Nil:
+		return ""
+	case err != nil:
+		logger.Errorf(`Redis-Hget-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
+		return ""
+	}
+
+	return val
+}
+
+func Hgetall(key string) map[string]string {
+
+	val, err := Client().HGetAll(ctx, key).Result()
+
+	switch {
+	case err == redis.Nil:
+		return nil
+	case err != nil:
+		logger.Errorf(`Redis-Hgetall-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
+		return nil
+	}
+
+	return val
+}
+
+func Hsetnx(key string, field string, value interface{}) {
+	if err := Client().HSetNX(ctx, key, field, value).Err(); err != nil {
+		panic(err)
+	}
+}
+
+func Hvals(key string) []string {
+
+	val, err := Client().HVals(ctx, key).Result()
+
+	switch {
+	case err == redis.Nil:
+		return nil
+	case err != nil:
+		logger.Errorf(`Redis-Hvals-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
+		return nil
+	}
+
+	return val
 
 }
 

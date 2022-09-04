@@ -80,6 +80,40 @@ func RedisPubRouter(c *gin.Context) {
 
 }
 
+func RedisDelRouter(c *gin.Context) {
+	key := c.Query("key")
+	gredis.Del(key)
+	c.JSON(http.StatusOK, R{Data: gredis.Llen(key)}.Success())
+}
+
+func RedisGetRouter(c *gin.Context) {
+	key := c.Query("key")
+	c.JSON(http.StatusOK, R{Data: gredis.Get(key)}.Success())
+}
+
+func RedisSetRouter(c *gin.Context) {
+	key := c.Query("key")
+	val := c.Query("val")
+	expir := c.Query("expir")
+	gredis.Set(key, val, utils.StrToInt(expir))
+	c.JSON(http.StatusOK, R{Data: utils.StrToInt(expir)}.Success())
+}
+
+func RedisLpushRouter(c *gin.Context) {
+	key := c.Query("key")
+	val := c.Query("val")
+	gredis.Lpush(key, val)
+	c.JSON(http.StatusOK, R{Data: gredis.Llen(key)}.Success())
+}
+
+func RedisHsetRouter(c *gin.Context) {
+	key := c.Query("key")
+	f1 := c.Query("f1")
+	v1 := c.Query("v1")
+	gredis.Hset(key, f1, v1)
+	c.JSON(http.StatusOK, R{Data: gredis.Hgetall(key)}.Success())
+}
+
 func HttpClientSimpleRouter(c *gin.Context) {
 	httpResult := ghttp.SendRequest(ghttp.GET("https://www.google.com?fff=gg").Query(utils.MapOf("a", "b", "v", "你好")))
 	c.JSON(http.StatusOK, R{Data: string(httpResult.ResponseBody)}.Success())
