@@ -26,7 +26,7 @@ func New(connectId string, serverAddress string) *Client {
 	return &Client{ConnectId: connectId, ServerAddr: serverAddress}
 }
 
-func (c *Client) Connect(messageHandler MessageHandler) (context.Context, net.Conn) {
+func (c *Client) Connect(messageHandler MessageHandler) (context.Context, net.Conn, error) {
 
 	ctx := context.Background()
 
@@ -34,6 +34,7 @@ func (c *Client) Connect(messageHandler MessageHandler) (context.Context, net.Co
 
 	if err != nil {
 		logger.Errorf(`Connect-WebSocker-Server-Error: serverAddress=%s, errorMessage=%s`, c.ServerAddr, err.Error())
+		return nil, nil, err
 	}
 
 	c.CTX = ctx
@@ -42,7 +43,7 @@ func (c *Client) Connect(messageHandler MessageHandler) (context.Context, net.Co
 
 	go c.ListenMessage(messageHandler)
 
-	return ctx, conn
+	return ctx, conn, nil
 
 }
 

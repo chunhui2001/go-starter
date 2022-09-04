@@ -162,13 +162,18 @@ func UploadFileRouterMany(c *gin.Context) {
 
 func WsClientSimple(c *gin.Context) {
 
-	connectId := c.Query("connectId")
+	connectId := utils.ShortId()
 	serverAddress := c.Query("serverAddress")
 
-	gwss.New(connectId, serverAddress).Connect(func(ctx context.Context, client *gwss.Client, messageBuf []byte) {
+	_, _, err := gwss.New(connectId, serverAddress).Connect(func(ctx context.Context, client *gwss.Client, messageBuf []byte) {
 		logger.Infof(`WebSocket-Receive-a-Message: connectId=%s, message=%s`, client.ConnectId, string(messageBuf))
 	})
 
-	c.JSON(http.StatusOK, R{Data: true}.Success())
+	if err != nil {
+		c.JSON(http.StatusOK, R{Error: err}.Fail(400))
+		return
+	}
+
+	c.JSON(http.StatusOK, R{Data: connectId}.Msg("Connect Websocket successful").Success())
 
 }

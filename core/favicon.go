@@ -47,7 +47,7 @@ func Favicon(path string) gin.HandlerFunc {
 		info, err := os.Stat(path)
 		modTime = info.ModTime()
 		if err != nil || info == nil || info.IsDir() {
-			logger.Warnf(`Invalid-Favicon-Path-Use-Default: path=%s`, path)
+			logger.Warnf(`Invalid-Favicon-Path-Used-Memory-File: path=%s`, path)
 			reader = bytes.NewReader(faviconBuf)
 		} else {
 			file, err := ioutil.ReadFile(path)
@@ -59,7 +59,7 @@ func Favicon(path string) gin.HandlerFunc {
 			}
 		}
 	} else {
-		logger.Warnf(`Favicon-Path-Not-Exists-Use-Default: path=%s`, path)
+		logger.Warnf(`Favicon-Path-Not-Exists-Used-Memory-File: path=%s`, path)
 		reader = bytes.NewReader(faviconBuf)
 	}
 
