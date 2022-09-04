@@ -282,7 +282,7 @@ func InitLog() {
 		TimestampFormat: timeStampFormat,
 		LogFormat:       "%time% [%lvl%] - %file% > %msg%\n",
 		CallerPrettyfier: func(frame *runtime.Frame) (function string, file string) {
-			lineMessage := fmt.Sprintf("%s() %s:%d", frame.Function, path.Base(frame.File), frame.Line)
+			lineMessage := fmt.Sprintf("%s() %s(%d):%d", frame.Function, path.Base(frame.File), utils.GoroutineId(), frame.Line)
 			lineLength := len(lineMessage)
 			lineMaxLength := 36
 			if lineLength > lineMaxLength {
@@ -290,7 +290,6 @@ func InitLog() {
 			} else if lineLength < lineMaxLength {
 				lineMessage = utils.PadLeft(lineMessage, " ", lineMaxLength+1)
 			}
-
 			return "", "{" + lineMessage + "}"
 		},
 	})
