@@ -49,4 +49,7 @@ gin-bin
 go-starter
 vendor
 app
+app-windows-*
+app-darwin-*
+app-linux-*
 *.debug

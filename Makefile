@@ -14,6 +14,8 @@ tidy:
 
 # make install mod=github.com/codegangsta/gin
 install:
+	go get github.com/codegangsta/gin
+	go install github.com/codegangsta/gin
 	go get $(mod)
 	go install $(mod)
 
@@ -34,7 +36,9 @@ build:
 	docker rmi -f go-starter:1.0 && docker build . -t go-starter:1.0  -m 4g
 
 Built:
-	go build -o ./app ./main.go
+	env GOOS=windows GOARCH=amd64 go build -o ./app-windows-amd64 ./main.go
+	env GOOS=darwin GOARCH=amd64 go build -o ./app-darwin-amd64 ./main.go
+	env GOOS=linux GOARCH=amd64 go build -o ./app-linux-amd64 ./main.go
 
 Build:
 	docker build -f ./Dockerfile-Build . -t go-starter:Build
@@ -57,7 +61,7 @@ clear:
 	go clean --modcache
 	rm -rf `go env GOPATH`/bin/go-starter
 	rm -rf `go env GOPATH`/bin/*
-	ls -alh `go env GOPATH`/bin/
+	rm -rf app app-*-* gin-bin
 
 # show install utils
 list:
