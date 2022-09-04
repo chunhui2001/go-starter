@@ -57,6 +57,13 @@ func FileExists(name string) (bool, error) {
 	return false, err
 }
 
+func DateTimeParse(s string) time.Time {
+	if t, err := time.Parse(TimeStampFormat, s); err == nil {
+		return t
+	}
+	return time.Time{}
+}
+
 func DateTimeUTCString() string {
 	return time.Now().Format(TimeStampFormat)
 }
@@ -135,6 +142,14 @@ func ToJsonString(v interface{}) string {
 		panic(err)
 	}
 	return string(b)
+}
+
+func ToJsonBytes(v interface{}) []byte {
+	b, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	return b
 }
 
 func AsMap(buf []byte) map[string]interface{} {

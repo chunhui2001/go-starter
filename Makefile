@@ -7,6 +7,7 @@ c 		?=10000
 #zone 	?=Asia/Shanghai
 zone 	?=UTC
 WSS_HOST	?=ws://127.0.0.1:8080
+APP_PORT 	?=8080
 
 # make tidy
 tidy:
@@ -25,6 +26,7 @@ get:
 
 # make run e=development 
 run:
+	rm -rf gin-bin
 	GIN_ENV=$(e) go run .
 
 # make dev
@@ -39,10 +41,6 @@ Built:
 	env GOOS=windows GOARCH=amd64 go build -o ./app-windows-amd64 ./main.go
 	env GOOS=darwin GOARCH=amd64 go build -o ./app-darwin-amd64 ./main.go
 	env GOOS=linux GOARCH=amd64 go build -o ./app-linux-amd64 ./main.go
-
-Build:
-	docker build -f ./Dockerfile-Build . -t go-starter:Build
-	docker run -dit --name go-starter-Build go-starter:Build
 
 # docker up
 up: rm

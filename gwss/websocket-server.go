@@ -1,11 +1,11 @@
 package gwss
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	"net/http"
+	"time"
 
 	"github.com/chunhui2001/go-starter/cron"
 	"github.com/chunhui2001/go-starter/gwss/model"
@@ -32,6 +32,10 @@ func init() {
 		server.ServerPing()
 	})
 
+	cron.Add("* * * * * *", func() {
+		server.DetectedClientPong()
+	})
+
 }
 
 func WebsocketUpgrade(c *gin.Context) {
@@ -50,6 +54,7 @@ func WebsocketUpgrade(c *gin.Context) {
 	client := model.Client{
 		ID:         uuid.Must(uuid.NewRandom()).String(),
 		Connection: ws,
+		CreatedAt:  time.Now(),
 	}
 
 	// greet the new client
@@ -65,13 +70,8 @@ func WebsocketUpgrade(c *gin.Context) {
 			return
 		}
 
-		// If client message is ping will return pong
-		if string(message) == "ping" {
-			message = []byte("pong")
-			_ = ws.WriteMessage(mt, message)
-		} else {
-			server.ProcessMessage(client, mt, message)
-		}
+		// process messages
+		server.ProcessMessage(client, mt, message)
 
 	}
 }
