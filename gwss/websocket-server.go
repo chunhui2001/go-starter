@@ -1,4 +1,4 @@
-package wss
+package gwss
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/chunhui2001/go-starter/cron"
-	"github.com/chunhui2001/go-starter/wss/model"
+	"github.com/chunhui2001/go-starter/gwss/model"
 )
 
 var upgrader = websocket.Upgrader{

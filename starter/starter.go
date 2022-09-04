@@ -13,8 +13,8 @@ import (
 	"github.com/chunhui2001/go-starter/controller"
 	"github.com/chunhui2001/go-starter/core"
 	"github.com/chunhui2001/go-starter/gredis"
+	"github.com/chunhui2001/go-starter/gwss"
 	"github.com/chunhui2001/go-starter/utils"
-	"github.com/chunhui2001/go-starter/wss"
 	"github.com/foolin/goview"
 	"github.com/foolin/goview/supports/ginview"
 	"github.com/gin-contrib/static"
@@ -193,7 +193,7 @@ func Setup(starterServer *Server) *gin.Engine {
 	}
 
 	if WSS_Conf.Enable {
-		engine.GET(WSS_Conf.Prefix, wss.WebsocketUpgrade)
+		engine.GET(WSS_Conf.Prefix, gwss.WebsocketUpgrade)
 	}
 
 	engine.NoRoute(func(c *gin.Context) {

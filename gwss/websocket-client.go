@@ -3,6 +3,7 @@ package gwss
 import (
 	"context"
 	"net"
+	"time"
 
 	"github.com/chunhui2001/go-starter/config"
 	"github.com/gobwas/ws"
@@ -33,7 +34,7 @@ func (c *Client) Connect(messageHandler MessageHandler) (context.Context, net.Co
 	conn, _, _, err := ws.DefaultDialer.Dial(ctx, c.ServerAddr)
 
 	if err != nil {
-		logger.Errorf(`Connect-WebSocker-Server-Error: serverAddress=%s, errorMessage=%s`, c.ServerAddr, err.Error())
+		logger.Errorf(`Connect-WebSocker-Server-Error: ConnectId=%s, ServerAddress=%s, ErrorMessage=%s`, c.ConnectId, c.ServerAddr, err.Error())
 		return nil, nil, err
 	}
 
@@ -44,6 +45,21 @@ func (c *Client) Connect(messageHandler MessageHandler) (context.Context, net.Co
 	go c.ListenMessage(messageHandler)
 
 	return ctx, conn, nil
+
+}
+
+func (c *Client) ReConnect(messageHandler MessageHandler) (net.Conn, error) {
+
+	conn, _, _, err := ws.DefaultDialer.Dial(c.CTX, c.ServerAddr)
+
+	if err != nil {
+		return nil, err
+	}
+
+	c.Connection = conn
+	go c.ListenMessage(messageHandler)
+
+	return conn, nil
 
 }
 
@@ -64,11 +80,18 @@ func (c *Client) ListenMessage(messageHandler MessageHandler) {
 		msg, _, err := wsutil.ReadServerData(c.Connection)
 
 		if err != nil {
-			logger.Errorf(`Write-WebSocker-Message-Error: errorMessage=%s`, err.Error())
+			for {
+				logger.Errorf(`Write-WebSocker-Message-Error: ConnectId=%s, SeverAddress=%s, memo=Will-be-Reconnect-in-5-sec, errorMessage=%s`, c.ConnectId, c.ServerAddr, err.Error())
+				time.Sleep(5 * time.Second) // reconnect in 5 seconds
+				if _, reConnectErr := c.ReConnect(messageHandler); reConnectErr == nil {
+					break
+				}
+			}
 		} else {
-			// logger.Debugf(`WebSocker-Message-Received: message=%s`, msg)
 			if messageHandler != nil {
 				go messageHandler(c.CTX, c, msg)
+			} else {
+				logger.Warnf(`WebSocker-Message-Received-Not-Processed: ConnectId=%s, message=%s`, c.ConnectId, msg)
 			}
 		}
 

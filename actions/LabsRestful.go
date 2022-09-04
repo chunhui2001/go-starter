@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -14,7 +15,6 @@ import (
 
 	. "github.com/chunhui2001/go-starter/commons"
 	"github.com/chunhui2001/go-starter/config"
-	_ "github.com/chunhui2001/go-starter/config"
 	"github.com/chunhui2001/go-starter/ghttp"
 	"github.com/chunhui2001/go-starter/gras"
 	"github.com/chunhui2001/go-starter/gredis"
@@ -167,6 +167,11 @@ func WsClientSimple(c *gin.Context) {
 
 	_, _, err := gwss.New(connectId, serverAddress).Connect(func(ctx context.Context, client *gwss.Client, messageBuf []byte) {
 		logger.Infof(`WebSocket-Receive-a-Message: connectId=%s, message=%s`, client.ConnectId, string(messageBuf))
+		message := utils.AsMap(messageBuf)
+		if message != nil && message["topic"] != nil && message["topic"] == "server_ping" {
+			msg := fmt.Sprintf(`{"message":"%s","action": "pong"}`, utils.DateTimeUTCString())
+			client.WriteMessage(msg)
+		}
 	})
 
 	if err != nil {

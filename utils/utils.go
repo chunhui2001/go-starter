@@ -140,7 +140,7 @@ func ToJsonString(v interface{}) string {
 func AsMap(buf []byte) map[string]interface{} {
 	var m map[string]interface{}
 	if err := json.Unmarshal(buf, &m); err != nil {
-		panic(err)
+		return nil
 	}
 	return m
 }

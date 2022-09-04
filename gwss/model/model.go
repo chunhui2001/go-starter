@@ -3,16 +3,21 @@ package model
 import (
 	"encoding/json"
 
-	_ "github.com/chunhui2001/go-starter/config"
+	"github.com/chunhui2001/go-starter/config"
 	"github.com/chunhui2001/go-starter/utils"
 	"github.com/gorilla/websocket"
 )
 
-// contant for 3 type actions
+var (
+	logger = config.Log
+)
+
+// contant for 4 type actions
 const (
 	publish     = "publish"
 	subscribe   = "subscribe"
 	unsubscribe = "unsubscribe"
+	pong        = "pong"
 )
 
 const (
@@ -47,6 +52,10 @@ func (s *Server) ServerPing() {
 	s.Publish(server_ping, utils.DateTimeUTCString())
 }
 
+func (s *Server) ReceiveClientPong(client *Client, message string) {
+	logger.Infof(`ReceiveClientPong: ClientId=%s, message=%s`, client.ID, message)
+}
+
 func (s *Server) NewClient(client *Client) {
 	s.Subscribe(client, server_ping)
 	s.Send(client, "Welcome! Your ID is: "+client.ID+", DataTime: "+utils.DateTimeUTCString())
@@ -69,15 +78,15 @@ func (s *Server) ProcessMessage(client Client, messageType int, payload []byte) 
 	case publish:
 		s.Publish(m.Topic, m.Message)
 		break
-
 	case subscribe:
 		s.Subscribe(&client, m.Topic)
 		break
-
 	case unsubscribe:
 		s.Unsubscribe(&client, m.Topic)
 		break
-
+	case pong:
+		s.ReceiveClientPong(&client, m.Message)
+		break
 	default:
 		s.Send(&client, "Server: Action unrecognized")
 		break
