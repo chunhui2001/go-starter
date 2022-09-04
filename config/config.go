@@ -60,7 +60,7 @@ type Cookie struct {
 	Enable bool   `mapstructure:"COOKIE_ENABLE"`
 	Name   string `mapstructure:"COOKIE_NAME"`
 	Secret string `mapstructure:"COOKIE_SECRET"`
-	MaxAge int    `mapstructure:"COOKIE_MaxAge"`
+	MaxAge int    `mapstructure:"COOKIE_MAXAGE"`
 }
 
 type LogConf struct {
@@ -71,7 +71,7 @@ type LogConf struct {
 }
 
 type WebPageConf struct {
-	Enable    bool   `mapstructure:"WEB_PAGE_Enable"`
+	Enable    bool   `mapstructure:"WEB_PAGE_ENABLE"`
 	Root      string `mapstructure:"WEB_PAGE_ROOT"`
 	Master    string `mapstructure:"WEB_PAGE_MASTER"`
 	Extension string `mapstructure:"WEB_PAGE_Extension"`
@@ -183,6 +183,9 @@ func init() {
 
 	var env string = os.Getenv("GIN_ENV")
 	var envfile = ".env." + env
+
+	var WEB_PAGE_Enable string = os.Getenv("WEB_PAGE_Enable")
+	log.Println(WEB_PAGE_Enable)
 
 	if exists, _ := utils.FileExists(filepath.Join(utils.RootDir(), envfile)); exists == true {
 		filename = envfile
@@ -483,7 +486,7 @@ func readConfig(filename string, defaults map[string]interface{}) *viper.Viper {
 	v.AddConfigPath(utils.RootDir())
 	v.SetConfigName(filename)
 	v.SetConfigType("env")
-	v.AutomaticEnv() // 将读取当前目录下的 .env 配置文件或环境变量, .env 优先级最高
+	v.AutomaticEnv() // 将读取当前目录下的 .env 配置文件或"环境变量", .env 优先级最高
 	err := v.ReadInConfig()
 	if err != nil {
 		log.Println("viper loaded error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")

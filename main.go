@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/chunhui2001/go-starter/actions"
+	. "github.com/chunhui2001/go-starter/commons"
 	"github.com/chunhui2001/go-starter/config"
 	"github.com/chunhui2001/go-starter/controller"
 	"github.com/chunhui2001/go-starter/gredis"
@@ -25,7 +26,7 @@ func init() {
 
 	starterServer = &starter.Server{
 		HandlerInfo: func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{"code": 200, "data": "this is info page", "message": "Ok"})
+			c.JSON(http.StatusOK, R{Data: "this is info page"}.Success())
 		},
 		HandlerIndexPage: controller.IndexRouter,
 		Handler404: func(c *gin.Context) {
@@ -35,10 +36,7 @@ func init() {
 					"content":    "Page not found",
 				})
 			} else {
-				c.JSON(http.StatusNotFound, gin.H{
-					"code":    http.StatusNotFound,
-					"message": "Page not found",
-				})
+				c.JSON(http.StatusOK, R{}.Msg("Page-Not-Found").Fail(404))
 			}
 		},
 	}

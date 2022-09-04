@@ -33,11 +33,7 @@ func AlbumCreateRouter(c *gin.Context) {
 	var albumBook = &AlbumBook{}
 
 	if err := c.ShouldBindJSON(&albumBook); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code":    400,
-			"data":    nil,
-			"message": err.Error(),
-		})
+		c.JSON(200, R{Error: err}.Fail(400))
 		return
 	}
 
@@ -50,28 +46,16 @@ func AlbumCreateRouter(c *gin.Context) {
 	}
 
 	bson.Unmarshal(bsonBytes, albumBook)
-
-	c.JSON(http.StatusBadRequest, gin.H{
-		"code":    200,
-		"data":    albumBook,
-		"message": "Ok",
-	})
+	c.JSON(http.StatusAccepted, R{Data: albumBook}.Success())
 
 }
 
 func AlbumGetRouter(c *gin.Context) {
 
 	id := c.Query("id")
-
 	var data map[string]interface{}
 	gmongo.FindOne("c_albums", id, &data)
-
-	c.JSON(http.StatusBadRequest, gin.H{
-		"code":    200,
-		"data":    data,
-		"message": "Ok",
-	})
-
+	c.JSON(200, R{Data: data}.Success())
 }
 
 func BodyBindHandler(c *gin.Context) {

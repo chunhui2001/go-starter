@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	. "github.com/chunhui2001/go-starter/commons"
 	"github.com/chunhui2001/go-starter/config"
 	_ "github.com/chunhui2001/go-starter/config"
 	"github.com/chunhui2001/go-starter/ghttp"
@@ -26,25 +27,17 @@ var (
 
 func BigRouter(c *gin.Context) {
 	b := utils.BigIntRandom()
-	c.JSON(http.StatusOK, gin.H{
-		"code": 200,
-		"data": gin.H{
-			"a": b,
-			"b": utils.BigIntHexString(b),
-			"c": utils.BigIntFromHexString(utils.BigIntHexString(b)),
-			"d": b.String(),
-			"e": utils.BigIntFromString(b.String()),
-		},
-		"message": "Ok",
-	})
+	c.JSON(http.StatusOK, R{Data: gin.H{
+		"a": b,
+		"b": utils.BigIntHexString(b),
+		"c": utils.BigIntFromHexString(utils.BigIntHexString(b)),
+		"d": b.String(),
+		"e": utils.BigIntFromString(b.String()),
+	}}.Success())
 }
 
 func YtIdRouter(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"code":    200,
-		"data":    utils.ShortId(),
-		"message": "Ok",
-	})
+	c.JSON(http.StatusOK, R{Data: utils.ShortId()}.Success())
 }
 
 func PemRouter(c *gin.Context) {
@@ -66,11 +59,7 @@ func PemRouter(c *gin.Context) {
 }
 
 func PadLeftRouter(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"code":    200,
-		"data":    utils.PadLeft("chui", "..", 3),
-		"message": "Ok",
-	})
+	c.JSON(http.StatusOK, R{Data: utils.PadLeft("chui", "..", 3)}.Success())
 }
 
 func RedisPubRouter(c *gin.Context) {
@@ -83,24 +72,14 @@ func RedisPubRouter(c *gin.Context) {
 	}
 
 	gredis.Pub(channel, string(payload))
-	c.JSON(http.StatusOK, gin.H{
-		"code":    200,
-		"data":    true,
-		"message": "Ok",
-	})
+
+	c.JSON(http.StatusOK, R{Data: true}.Success())
 
 }
 
 func HttpClientSimpleRouter(c *gin.Context) {
-
 	httpResult := ghttp.SendRequest(ghttp.GET("https://www.google.com?fff=gg").Query(utils.MapOf("a", "b", "v", "你好")))
-
-	c.JSON(http.StatusOK, gin.H{
-		"code":    200,
-		"data":    string(httpResult.ResponseBody),
-		"message": "Ok",
-	})
-
+	c.JSON(http.StatusOK, R{Data: string(httpResult.ResponseBody)}.Success())
 }
 
 func UploadFileRouterOne(c *gin.Context) {
@@ -110,10 +89,7 @@ func UploadFileRouterOne(c *gin.Context) {
 
 	if err != nil {
 		logger.Error("Upload-a-File-Error: errorMessage=" + err.Error())
-		c.JSON(http.StatusOK, gin.H{
-			"code":    400,
-			"message": "Upload one file failed.",
-		})
+		c.JSON(http.StatusOK, R{Error: err, Message: "Upload one file failed."}.Fail(400))
 		return
 	}
 
@@ -121,10 +97,7 @@ func UploadFileRouterOne(c *gin.Context) {
 
 	if openerr != nil {
 		logger.Error("Upload-File-Open-Error: errorMessage=" + openerr.Error())
-		c.JSON(http.StatusOK, gin.H{
-			"code":    400,
-			"message": "Upload-File-Open-Error.",
-		})
+		c.JSON(http.StatusOK, R{Error: openerr, Message: "Upload-File-Open-Error"}.Fail(400))
 		return
 	}
 
@@ -132,10 +105,7 @@ func UploadFileRouterOne(c *gin.Context) {
 
 	if readerr != nil {
 		logger.Error("Upload-File-Read-Error: errorMessage=" + readerr.Error())
-		c.JSON(http.StatusOK, gin.H{
-			"code":    400,
-			"message": "Upload-File-Read-Error.",
-		})
+		c.JSON(http.StatusOK, R{Error: readerr, Message: "Upload-File-Read-Error."}.Fail(400))
 		return
 	}
 
@@ -147,10 +117,7 @@ func UploadFileRouterOne(c *gin.Context) {
 
 	if ziperr != nil {
 		logger.Error("Upload-File-Create-ZipWriter-Error: errorMessage=" + ziperr.Error())
-		c.JSON(http.StatusOK, gin.H{
-			"code":    400,
-			"message": "Upload-File-Create-ZipWriter-Error.",
-		})
+		c.JSON(http.StatusOK, R{Error: ziperr, Message: "Upload-File-Create-ZipWriter-Error."}.Fail(400))
 		return
 	}
 
@@ -158,10 +125,7 @@ func UploadFileRouterOne(c *gin.Context) {
 
 	if _, err := io.Copy(w1, fileReader); err != nil {
 		logger.Error("Upload-File-Copy-ZipStream-Error: errorMessage=" + err.Error())
-		c.JSON(http.StatusOK, gin.H{
-			"code":    400,
-			"message": "Upload-File-Copy-ZipStream-Error.",
-		})
+		c.JSON(http.StatusOK, R{Error: err, Message: "Upload-File-Copy-ZipStream-Error."}.Fail(400))
 		return
 	}
 
@@ -169,10 +133,7 @@ func UploadFileRouterOne(c *gin.Context) {
 
 	if wrierr := os.WriteFile(zipfilename, fileBytes.Bytes(), 0644); wrierr != nil {
 		logger.Error("Upload-File-Write-ZipFile-Error: errorMessage=" + err.Error())
-		c.JSON(http.StatusOK, gin.H{
-			"code":    400,
-			"message": "Upload-File-Write-ZipFile-Error.",
-		})
+		c.JSON(http.StatusOK, R{Error: wrierr, Message: "Upload-File-Write-ZipFile-Error."}.Fail(400))
 		return
 	}
 
@@ -180,28 +141,19 @@ func UploadFileRouterOne(c *gin.Context) {
 
 	logger.Info("Upload-a-File: FileName=" + formFile.Filename + ", Size=" + utils.ToString(formFile.Size))
 
-	c.JSON(http.StatusOK, gin.H{
-		"code":    200,
-		"data":    zipfilename,
-		"message": "Ok",
-	})
+	c.JSON(http.StatusOK, R{Data: zipfilename}.Success())
 
 }
 
 func UploadFileRouterMany(c *gin.Context) {
 
-	channel := c.Query("channel")
-	payload, err := ioutil.ReadAll(c.Request.Body)
+	// channel := c.Query("channel")
+	// payload, err := ioutil.ReadAll(c.Request.Body)
 
-	if err != nil {
-		panic(err)
-	}
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	gredis.Pub(channel, string(payload))
-	c.JSON(http.StatusOK, gin.H{
-		"code":    200,
-		"data":    true,
-		"message": "Ok",
-	})
+	c.JSON(http.StatusOK, R{Data: true}.Success())
 
 }

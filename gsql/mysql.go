@@ -11,7 +11,7 @@ import (
 )
 
 type MySql struct {
-	Enable bool   `mapstructure:"MYSQL_Enable"`
+	Enable bool   `mapstructure:"MYSQL_ENABLE"`
 	Dns    string `mapstructure:"MYSQL_DNS"`
 }
 

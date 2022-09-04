@@ -27,7 +27,7 @@ run:
 
 # make dev
 dev:
-	TZ=$(zone) GIN_ENV=$(e) WSS_HOST=$(WSS_HOST) gin -i --appPort 8080 --port 3000 run main.go
+	TZ=$(zone) GIN_ENV=$(e) WSS_HOST=$(WSS_HOST) WEB_PAGE_ENABLE=false gin -i --appPort 8080 --port 3000 run main.go
 
 # build docker image
 build:

@@ -43,17 +43,17 @@ func (r *GRedis) Disabled() bool {
 type MessageHandler func(channel string, payload string)
 
 type GRedis struct {
-	Mode           REDIS_Mode    `mapstructure:"REDIS_Mode"` // 0: disable, 1:single, 2:sentinel, 3:cluster
-	Host           string        `mapstructure:"REDIS_Host"`
+	Mode           REDIS_Mode    `mapstructure:"REDIS_MODE"` // 0: disable, 1:single, 2:sentinel, 3:cluster
+	Host           string        `mapstructure:"REDIS_HOST"`
 	Addrs          string        `mapstructure:"REDIS_ADDRS"`
 	MasterName     string        `mapstructure:"REDIS_MASTER_NAME"`
-	Passwd         string        `mapstructure:"REDIS_Password"`
-	Db             int           `mapstructure:"REDIS_DataBase"`
-	MaxIdle        int           `mapstructure:"REDIS_MaxIdle"`
-	MaxActive      int           `mapstructure:"REDIS_MaxActive"`
-	IdleTimeout    time.Duration `mapstructure:"REDIS_IdleTimeout"`
-	RouteByLatency bool          `mapstructure:"REDIS_RouteByLatency"`
-	RouteRandomly  bool          `mapstructure:"REDIS_RouteRandomly"`
+	Passwd         string        `mapstructure:"REDIS_PASSWORD"`
+	Db             int           `mapstructure:"REDIS_DATABASE"`
+	MaxIdle        int           `mapstructure:"REDIS_MAX_IDLE"`
+	MaxActive      int           `mapstructure:"REDIS_MAX_ACTIVE"`
+	IdleTimeout    time.Duration `mapstructure:"REDIS_IDLE_TIMEOUT"`
+	RouteByLatency bool          `mapstructure:"REDIS_ROUTE_BY_LATENCY"`
+	RouteRandomly  bool          `mapstructure:"REDIS_ROUTE_RANDOMLY"`
 	SubChannels    string        `mapstructure:"REDIS_SUB_CHANNELS"`
 }
 

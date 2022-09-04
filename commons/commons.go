@@ -33,6 +33,11 @@ type R struct {
 	Error   error       `json:"-"`
 }
 
+func (r R) Msg(msg string) R {
+	r.Message = msg
+	return r
+}
+
 func (r R) Get() map[string]interface{} {
 	return Result(r)
 }
@@ -57,8 +62,6 @@ func Result(r R) map[string]interface{} {
 
 	if r.Message != "" {
 		m["message"] = r.Message
-	} else {
-		m["message"] = "Ok."
 	}
 
 	if r.Data != nil {
@@ -74,12 +77,20 @@ func Result(r R) map[string]interface{} {
 			for i, fe := range ve {
 				out[i] = ErrorMsg{fe.Field(), GetErrorMsg(fe)}
 			}
-			m["message"] = "Validator-Failed."
+			if r.Message == "" {
+				m["message"] = "Validator-Failed."
+			}
 			m["errors"] = out
 		} else {
-			m["message"] = r.Error.Error()
+			if r.Message == "" {
+				m["message"] = r.Error.Error()
+			}
 		}
 
+	} else {
+		if r.Message == "" {
+			m["message"] = "Ok."
+		}
 	}
 
 	return m

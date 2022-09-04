@@ -18,8 +18,8 @@ var (
 )
 
 type ESConf struct {
-	Enable  bool   `mapstructure:"ES_Enable"`
-	Servers string `mapstructure:"ES_Servers"`
+	Enable  bool   `mapstructure:"ES_ENABLE"`
+	Servers string `mapstructure:"ES_SERVERS"`
 }
 
 func Init(conf *ESConf, log *logrus.Entry) {

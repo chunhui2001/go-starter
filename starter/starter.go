@@ -8,6 +8,7 @@ import (
 	_ "strings"
 	"time"
 
+	. "github.com/chunhui2001/go-starter/commons"
 	"github.com/chunhui2001/go-starter/config"
 	"github.com/chunhui2001/go-starter/gredis"
 	"github.com/chunhui2001/go-starter/utils"
@@ -58,7 +59,7 @@ func errorHandler(c *gin.Context, info ratelimit.Info) {
 var defaultServer = &Server{
 	Store: store,
 	HandlerInfo: func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"code": 200, "data": "info", "message": "Ok"})
+		c.JSON(http.StatusOK, R{Data: "info"}.Success())
 	},
 	HandlerIndexPage: controller.IndexRouter,
 	Handler404: func(c *gin.Context) {
@@ -68,19 +69,16 @@ var defaultServer = &Server{
 				"content":    "Page not found",
 			})
 		} else {
-			c.JSON(http.StatusOK, gin.H{
-				"code":    http.StatusNotFound,
-				"message": "Page not found",
-			})
+			c.JSON(http.StatusOK, R{}.Fail(404))
 		}
 	},
 	Handler500: func(c *gin.Context, err interface{}) {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": errors.Wrap(err, 3).Error()})
+		c.JSON(http.StatusInternalServerError, R{Error: errors.Wrap(err, 3)}.Fail(500))
 	},
 	CustomeRoutes: []Route{
 		{Method: http.MethodGet, Path: "/info_cache", Handlers: []gin.HandlerFunc{
 			cache.CachePage(store, time.Minute, func(c *gin.Context) {
-				c.JSON(http.StatusOK, gin.H{"code": 200, "data": "hello world, " + fmt.Sprint(time.Now().Unix()), "message": "Ok"})
+				c.JSON(http.StatusOK, R{Data: "hello world, " + fmt.Sprint(time.Now().Unix())}.Success())
 			}),
 		}},
 		{Method: http.MethodGet, Path: "/about", Handlers: []gin.HandlerFunc{controller.AboutRouter}},
