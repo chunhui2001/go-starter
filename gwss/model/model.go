@@ -54,9 +54,10 @@ type Message struct {
 	Time    string `json:"time"`
 }
 
-func NewMessage(action string, message string) *Message {
+func NewMessage(topic string, action string, message string) *Message {
 	return &Message{
 		Action:  action,
+		Topic:   topic,
 		Message: message,
 		Time:    utils.DateTimeUTCString(),
 	}
@@ -81,22 +82,24 @@ func (s *Server) DetectedClientPong() {
 		}
 	}
 
+	d1 := 45 * time.Second
+	d2 := 15 * time.Second
+
 	for _, client := range clients {
 
 		var t time.Duration
 
 		if client.LastPong.IsZero() {
 			t = time.Now().Sub(client.CreatedAt)
-			logger.Infof("connection Duration1: %s, %s, %s", client.ID, t, utils.ToDateTimeUTCString(client.LastPong))
 		} else {
 			t = time.Now().Sub(client.LastPong)
-			logger.Infof("connection Duration2: %s", t)
 		}
 
-		if t >= 15*time.Second {
-			s.Send(&client, NewMessage("warnning", fmt.Sprintf(`Your connection has been closed, Bye.`)).Bytes())
-		} else if t >= 10*time.Second {
-			s.Send(&client, NewMessage("warnning", fmt.Sprintf(`Your connection will be closed, Please send Pong in 5 seconds`)).Bytes())
+		if t >= d1 {
+			s.Send(&client, NewMessage("sys", "connection_closed", fmt.Sprintf(`Your connection has been closed, Bye.`)).Bytes())
+			s.RemoveClient(client)
+		} else if t >= d2 {
+			s.Send(&client, NewMessage("sys", "connection_alert", fmt.Sprintf(`Your connection will be closed, Please send Pong in '%s'`, d1-t)).Bytes())
 		}
 
 	}
@@ -105,25 +108,14 @@ func (s *Server) DetectedClientPong() {
 
 func (s *Server) ReceiveClientPong(client *Client, message string) {
 
-	// get list of clients subscribed to topic
 	for _, sub := range s.Subscriptions {
 		if sub.Topic == server_ping {
-			for _, c := range *sub.Clients {
+			clients := *sub.Clients
+			for j, c := range clients {
 				if c.ID == client.ID {
-					(&c).LastPong = utils.DateTimeParse(message)
-					logger.Infof("ReceiveClientPong1: ID=%s, currTime=%s", client.ID, utils.ToDateTimeUTCString(c.LastPong))
+					clients[j].LastPong = utils.DateTimeParse(message)
 					break
 				}
-			}
-			break
-		}
-	}
-
-	// get list of clients subscribed to topic
-	for _, sub := range s.Subscriptions {
-		if sub.Topic == server_ping {
-			for _, c := range *sub.Clients {
-				logger.Infof("ReceiveClientPong2: ID=%s, currTime=%s", c.ID, utils.ToDateTimeUTCString(c.LastPong))
 			}
 			break
 		}
@@ -133,7 +125,7 @@ func (s *Server) ReceiveClientPong(client *Client, message string) {
 
 func (s *Server) NewClient(client *Client) {
 	s.Subscribe(client, server_ping)
-	s.Send(client, NewMessage(action_connected_successful, fmt.Sprintf(`Welcome! Your ID is: '%s'`, client.ID)).Bytes())
+	s.Send(client, NewMessage("sys", action_connected_successful, fmt.Sprintf(`Welcome! Your ID is: '%s'`, client.ID)).Bytes())
 }
 
 func (s *Server) Send(client *Client, messageBytes []byte) {

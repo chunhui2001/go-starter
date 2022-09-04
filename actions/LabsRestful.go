@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	. "github.com/chunhui2001/go-starter/commons"
 	"github.com/chunhui2001/go-starter/config"
@@ -166,11 +167,11 @@ func WsClientSimple(c *gin.Context) {
 	serverAddress := c.Query("serverAddress")
 
 	_, _, err := gwss.New(connectId, serverAddress).Connect(func(ctx context.Context, client *gwss.Client, messageBuf []byte) {
-		logger.Infof(`WebSocket-Receive-a-Message: connectId=%s, message=%s`, client.ConnectId, string(messageBuf))
+		logger.Info(fmt.Sprintf(`WebSocket-Receive-a-Message: connectId=%s, message=%s`, client.ConnectId, string(messageBuf)))
 		message := utils.AsMap(messageBuf)
 		if message != nil && message["topic"] != nil && message["topic"] == "server_ping" {
-			msg := fmt.Sprintf(`{"message":"%s","action": "pong"}`, utils.DateTimeUTCString())
-			client.WriteMessage(msg)
+			// msg := fmt.Sprintf(`{"message":"%s","action": "pong"}`, utils.DateTimeUTCString())
+			// client.WriteMessage(msg)
 		}
 	})
 
@@ -180,5 +181,49 @@ func WsClientSimple(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, R{Data: connectId}.Msg("Connect Websocket successful").Success())
+
+}
+
+type Client struct {
+	ID        string
+	LastPong  time.Time
+	CreatedAt time.Time
+}
+
+type Subscription struct {
+	Topic   string
+	Clients *[]Client
+}
+
+// a server type to store all subscriptions
+type Server struct {
+	Subscriptions []Subscription
+}
+
+var s *Server = &Server{}
+
+func UpdateStructPointer(c *gin.Context) {
+
+	var client *Client = &Client{}
+	var newClient *[]Client = &[]Client{*client}
+
+	newTopic := &Subscription{
+		Topic:   "topic1",
+		Clients: newClient,
+	}
+
+	s.Subscriptions = append(s.Subscriptions, *newTopic)
+
+	for i := range s.Subscriptions {
+		var sub Subscription = s.Subscriptions[i]
+		sub.Topic = "topic2"
+		s.Subscriptions[i] = sub
+		clients := *sub.Clients
+		for j := range clients {
+			clients[j].LastPong = time.Now()
+		}
+	}
+
+	c.JSON(http.StatusOK, R{Data: s}.Success())
 
 }
