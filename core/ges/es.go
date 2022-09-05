@@ -97,20 +97,26 @@ func Search() {
 
 }
 
-func SaveOrUpdate(indexName string, id string, dataMap map[string]interface{}) (bool, error) {
+func SaveOrUpdate(indexName string, id string, dataMap map[string]interface{}) (string, error) {
 
 	if dataMap == nil {
-		return false, nil
+		return "", nil
 	}
 
 	if dataMap["@timestamp"] == nil {
 		dataMap["@timestamp"] = utils.DateTimeUTCString()
 	}
 
+	_id := id
+
+	if id == "" {
+		_id = utils.Base64UUID()
+	}
+
 	// Instantiate a request object
 	req := esapi.IndexRequest{
 		Index:      indexName,
-		DocumentID: utils.IfElse(id == "", utils.Base64UUID(), id).(string),
+		DocumentID: _id,
 		Body:       strings.NewReader(utils.ToJsonString(dataMap)),
 		Refresh:    "true",
 	}
@@ -118,7 +124,7 @@ func SaveOrUpdate(indexName string, id string, dataMap map[string]interface{}) (
 	res, err := req.Do(ctx, esClient)
 
 	if err != nil {
-		return false, err
+		return "", err
 	}
 
 	defer res.Body.Close()
@@ -127,14 +133,14 @@ func SaveOrUpdate(indexName string, id string, dataMap map[string]interface{}) (
 	var resMap map[string]interface{}
 
 	if err := json.NewDecoder(res.Body).Decode(&resMap); err != nil {
-		return false, err
+		return "", err
 	}
 
 	if resMap["error"] != nil {
 		logger.Errorf("Es-SaveOrUpdate-Save-Failed: ErrorMessage=%s", utils.ToJsonString(resMap["error"]))
-		return false, errors.New(resMap["error"].(map[string]interface{})["reason"].(string))
+		return "", errors.New(resMap["error"].(map[string]interface{})["reason"].(string))
 	}
 
-	return true, nil
+	return _id, nil
 
 }

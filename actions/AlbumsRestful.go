@@ -77,11 +77,13 @@ func ElsCreateOrUpdateRouter(c *gin.Context) {
 		return
 	}
 
-	if _, err := ges.SaveOrUpdate("go-simple-index", albumBook.Id, utils.ToMap(albumBook)); err != nil {
+	_id, err := ges.SaveOrUpdate("go-simple-index", albumBook.Id, utils.ToMap(albumBook))
+
+	if err != nil {
 		c.JSON(http.StatusOK, R{Error: err}.Fail(400))
 		return
 	}
 
-	c.JSON(http.StatusOK, R{Data: true}.Success())
+	c.JSON(http.StatusOK, R{Data: _id}.Success())
 
 }
