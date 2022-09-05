@@ -99,7 +99,7 @@ func Search() {
 
 func SaveOrUpdate(indexName string, id string, dataMap map[string]interface{}) (string, error) {
 
-	if dataMap == nil {
+	if dataMap == nil || len(dataMap) == 0 {
 		return "", nil
 	}
 
