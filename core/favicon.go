@@ -10,7 +10,7 @@ import (
 	_ "strings"
 	"time"
 
-	"github.com/chunhui2001/go-starter/config"
+	"github.com/chunhui2001/go-starter/core/config"
 	"github.com/chunhui2001/go-starter/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/hhsnopek/etag"

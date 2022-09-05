@@ -8,9 +8,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 
-	"github.com/chunhui2001/go-starter/config"
-	"github.com/chunhui2001/go-starter/gtask"
-	"github.com/chunhui2001/go-starter/gwss/model"
+	"github.com/chunhui2001/go-starter/core/config"
+	"github.com/chunhui2001/go-starter/core/gtask"
+	"github.com/chunhui2001/go-starter/core/gwss/model"
 )
 
 var upgrader = websocket.Upgrader{

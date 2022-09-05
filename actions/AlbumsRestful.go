@@ -3,9 +3,9 @@ package actions
 import (
 	"net/http"
 
-	. "github.com/chunhui2001/go-starter/commons"
-	"github.com/chunhui2001/go-starter/ges"
-	"github.com/chunhui2001/go-starter/gmongo"
+	. "github.com/chunhui2001/go-starter/core/commons"
+	"github.com/chunhui2001/go-starter/core/ges"
+	"github.com/chunhui2001/go-starter/core/gmongo"
 	"github.com/chunhui2001/go-starter/utils"
 	"github.com/fatih/structs"
 	"go.mongodb.org/mongo-driver/bson"

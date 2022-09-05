@@ -9,12 +9,12 @@ import (
 	"time"
 
 	"github.com/chunhui2001/go-starter/actions"
-	. "github.com/chunhui2001/go-starter/commons"
-	"github.com/chunhui2001/go-starter/config"
 	"github.com/chunhui2001/go-starter/controller"
 	"github.com/chunhui2001/go-starter/core"
-	"github.com/chunhui2001/go-starter/gredis"
-	"github.com/chunhui2001/go-starter/gwss"
+	. "github.com/chunhui2001/go-starter/core/commons"
+	"github.com/chunhui2001/go-starter/core/config"
+	"github.com/chunhui2001/go-starter/core/gredis"
+	"github.com/chunhui2001/go-starter/core/gwss"
 	"github.com/chunhui2001/go-starter/utils"
 	"github.com/foolin/goview"
 	"github.com/foolin/goview/supports/ginview"
@@ -23,7 +23,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/chunhui2001/go-starter/middleware"
+	"github.com/chunhui2001/go-starter/core/middleware"
 	_ "github.com/chunhui2001/go-starter/mycache"
 
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"

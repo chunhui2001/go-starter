@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/chunhui2001/go-starter/config"
+	"github.com/chunhui2001/go-starter/core/config"
 )
 
 var defaultLogFormatter = func(param gin.LogFormatterParams) string {

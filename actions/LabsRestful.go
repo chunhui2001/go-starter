@@ -14,12 +14,12 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/chunhui2001/go-starter/commons"
-	"github.com/chunhui2001/go-starter/config"
-	"github.com/chunhui2001/go-starter/ghttp"
-	"github.com/chunhui2001/go-starter/gras"
-	"github.com/chunhui2001/go-starter/gredis"
-	"github.com/chunhui2001/go-starter/gwss"
+	. "github.com/chunhui2001/go-starter/core/commons"
+	"github.com/chunhui2001/go-starter/core/config"
+	"github.com/chunhui2001/go-starter/core/ghttp"
+	"github.com/chunhui2001/go-starter/core/gras"
+	"github.com/chunhui2001/go-starter/core/gredis"
+	"github.com/chunhui2001/go-starter/core/gwss"
 	"github.com/chunhui2001/go-starter/utils"
 	"github.com/gin-gonic/gin"
 )

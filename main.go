@@ -3,10 +3,10 @@ package main
 import (
 	"net/http"
 
-	. "github.com/chunhui2001/go-starter/commons"
-	"github.com/chunhui2001/go-starter/config"
 	"github.com/chunhui2001/go-starter/controller"
-	"github.com/chunhui2001/go-starter/starter"
+	. "github.com/chunhui2001/go-starter/core/commons"
+	"github.com/chunhui2001/go-starter/core/config"
+	"github.com/chunhui2001/go-starter/core/starter"
 	"github.com/gin-gonic/gin"
 )
 

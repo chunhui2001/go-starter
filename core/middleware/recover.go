@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-errors/errors"
 
-	"github.com/chunhui2001/go-starter/config"
+	"github.com/chunhui2001/go-starter/core/config"
 	"github.com/chunhui2001/go-starter/utils"
 	"github.com/gin-gonic/gin"
 )

@@ -14,19 +14,18 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/chunhui2001/go-starter/ges"
-	"github.com/chunhui2001/go-starter/ghttp"
-	"github.com/chunhui2001/go-starter/gmongo"
-	"github.com/chunhui2001/go-starter/gredis"
-	"github.com/chunhui2001/go-starter/gsql"
-	_ "github.com/chunhui2001/go-starter/gzk"
+	"github.com/chunhui2001/go-starter/core/ges"
+	"github.com/chunhui2001/go-starter/core/ghttp"
+	"github.com/chunhui2001/go-starter/core/gmongo"
+	"github.com/chunhui2001/go-starter/core/gredis"
+	"github.com/chunhui2001/go-starter/core/gsql"
+	_ "github.com/chunhui2001/go-starter/core/gzk"
 	"github.com/chunhui2001/go-starter/utils"
 	_ "github.com/joho/godotenv"
 	"github.com/spf13/viper"
 
 	"github.com/gin-gonic/gin"
 
-	_ "github.com/chunhui2001/go-starter/gmongo"
 	lkh "github.com/gfremex/logrus-kafka-hook"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
@@ -184,7 +183,7 @@ func init() {
 	log.SetOutput(new(logWriter))
 
 	var env string = os.Getenv("GIN_ENV")
-	var envfile = ".env." + env
+	var envfile = ".env/.env." + env
 
 	var WEB_PAGE_Enable string = os.Getenv("WEB_PAGE_Enable")
 	log.Println(WEB_PAGE_Enable)

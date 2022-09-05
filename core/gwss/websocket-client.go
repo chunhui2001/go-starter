@@ -5,7 +5,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/chunhui2001/go-starter/config"
+	"github.com/chunhui2001/go-starter/core/config"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 )
