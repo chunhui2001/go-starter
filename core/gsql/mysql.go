@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/chunhui2001/go-starter/utils"
+	"github.com/chunhui2001/go-starter/core/utils"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
 )

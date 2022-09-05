@@ -8,8 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chunhui2001/go-starter/utils"
-	_ "github.com/chunhui2001/go-starter/utils"
+	"github.com/chunhui2001/go-starter/core/utils"
 	"github.com/sirupsen/logrus"
 	"moul.io/http2curl"
 )

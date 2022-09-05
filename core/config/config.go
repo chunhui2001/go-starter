@@ -20,7 +20,7 @@ import (
 	"github.com/chunhui2001/go-starter/core/gredis"
 	"github.com/chunhui2001/go-starter/core/gsql"
 	_ "github.com/chunhui2001/go-starter/core/gzk"
-	"github.com/chunhui2001/go-starter/utils"
+	"github.com/chunhui2001/go-starter/core/utils"
 	_ "github.com/joho/godotenv"
 	"github.com/spf13/viper"
 

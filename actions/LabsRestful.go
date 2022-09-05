@@ -20,7 +20,7 @@ import (
 	"github.com/chunhui2001/go-starter/core/gras"
 	"github.com/chunhui2001/go-starter/core/gredis"
 	"github.com/chunhui2001/go-starter/core/gwss"
-	"github.com/chunhui2001/go-starter/utils"
+	"github.com/chunhui2001/go-starter/core/utils"
 	"github.com/gin-gonic/gin"
 )
 

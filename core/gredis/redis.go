@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chunhui2001/go-starter/utils"
+	"github.com/chunhui2001/go-starter/core/utils"
 	"github.com/go-errors/errors"
 	"github.com/go-redis/redis/v8"
 	"github.com/sirupsen/logrus"

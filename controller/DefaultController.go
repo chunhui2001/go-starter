@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/chunhui2001/go-starter/core/config"
+	"github.com/chunhui2001/go-starter/core/utils"
 	"github.com/chunhui2001/go-starter/mycache"
-	"github.com/chunhui2001/go-starter/utils"
 	"github.com/gin-gonic/gin"
 )
 
