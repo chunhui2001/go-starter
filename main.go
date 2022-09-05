@@ -15,14 +15,13 @@ import (
 
 var (
 	starterServer *starter.Server
-	APP_COOKIE    *config.Cookie
-	WEB_PAGE_CONF *config.WebPageConf
+	APP_COOKIE    *config.Cookie      = config.CookieSetting
+	WEB_PAGE_CONF *config.WebPageConf = config.WebPageSettings
+	APP_SETTINGS  *config.AppConf     = config.AppSetting
+	Redis_Conf    *gredis.GRedis      = config.RedisConf
 )
 
 func init() {
-
-	WEB_PAGE_CONF = config.WebPageSettings
-	APP_COOKIE = config.CookieSetting
 
 	starterServer = &starter.Server{
 		HandlerInfo: func(c *gin.Context) {
@@ -43,33 +42,38 @@ func init() {
 
 }
 
-func main() {
+func bootstrap() *gin.Engine {
 
 	// simples
-	starter.AppendRouter("GET", []string{"/httpclient-simple"}, actions.HttpClientSimpleRouter)
-	starter.AppendRouter("GET", []string{"/labs-bigint"}, actions.BigRouter)
-	starter.AppendRouter("GET", []string{"/labs-ytld"}, actions.YtIdRouter)
-	starter.AppendRouter("GET", []string{"/labs-pem"}, actions.PemRouter)
-	starter.AppendRouter("GET", []string{"/labs-leftpad"}, actions.PadLeftRouter)
-	starter.AppendRouter("POST", []string{"/labs-redis-pub"}, actions.RedisPubRouter)
-	starter.AppendRouter("POST", []string{"/labs-upload-file"}, actions.UploadFileRouterOne)
-	starter.AppendRouter("GET", []string{"/labs-update-struct-pointer"}, actions.UpdateStructPointer)
+	if APP_SETTINGS.DemoEnable {
 
-	starter.AppendRouter("GET", []string{"/labs-redis-get"}, actions.RedisGetRouter)
-	starter.AppendRouter("GET", []string{"/labs-redis-set"}, actions.RedisSetRouter)
-	starter.AppendRouter("GET", []string{"/labs-redis-lpush"}, actions.RedisLpushRouter)
-	starter.AppendRouter("GET", []string{"/labs-redis-del"}, actions.RedisDelRouter)
-	starter.AppendRouter("GET", []string{"/labs-redis-hset"}, actions.RedisHsetRouter)
-	starter.AppendRouter("GET", []string{"/labs-redis-hsetnx"}, actions.RedisDelRouter)
+		// commons simples
+		starter.AppendRouter("GET", []string{"/httpclient-simple"}, actions.HttpClientSimpleRouter)
+		starter.AppendRouter("GET", []string{"/labs-bigint"}, actions.BigRouter)
+		starter.AppendRouter("GET", []string{"/labs-ytld"}, actions.YtIdRouter)
+		starter.AppendRouter("GET", []string{"/labs-pem"}, actions.PemRouter)
+		starter.AppendRouter("GET", []string{"/labs-leftpad"}, actions.PadLeftRouter)
+		starter.AppendRouter("POST", []string{"/labs-redis-pub"}, actions.RedisPubRouter)
+		starter.AppendRouter("POST", []string{"/labs-upload-file"}, actions.UploadFileRouterOne)
+		starter.AppendRouter("GET", []string{"/labs-update-struct-pointer"}, actions.UpdateStructPointer)
 
-	starter.AppendRouter("POST", []string{"/websocket-client-simple"}, actions.WsClientSimple)
-	starter.AppendRouter("POST", []string{"/demo/album-create"}, actions.AlbumCreateRouter)
-	starter.AppendRouter("GET", []string{"/demo/album-get"}, actions.AlbumGetRouter)
-	starter.AppendRouter("POST", []string{"/demo/binding-body"}, actions.BodyBindHandler)
+		// redis simples
+		starter.AppendRouter("GET", []string{"/labs-redis-get"}, actions.RedisGetRouter)
+		starter.AppendRouter("GET", []string{"/labs-redis-set"}, actions.RedisSetRouter)
+		starter.AppendRouter("GET", []string{"/labs-redis-lpush"}, actions.RedisLpushRouter)
+		starter.AppendRouter("GET", []string{"/labs-redis-del"}, actions.RedisDelRouter)
+		starter.AppendRouter("GET", []string{"/labs-redis-hset"}, actions.RedisHsetRouter)
+		starter.AppendRouter("GET", []string{"/labs-redis-hsetnx"}, actions.RedisDelRouter)
 
-	r := starter.Setup(starterServer)
+		// validator data binding simples
+		starter.AppendRouter("POST", []string{"/demo/album-create"}, actions.AlbumCreateRouter)
+		starter.AppendRouter("GET", []string{"/demo/album-get"}, actions.AlbumGetRouter)
+		starter.AppendRouter("POST", []string{"/demo/binding-body"}, actions.BodyBindHandler)
 
-	Redis_Conf := config.RedisConf
+		// other simples
+		starter.AppendRouter("POST", []string{"/websocket-client-simple"}, actions.WsClientSimple)
+
+	}
 
 	if Redis_Conf.Mode != gredis.Disabled {
 		for _, channel := range strings.Split(Redis_Conf.SubChannels, ",") {
@@ -79,6 +83,11 @@ func main() {
 		}
 	}
 
-	r.Run(config.AppSetting.AppPort)
+	return starter.Setup(starterServer)
 
+}
+
+func main() {
+	r := bootstrap()
+	r.Run(config.AppSetting.AppPort)
 }

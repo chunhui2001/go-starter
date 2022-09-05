@@ -7,7 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/chunhui2001/go-starter/cron"
+	"github.com/chunhui2001/go-starter/config"
+	"github.com/chunhui2001/go-starter/gtask"
 	"github.com/chunhui2001/go-starter/gwss/model"
 )
 
@@ -24,13 +25,19 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-var server = &model.Server{}
+var (
+	server = &model.Server{}
+)
 
 func init() {
 
-	cron.Add("* * * * * *", func() {
+	gtask.AddTask("WebSocket定时任务每秒1次(Ping-and-Pong)", "* * * * * *", func() {
 		server.ServerPing()
 		server.DetectedClientPong()
+	})
+
+	gtask.AddTask("WebSocket定时任务每秒15次(打印当前连接数)", "0/15 * * * * *", func() {
+		config.Log.Infof(`当前WebSocket维护的所有连接数: count=%d`, len(server.AllClients()))
 	})
 
 }

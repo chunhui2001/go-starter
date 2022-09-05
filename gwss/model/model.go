@@ -73,14 +73,7 @@ func (s *Server) ServerPing() {
 
 func (s *Server) DetectedClientPong() {
 
-	var clients []Client
-
-	// get list of clients subscribed to topic
-	for _, sub := range s.Subscriptions {
-		if sub.Topic == server_ping {
-			clients = append(clients, *sub.Clients...)
-		}
-	}
+	var clients []Client = s.AllClients()
 
 	d1 := 45 * time.Second
 	d2 := 15 * time.Second
@@ -106,8 +99,20 @@ func (s *Server) DetectedClientPong() {
 
 }
 
-func (s *Server) ReceiveClientPong(client *Client, message string) {
+func (s *Server) AllClients() []Client {
 
+	var clients []Client
+
+	for _, sub := range s.Subscriptions {
+		if sub.Topic == server_ping {
+			clients = append(clients, *sub.Clients...)
+		}
+	}
+
+	return clients
+}
+
+func (s *Server) ReceiveClientPong(client *Client, message string) {
 	for _, sub := range s.Subscriptions {
 		if sub.Topic == server_ping {
 			clients := *sub.Clients
@@ -120,7 +125,6 @@ func (s *Server) ReceiveClientPong(client *Client, message string) {
 			break
 		}
 	}
-
 }
 
 func (s *Server) NewClient(client *Client) {

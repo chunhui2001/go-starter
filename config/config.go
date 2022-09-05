@@ -44,10 +44,11 @@ func (writer logWriter) Write(bytes []byte) (int, error) {
 }
 
 type AppConf struct {
-	Env      string `mapstructure:"GIN_ENV"`
-	AppName  string `mapstructure:"APP_NAME"`
-	AppPort  string `mapstructure:"APP_PORT"`
-	TimeZone string `mapstructure:"APP_TIMEZONE"`
+	Env        string `mapstructure:"GIN_ENV"`
+	AppName    string `mapstructure:"APP_NAME"`
+	AppPort    string `mapstructure:"APP_PORT"`
+	TimeZone   string `mapstructure:"APP_TIMEZONE"`
+	DemoEnable bool   `mapstructure:"ENABLE_DEMO"`
 }
 
 type Wss struct {
@@ -85,10 +86,11 @@ func (w *Wss) Wss() string {
 
 var AppSetting = &AppConf{
 	// Env:     "development",
-	Env:      "production",
-	AppName:  "go-starter",
-	AppPort:  "8080",
-	TimeZone: map[bool]string{true: os.Getenv("TZ"), false: "UTC"}[os.Getenv("TZ") != ""],
+	Env:        "production",
+	AppName:    "go-starter",
+	AppPort:    "8080",
+	TimeZone:   map[bool]string{true: os.Getenv("TZ"), false: "UTC"}[os.Getenv("TZ") != ""],
+	DemoEnable: true,
 }
 
 var LogSettings = &LogConf{

@@ -81,7 +81,6 @@ var defaultServer = &Server{
 				c.JSON(http.StatusOK, R{Data: "hello world, " + fmt.Sprint(time.Now().Unix())}.Success())
 			}),
 		}},
-		{Method: http.MethodGet, Path: "/about", Handlers: []gin.HandlerFunc{controller.AboutRouter}},
 	},
 }
 
@@ -176,6 +175,8 @@ func Setup(starterServer *Server) *gin.Engine {
 
 		// index page route
 		AppendRouter(http.MethodGet, []string{"/", "/index", "home"}, ratelimitMiddleWare, defaultServer.HandlerIndexPage)
+		// about simple page
+		AppendRouter(http.MethodGet, []string{"/about"}, ratelimitMiddleWare, controller.AboutRouter)
 
 		if WEB_PAGE_CONF.LoginUrl != "" {
 			AppendRouter(http.MethodGet, []string{WEB_PAGE_CONF.LoginUrl}, controller.LoginHandler)
@@ -217,7 +218,7 @@ func Setup(starterServer *Server) *gin.Engine {
 
 func AppendRouter(method string, paths []string, handlers ...gin.HandlerFunc) {
 	for _, path := range paths {
-		defaultServer.CustomeRoutes = append(defaultServer.CustomeRoutes, Route{Method: http.MethodGet, Path: path, Handlers: handlers})
+		defaultServer.CustomeRoutes = append(defaultServer.CustomeRoutes, Route{Method: method, Path: path, Handlers: handlers})
 	}
 }
 
