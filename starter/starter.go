@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
-	_ "strings"
+	"strings"
 	"time"
 
 	. "github.com/chunhui2001/go-starter/commons"
@@ -93,6 +93,7 @@ var (
 	WEB_PAGE_CONF *config.WebPageConf        = config.WebPageSettings
 	store         *persistence.InMemoryStore = persistence.NewInMemoryStore(time.Second)
 	Redis_Setting *gredis.GRedis             = config.RedisConf
+	logger                                   = config.Log
 )
 
 func Setup(starterServer *Server) *gin.Engine {
@@ -161,7 +162,7 @@ func Setup(starterServer *Server) *gin.Engine {
 	if ok, _ := utils.FileExists(filepath.Join(utils.RootDir(), "static")); ok {
 		engine.Use(static.Serve("/static", static.LocalFile("./static", false)))
 	} else {
-		config.Log.Warn("static folder not exists" + config.WssSetting.Wss())
+		logger.Warn("static folder not exists" + config.WssSetting.Wss())
 	}
 
 	engine.Use(core.Favicon("./static/favicon.ico")) // set favicon middleware
@@ -173,22 +174,22 @@ func Setup(starterServer *Server) *gin.Engine {
 
 	if WEB_PAGE_CONF.Enable {
 
-		engine.GET("", ratelimitMiddleWare, defaultServer.HandlerIndexPage) // index page
-		engine.GET("/index", ratelimitMiddleWare, defaultServer.HandlerIndexPage)
-		engine.GET("/home", ratelimitMiddleWare, defaultServer.HandlerIndexPage)
+		// index page route
+		AppendRouter(http.MethodGet, []string{"/", "/index", "home"}, ratelimitMiddleWare, defaultServer.HandlerIndexPage)
 
 		if WEB_PAGE_CONF.LoginUrl != "" {
-			engine.GET(WEB_PAGE_CONF.LoginUrl, controller.LoginHandler)
+			AppendRouter(http.MethodGet, []string{WEB_PAGE_CONF.LoginUrl}, controller.LoginHandler)
 		}
 
 		if WEB_PAGE_CONF.SignUpUrl != "" {
-			engine.GET(WEB_PAGE_CONF.SignUpUrl, controller.SignUpHandler)
+			AppendRouter(http.MethodGet, []string{WEB_PAGE_CONF.SignUpUrl}, controller.SignUpHandler)
 		}
 
 	}
 
-	// customer routes
+	// REGISTER ROUTES
 	for _, ro := range defaultServer.CustomeRoutes {
+		logger.Infof("REGISTER-A-ROUTER: Method=%s, Path=%s, Handlers=%s", ro.Method, ro.Path, JoinHandlersString(ro.Handlers))
 		engine.Handle(ro.Method, ro.Path, ro.Handlers...)
 	}
 
@@ -204,14 +205,28 @@ func Setup(starterServer *Server) *gin.Engine {
 		}
 	})
 
-	config.Log.Info("Listening and serving HTTP on " + APP_PORT)
+	logger.Info("Listening and serving HTTP on " + APP_PORT)
 
 	if WSS_Conf.Enable {
-		config.Log.Info("Startup a websocket server running on " + config.WssSetting.Wss())
+		logger.Info("Startup a websocket server running on " + config.WssSetting.Wss())
 	}
 
 	return engine
 
+}
+
+func AppendRouter(method string, paths []string, handlers ...gin.HandlerFunc) {
+	for _, path := range paths {
+		defaultServer.CustomeRoutes = append(defaultServer.CustomeRoutes, Route{Method: http.MethodGet, Path: path, Handlers: handlers})
+	}
+}
+
+func JoinHandlersString(handlers []gin.HandlerFunc) string {
+	var handlersString []string
+	for _, h := range handlers {
+		handlersString = append(handlersString, utils.GetFunctionName(h))
+	}
+	return strings.Join(handlersString, ", ")
 }
 
 func recoveryHandler(c *gin.Context, err interface{}) {

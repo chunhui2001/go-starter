@@ -45,6 +45,28 @@ func init() {
 
 func main() {
 
+	// simples
+	starter.AppendRouter("GET", []string{"/httpclient-simple"}, actions.HttpClientSimpleRouter)
+	starter.AppendRouter("GET", []string{"/labs-bigint"}, actions.BigRouter)
+	starter.AppendRouter("GET", []string{"/labs-ytld"}, actions.YtIdRouter)
+	starter.AppendRouter("GET", []string{"/labs-pem"}, actions.PemRouter)
+	starter.AppendRouter("GET", []string{"/labs-leftpad"}, actions.PadLeftRouter)
+	starter.AppendRouter("POST", []string{"/labs-redis-pub"}, actions.RedisPubRouter)
+	starter.AppendRouter("POST", []string{"/labs-upload-file"}, actions.UploadFileRouterOne)
+	starter.AppendRouter("GET", []string{"/labs-update-struct-pointer"}, actions.UpdateStructPointer)
+
+	starter.AppendRouter("GET", []string{"/labs-redis-get"}, actions.RedisGetRouter)
+	starter.AppendRouter("GET", []string{"/labs-redis-set"}, actions.RedisSetRouter)
+	starter.AppendRouter("GET", []string{"/labs-redis-lpush"}, actions.RedisLpushRouter)
+	starter.AppendRouter("GET", []string{"/labs-redis-del"}, actions.RedisDelRouter)
+	starter.AppendRouter("GET", []string{"/labs-redis-hset"}, actions.RedisHsetRouter)
+	starter.AppendRouter("GET", []string{"/labs-redis-hsetnx"}, actions.RedisDelRouter)
+
+	starter.AppendRouter("POST", []string{"/websocket-client-simple"}, actions.WsClientSimple)
+	starter.AppendRouter("POST", []string{"/demo/album-create"}, actions.AlbumCreateRouter)
+	starter.AppendRouter("GET", []string{"/demo/album-get"}, actions.AlbumGetRouter)
+	starter.AppendRouter("POST", []string{"/demo/binding-body"}, actions.BodyBindHandler)
+
 	r := starter.Setup(starterServer)
 
 	Redis_Conf := config.RedisConf
@@ -56,28 +78,6 @@ func main() {
 			})
 		}
 	}
-
-	// simples
-	r.GET("/httpclient-simple", actions.HttpClientSimpleRouter)
-	r.GET("/labs-bigint", actions.BigRouter)
-	r.GET("/labs-ytld", actions.YtIdRouter)
-	r.GET("/labs-pem", actions.PemRouter)
-	r.GET("/labs-leftpad", actions.PadLeftRouter)
-	r.POST("/labs-redis-pub", actions.RedisPubRouter)
-	r.POST("/labs-upload-file", actions.UploadFileRouterOne)
-	r.GET("/labs-update-struct-pointer", actions.UpdateStructPointer)
-
-	r.GET("/labs-redis-get", actions.RedisGetRouter)
-	r.GET("/labs-redis-set", actions.RedisSetRouter)
-	r.GET("/labs-redis-lpush", actions.RedisLpushRouter)
-	r.GET("/labs-redis-del", actions.RedisDelRouter)
-	r.GET("/labs-redis-hset", actions.RedisHsetRouter)
-	r.GET("/labs-redis-hsetnx", actions.RedisDelRouter)
-
-	r.POST("/websocket-client-simple", actions.WsClientSimple)
-	r.POST("/demo/album-create", actions.AlbumCreateRouter)
-	r.GET("/demo/album-get", actions.AlbumGetRouter)
-	r.POST("/demo/binding-body", actions.BodyBindHandler)
 
 	r.Run(config.AppSetting.AppPort)
 
