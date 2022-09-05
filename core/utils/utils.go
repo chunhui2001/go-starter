@@ -160,6 +160,10 @@ func AsMap(buf []byte) map[string]interface{} {
 	return m
 }
 
+func ToMap(v interface{}) map[string]interface{} {
+	return AsMap(ToJsonBytes(v))
+}
+
 func StrToInt(str string) int {
 	intVar, err := strconv.Atoi(str)
 	if err != nil {
@@ -265,9 +269,9 @@ func IfNull(obj any, defaultValue interface{}) interface{} {
 
 func IfElse(b bool, obj any, defaultValue any) any {
 	if b {
-		return defaultValue
+		return obj
 	}
-	return obj
+	return defaultValue
 }
 
 func GoroutineId() uint64 {
@@ -281,4 +285,29 @@ func GoroutineId() uint64 {
 
 func GetFunctionName(i interface{}) string {
 	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
+}
+
+func Base64UUID() string {
+
+	b := make([]byte, 16)
+
+	_, err := rand.Read(b)
+
+	// Note that err == nil only if we read len(b) bytes.
+	if err != nil {
+		panic(err)
+	}
+
+	b[6] &= 0x0f /* clear the 4 most significant bits for the version  */
+	b[6] |= 0x40 /* set the version to 0100 / 0x40 */
+
+	/* Set the variant:
+	 * The high field of th clock sequence multiplexed with the variant.
+	 * We set only the MSB of the variant*/
+	b[8] &= 0x3f /* clear the 2 most significant bits */
+	b[8] |= 0x80 /* set the variant (MSB is set)*/
+
+	escaper := strings.NewReplacer("-", "", "_", "")
+	return escaper.Replace(base64.RawURLEncoding.EncodeToString(b))
+
 }

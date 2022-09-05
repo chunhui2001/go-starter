@@ -89,9 +89,9 @@ func (s *Server) DetectedClientPong() {
 		var t time.Duration
 
 		if client.LastPong.IsZero() {
-			t = time.Now().Sub(client.CreatedAt)
+			t = time.Since(client.CreatedAt)
 		} else {
-			t = time.Now().Sub(client.LastPong)
+			t = time.Since(client.LastPong)
 		}
 
 		if t >= d1 {

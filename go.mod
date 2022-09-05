@@ -4,6 +4,8 @@ go 1.18
 
 require (
 	github.com/JGLTechnologies/gin-rate-limit v1.5.1
+	github.com/cenkalti/backoff/v4 v4.1.3
+	github.com/elastic/go-elasticsearch v0.0.0
 	github.com/elastic/go-elasticsearch/v8 v8.4.0
 	github.com/fatih/structs v1.1.0
 	github.com/foolin/goview v0.3.0

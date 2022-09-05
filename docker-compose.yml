@@ -32,9 +32,6 @@ services:
       - ./static:/dist/static:ro
       - ./views:/dist/views:ro
       - ./.env:/dist/.env:ro
-      - ./.env.development:/dist/.env.development:ro
-      - ./.env.production:/dist/.env.production:ro
-      - ./.env.testing:/dist/.env.testing:ro
       - ./Makefile:/dist/Makefile:ro
     restart: always
     networks:

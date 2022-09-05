@@ -1,15 +1,18 @@
 package ges
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/chunhui2001/go-starter/core/utils"
+	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/elastic/go-elasticsearch/v8"
-	"github.com/elastic/go-elasticsearch/v8/esutil"
 	"github.com/sirupsen/logrus"
 )
 
@@ -17,6 +20,7 @@ var (
 	esConf   *ESConf
 	logger   *logrus.Entry
 	esClient *elasticsearch.Client
+	ctx      context.Context
 )
 
 type ESConf struct {
@@ -28,8 +32,19 @@ func Init(conf *ESConf, log *logrus.Entry) {
 
 	logger = log
 	esConf = conf
+	ctx = context.Background()
+
+	retryBackoff := backoff.NewExponentialBackOff()
 
 	cfg := elasticsearch.Config{
+		MaxRetries:    5,
+		RetryOnStatus: []int{502, 503, 504, 429},
+		RetryBackoff: func(i int) time.Duration {
+			if i == 1 {
+				retryBackoff.Reset()
+			}
+			return retryBackoff.NextBackOff()
+		},
 		Transport: &http.Transport{
 			MaxIdleConnsPerHost:   10,
 			ResponseHeaderTimeout: 5 * time.Second,
@@ -83,11 +98,43 @@ func Search() {
 }
 
 func SaveOrUpdate(indexName string, id string, dataMap map[string]interface{}) (bool, error) {
-	res, err := esClient.Index(indexName, esutil.NewJSONReader(&dataMap))
+
+	if dataMap == nil {
+		return false, nil
+	}
+
+	if dataMap["@timestamp"] == nil {
+		dataMap["@timestamp"] = utils.DateTimeUTCString()
+	}
+
+	// Instantiate a request object
+	req := esapi.IndexRequest{
+		Index:      indexName,
+		DocumentID: utils.IfElse(id == "", utils.Base64UUID(), id).(string),
+		Body:       strings.NewReader(utils.ToJsonString(dataMap)),
+		Refresh:    "true",
+	}
+
+	res, err := req.Do(ctx, esClient)
+
 	if err != nil {
 		return false, err
 	}
+
 	defer res.Body.Close()
-	fmt.Println(res)
+
+	// Deserialize the response into a map.
+	var resMap map[string]interface{}
+
+	if err := json.NewDecoder(res.Body).Decode(&resMap); err != nil {
+		return false, err
+	}
+
+	if resMap["error"] != nil {
+		logger.Errorf("Es-SaveOrUpdate-Save-Failed: ErrorMessage=%s", utils.ToJsonString(resMap["error"]))
+		return false, errors.New(resMap["error"].(map[string]interface{})["reason"].(string))
+	}
+
 	return true, nil
+
 }

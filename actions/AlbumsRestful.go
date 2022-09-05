@@ -77,8 +77,11 @@ func ElsCreateOrUpdateRouter(c *gin.Context) {
 		return
 	}
 
-	ges.SaveOrUpdate("go-simple-index", "", utils.MapOf(albumBook))
+	if _, err := ges.SaveOrUpdate("go-simple-index", albumBook.Id, utils.ToMap(albumBook)); err != nil {
+		c.JSON(http.StatusOK, R{Error: err}.Fail(400))
+		return
+	}
 
-	c.JSON(http.StatusOK, R{Data: true}.Msg("Connect Websocket successful").Success())
+	c.JSON(http.StatusOK, R{Data: true}.Success())
 
 }
