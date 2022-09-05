@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/chunhui2001/go-starter/config"
@@ -30,6 +31,11 @@ const (
 // a server type to store all subscriptions
 type Server struct {
 	Subscriptions []Subscription
+	lock          sync.Mutex
+}
+
+func NewServer() *Server {
+	return &Server{}
 }
 
 // each subscription consists of topic-name & client
@@ -89,7 +95,7 @@ func (s *Server) DetectedClientPong() {
 		}
 
 		if t >= d1 {
-			s.Send(&client, NewMessage("sys", "connection_closed", fmt.Sprintf(`Your connection has been closed, Bye.`)).Bytes())
+			s.Send(&client, NewMessage("sys", "connection_closed", `Your connection has been closed, Bye.`).Bytes())
 			s.RemoveClient(client)
 		} else if t >= d2 {
 			s.Send(&client, NewMessage("sys", "connection_alert", fmt.Sprintf(`Your connection will be closed, Please send Pong in '%s'`, d1-t)).Bytes())
@@ -133,6 +139,8 @@ func (s *Server) NewClient(client *Client) {
 }
 
 func (s *Server) Send(client *Client, messageBytes []byte) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
 	client.Connection.WriteMessage(1, messageBytes)
 }
 

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/chunhui2001/go-starter/actions"
 	. "github.com/chunhui2001/go-starter/commons"
 	"github.com/chunhui2001/go-starter/config"
 	"github.com/chunhui2001/go-starter/controller"
@@ -85,23 +86,71 @@ var defaultServer = &Server{
 }
 
 var (
-	APP_Setting   *config.AppConf            = config.AppSetting
+	APP_SETTINGS  *config.AppConf            = config.AppSetting
 	APP_PORT      string                     = config.AppSetting.AppPort
 	WSS_Conf      *config.Wss                = config.WssSetting
 	APP_COOKIE    *config.Cookie             = config.CookieSetting
 	WEB_PAGE_CONF *config.WebPageConf        = config.WebPageSettings
 	store         *persistence.InMemoryStore = persistence.NewInMemoryStore(time.Second)
-	Redis_Setting *gredis.GRedis             = config.RedisConf
+	Redis_Conf    *gredis.GRedis             = config.RedisConf
 	logger                                   = config.Log
 )
 
-func Setup(starterServer *Server) *gin.Engine {
+func Bootstrap(starterServer *Server) *gin.Engine {
+
+	// simples
+	if APP_SETTINGS.DemoEnable {
+
+		// commons simples
+		AppendRouter("GET", []string{"/httpclient-simple"}, actions.HttpClientSimpleRouter)
+		AppendRouter("GET", []string{"/labs-bigint"}, actions.BigRouter)
+		AppendRouter("GET", []string{"/labs-ytld"}, actions.YtIdRouter)
+		AppendRouter("GET", []string{"/labs-pem"}, actions.PemRouter)
+		AppendRouter("GET", []string{"/labs-leftpad"}, actions.PadLeftRouter)
+		AppendRouter("POST", []string{"/labs-redis-pub"}, actions.RedisPubRouter)
+		AppendRouter("POST", []string{"/labs-upload-file"}, actions.UploadFileRouterOne)
+		AppendRouter("GET", []string{"/labs-update-struct-pointer"}, actions.UpdateStructPointer)
+
+		// redis simples
+		AppendRouter("GET", []string{"/labs-redis-get"}, actions.RedisGetRouter)
+		AppendRouter("GET", []string{"/labs-redis-set"}, actions.RedisSetRouter)
+		AppendRouter("GET", []string{"/labs-redis-lpush"}, actions.RedisLpushRouter)
+		AppendRouter("GET", []string{"/labs-redis-del"}, actions.RedisDelRouter)
+		AppendRouter("GET", []string{"/labs-redis-hset"}, actions.RedisHsetRouter)
+		AppendRouter("GET", []string{"/labs-redis-hsetnx"}, actions.RedisDelRouter)
+
+		// validator data binding simples
+		AppendRouter("POST", []string{"/demo/album-create"}, actions.AlbumCreateRouter)
+		AppendRouter("GET", []string{"/demo/album-get"}, actions.AlbumGetRouter)
+		AppendRouter("POST", []string{"/demo/binding-body"}, actions.BodyBindHandler)
+
+		// elastic search simples
+		AppendRouter("POST", []string{"/demo/els-create-or-Update"}, actions.ElsCreateOrUpdateRouter)
+
+		// other simples
+		AppendRouter("POST", []string{"/websocket-client-simple"}, actions.WsClientSimple)
+
+	}
+
+	if Redis_Conf.Mode != gredis.Disabled {
+		for _, channel := range strings.Split(Redis_Conf.SubChannels, ",") {
+			gredis.Sub(channel, func(channel string, payload string) {
+				config.Log.Info("收到了消息1: channel=" + channel + ", payload=" + payload)
+			})
+		}
+	}
 
 	if starterServer != nil {
 		copier.CopyWithOption(&defaultServer, &starterServer, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 	}
 
-	if APP_Setting.Env == "development" {
+	return Setup()
+
+}
+
+func Setup() *gin.Engine {
+
+	if APP_SETTINGS.Env == "development" {
 		gin.SetMode(gin.DebugMode)
 	} else {
 		gin.SetMode(gin.ReleaseMode)
@@ -139,7 +188,7 @@ func Setup(starterServer *Server) *gin.Engine {
 		Limit: 5,
 	})
 
-	if !Redis_Setting.Disabled() {
+	if !Redis_Conf.Disabled() {
 		rateLimitStore = ratelimit.RedisStore(&ratelimit.RedisOptions{
 			RedisClient: gredis.Client(),
 			Rate:        time.Second,

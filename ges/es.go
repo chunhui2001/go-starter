@@ -3,12 +3,14 @@ package ges
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/chunhui2001/go-starter/utils"
-	"github.com/elastic/go-elasticsearch/v8"
-	"github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/chunhui2001/go-starter/utils"
+	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/elastic/go-elasticsearch/v8/esutil"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -74,4 +76,18 @@ func Ping(es *elasticsearch.Client) *elasticsearch.Client {
 
 	return es
 
+}
+
+func Search() {
+
+}
+
+func SaveOrUpdate(indexName string, id string, dataMap map[string]interface{}) (bool, error) {
+	res, err := esClient.Index(indexName, esutil.NewJSONReader(&dataMap))
+	if err != nil {
+		return false, err
+	}
+	defer res.Body.Close()
+	fmt.Println(res)
+	return true, nil
 }

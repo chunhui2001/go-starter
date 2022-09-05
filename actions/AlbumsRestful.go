@@ -4,16 +4,13 @@ import (
 	"net/http"
 
 	. "github.com/chunhui2001/go-starter/commons"
-	_ "github.com/chunhui2001/go-starter/config"
+	"github.com/chunhui2001/go-starter/ges"
 	"github.com/chunhui2001/go-starter/gmongo"
+	"github.com/chunhui2001/go-starter/utils"
 	"github.com/fatih/structs"
 	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/gin-gonic/gin"
-)
-
-var (
-// logger = config.Log
 )
 
 type AlbumBook struct {
@@ -68,5 +65,20 @@ func BodyBindHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusAccepted, R{Data: &body}.Success())
+
+}
+
+func ElsCreateOrUpdateRouter(c *gin.Context) {
+
+	var albumBook = &AlbumBook{}
+
+	if err := c.ShouldBindJSON(&albumBook); err != nil {
+		c.JSON(200, R{Error: err}.Fail(400))
+		return
+	}
+
+	ges.SaveOrUpdate("go-simple-index", "", utils.MapOf(albumBook))
+
+	c.JSON(http.StatusOK, R{Data: true}.Msg("Connect Websocket successful").Success())
 
 }

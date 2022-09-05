@@ -1,11 +1,12 @@
 package gwss
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	"net/http"
-	"time"
 
 	"github.com/chunhui2001/go-starter/config"
 	"github.com/chunhui2001/go-starter/gtask"
@@ -26,7 +27,7 @@ var upgrader = websocket.Upgrader{
 }
 
 var (
-	server = &model.Server{}
+	server = model.NewServer()
 )
 
 func init() {
