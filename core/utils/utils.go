@@ -173,16 +173,19 @@ func StrToInt(str string) int {
 }
 
 func ToString(s any) string {
-	if reflect.TypeOf(s).String() == "string" {
+
+	switch s.(type) {
+	case float64, float32:
+		return fmt.Sprintf("%f", s)
+	case string:
 		return fmt.Sprintf("%s", s)
-	}
-	if reflect.TypeOf(s).String() == "bool" {
+	case bool:
 		return fmt.Sprintf("%t", s)
-	}
-	if reflect.TypeOf(s).String() == "[]uint8" {
+	case []uint8:
 		return fmt.Sprintf("%s", string(s.([]byte)))
+	default:
+		return fmt.Sprintf("%d", s)
 	}
-	return fmt.Sprintf("%d", s)
 }
 
 func ErrorToString(err interface{}) string {

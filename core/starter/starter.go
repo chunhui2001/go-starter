@@ -126,6 +126,8 @@ func Bootstrap(starterServer *Server) *gin.Engine {
 
 		// elastic search simples
 		AppendRouter("POST", []string{"/demo/els-create-or-Update"}, actions.ElsCreateOrUpdateRouter)
+		AppendRouter("GET", []string{"/demo/els-cat-Indices"}, actions.ElsCatIndicesRouter)
+		AppendRouter("POST", []string{"/demo/els-searcher"}, actions.ElsSearcherRouter)
 
 		// other simples
 		AppendRouter("POST", []string{"/websocket-client-simple"}, actions.WsClientSimple)

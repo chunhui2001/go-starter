@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"io/ioutil"
 	"net/http"
 
 	. "github.com/chunhui2001/go-starter/core/commons"
@@ -65,6 +66,35 @@ func BodyBindHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusAccepted, R{Data: &body}.Success())
+
+}
+
+func ElsCatIndicesRouter(c *gin.Context) {
+
+	indices, err := ges.CatIndices()
+
+	if err != nil {
+		c.JSON(http.StatusOK, R{Error: err}.Fail(400))
+		return
+	}
+
+	c.JSON(http.StatusOK, R{Data: indices}.Success())
+
+}
+
+func ElsSearcherRouter(c *gin.Context) {
+
+	indexName := c.Query("indexName")
+	payload, _ := ioutil.ReadAll(c.Request.Body)
+
+	reaults, total, err := ges.Search(indexName, string(payload))
+
+	if err != nil {
+		c.JSON(http.StatusOK, R{Error: err}.Fail(400))
+		return
+	}
+
+	c.JSON(http.StatusOK, R{Data: reaults}.Msg("Total-Count: "+utils.ToString(total)).Success())
 
 }
 

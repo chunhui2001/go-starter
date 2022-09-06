@@ -16,11 +16,16 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// ## Elasticsearch Knowledge Base
+// # How To Insert Elasticsearch Documents Into An Index Using Golang
+// https://kb.objectrocket.com/elasticsearch/how-to-insert-elasticsearch-documents-into-an-index-using-golang-451
+// # How To Construct Elasticsearch Queries From A String Using Golang
+// https://kb.objectrocket.com/elasticsearch/how-to-construct-elasticsearch-queries-from-a-string-using-golang-550
+
 var (
 	esConf   *ESConf
 	logger   *logrus.Entry
 	esClient *elasticsearch.Client
-	ctx      context.Context
 )
 
 type ESConf struct {
@@ -32,7 +37,6 @@ func Init(conf *ESConf, log *logrus.Entry) {
 
 	logger = log
 	esConf = conf
-	ctx = context.Background()
 
 	retryBackoff := backoff.NewExponentialBackOff()
 
@@ -93,10 +97,34 @@ func Ping(es *elasticsearch.Client) *elasticsearch.Client {
 
 }
 
-func Search() {
+// 查询所有索引
+func CatIndices() ([]map[string]interface{}, error) {
+
+	res, err := esapi.CatIndicesRequest{Format: "json"}.Do(context.Background(), esClient)
+
+	if err != nil {
+		logger.Errorf("Es-CatIndices-Error-1: ErrorMessage=%s", err.Error())
+		return nil, err
+	}
+
+	defer res.Body.Close()
+	var resMap []map[string]interface{}
+
+	if err := json.NewDecoder(res.Body).Decode(&resMap); err != nil {
+		logger.Errorf("Es-CatIndices-Error-2: ErrorMessage=%s", err.Error())
+		return nil, err
+	}
+
+	return resMap, nil
 
 }
 
+// 新增
+func Save(indexName string, dataMap map[string]interface{}) (string, error) {
+	return SaveOrUpdate(indexName, "", dataMap)
+}
+
+// 新增或更新
 func SaveOrUpdate(indexName string, id string, dataMap map[string]interface{}) (string, error) {
 
 	if dataMap == nil {
@@ -114,16 +142,15 @@ func SaveOrUpdate(indexName string, id string, dataMap map[string]interface{}) (
 	}
 
 	// Instantiate a request object
-	req := esapi.IndexRequest{
+	res, err := esapi.IndexRequest{
 		Index:      indexName,
 		DocumentID: _id,
 		Body:       strings.NewReader(utils.ToJsonString(dataMap)),
 		Refresh:    "true",
-	}
-
-	res, err := req.Do(ctx, esClient)
+	}.Do(context.Background(), esClient)
 
 	if err != nil {
+		logger.Errorf("Es-SaveOrUpdate-Error-1: ErrorMessage=%s", err.Error())
 		return "", err
 	}
 
@@ -133,14 +160,115 @@ func SaveOrUpdate(indexName string, id string, dataMap map[string]interface{}) (
 	var resMap map[string]interface{}
 
 	if err := json.NewDecoder(res.Body).Decode(&resMap); err != nil {
+		logger.Errorf("Es-SaveOrUpdate-Error-1: ErrorMessage=%s", err.Error())
 		return "", err
 	}
 
 	if resMap["error"] != nil {
-		logger.Errorf("Es-SaveOrUpdate-Save-Failed: ErrorMessage=%s", utils.ToJsonString(resMap["error"]))
+		logger.Errorf("Es-SaveOrUpdate-Failed: ErrorMessage=%s", utils.ToJsonString(resMap["error"]))
 		return "", errors.New(resMap["error"].(map[string]interface{})["reason"].(string))
 	}
 
 	return _id, nil
+
+}
+
+func Search(indexName string, queryJsonString string) ([]map[string]interface{}, int64, error) {
+
+	// Check for JSON errors
+	isValid := json.Valid([]byte(queryJsonString)) // returns bool
+
+	// Default query is "{}" if JSON is invalid
+	if !isValid {
+		logger.Errorf("Es-Search-Failed: ErrorMessage=%s, queryJsonString=%s", "Not a valid json query string", queryJsonString)
+		return nil, 0, errors.New("Not a valid json query string")
+	}
+
+	// Pass the JSON query to the Golang client's Search() method
+	res, err := esClient.Search(
+		esClient.Search.WithContext(context.Background()),
+		esClient.Search.WithIndex(indexName),
+		esClient.Search.WithBody(strings.NewReader(queryJsonString)),
+		esClient.Search.WithTrackTotalHits(true),
+	)
+
+	if err != nil {
+		logger.Errorf("Es-Search-Error-1: queryJsonString=%s, ErrorMessage=%s", queryJsonString, err.Error())
+		return nil, 0, err
+	}
+
+	defer res.Body.Close()
+
+	// Deserialize the response into a map.
+	var resMap map[string]interface{}
+
+	if err := json.NewDecoder(res.Body).Decode(&resMap); err != nil {
+		logger.Errorf("Es-Search-Error-2: ErrorMessage=%s", err.Error())
+		return nil, 0, err
+	}
+
+	if resMap["error"] != nil {
+		if resMap["error"].(map[string]interface{})["type"].(string) == "index_not_found_exception" {
+			return nil, 0, nil
+		}
+		logger.Errorf("Es-Search-Error-3: ErrorMessage=%s", utils.ToJsonString(resMap["error"]))
+		return nil, 0, errors.New(resMap["error"].(map[string]interface{})["reason"].(string))
+	}
+
+	if resMap["hits"] == nil {
+		return nil, 0, nil
+	}
+
+	hitsMap := resMap["hits"].(map[string]interface{})
+
+	if hitsMap["hits"] == nil {
+		return nil, 0, nil
+	}
+
+	var dataMap []interface{} = hitsMap["hits"].([]interface{})
+	total := hitsMap["total"].(map[string]interface{})["value"].(float64)
+
+	var interfaceSlice []map[string]interface{}
+
+	if total > 0 {
+		for _, item := range dataMap {
+
+			_map := item.(map[string]interface{})
+			id := _map["_id"].(string)
+			object := _map["_source"].(map[string]interface{})
+			logger.Infof(`Id=%s, len=%d`, id, len(object))
+			object["id"] = id
+
+			interfaceSlice = append(interfaceSlice, object)
+		}
+	}
+
+	return interfaceSlice, int64(total), nil
+
+}
+
+func ConstructQuery(q string, size int) *strings.Reader {
+
+	var queryJsonString = fmt.Sprintf(`{"query": { %s }, "size": %d}`, q, size)
+
+	// Check for JSON errors
+	isValid := json.Valid([]byte(queryJsonString)) // returns bool
+
+	// Default query is "{}" if JSON is invalid
+	if !isValid {
+		fmt.Println("constructQuery() ERROR: query string not valid:", queryJsonString)
+		fmt.Println("Using default match_all query")
+		queryJsonString = "{}"
+	}
+
+	// Build a new string from JSON query
+	var b strings.Builder
+	b.WriteString(queryJsonString)
+
+	// Instantiate a *strings.Reader object from string
+	read := strings.NewReader(b.String())
+
+	// Return a *strings.Reader object
+	return read
 
 }
