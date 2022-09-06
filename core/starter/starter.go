@@ -257,7 +257,7 @@ func Setup() *gin.Engine {
 		}
 	})
 
-	logger.Info("Listening and serving HTTP on " + APP_PORT)
+	logger.Info("Your server startup successful, Listening and serving HTTP on " + APP_PORT)
 
 	if WSS_Conf.Enable {
 		logger.Info("Startup a websocket server running on " + config.WssSetting.Wss())
