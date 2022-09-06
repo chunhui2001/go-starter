@@ -310,7 +310,6 @@ func Base64UUID() string {
 	b[8] &= 0x3f /* clear the 2 most significant bits */
 	b[8] |= 0x80 /* set the variant (MSB is set)*/
 
-	escaper := strings.NewReplacer("-", "", "_", "")
-	return escaper.Replace(base64.RawURLEncoding.EncodeToString(b))
+	return base64.RawURLEncoding.EncodeToString(b)
 
 }

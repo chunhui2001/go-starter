@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/chunhui2001/go-starter/core/built"
 	"github.com/chunhui2001/go-starter/core/ges"
 	"github.com/chunhui2001/go-starter/core/ghttp"
 	"github.com/chunhui2001/go-starter/core/gmongo"
@@ -176,6 +177,15 @@ var filename string = ".env"
 // LoadEnvVars will load a ".env[.development|.test]" file if it exists and set ENV vars.
 // Useful in development and test modes. Not used in production.
 func init() {
+
+	cmdArgs := os.Args
+
+	if len(cmdArgs) > 1 {
+		if cmdArgs[1] == "version" {
+			fmt.Println(built.INFO.Info())
+			os.Exit(0)
+		}
+	}
 
 	os.Setenv("TZ", AppSetting.TimeZone)
 

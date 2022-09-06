@@ -1,19 +1,13 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-
 	"github.com/chunhui2001/go-starter/controller"
 	. "github.com/chunhui2001/go-starter/core/commons"
 	"github.com/chunhui2001/go-starter/core/config"
 	"github.com/chunhui2001/go-starter/core/starter"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
-
-// go version devel +475d92ba4d Thu Oct 5 10:50:18 2017 +0000 darwin/amd64
-var Author string
-var Commit string
 
 var (
 	starterServer *starter.Server
@@ -21,9 +15,6 @@ var (
 )
 
 func init() {
-
-	fmt.Printf("Author: %s\n", Author)
-	fmt.Printf("Commit: %s\n", Commit)
 
 	starterServer = &starter.Server{
 		HandlerInfo: func(c *gin.Context) {
