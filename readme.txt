@@ -67,6 +67,9 @@ https://github.com/gfremex/logrus-kafka-hook
 ### Gin binding in Go: A tutorial with examples
 https://blog.logrocket.com/gin-binding-in-go-a-tutorial-with-examples/
 
+### Embedding Git Commit Information in Go Binaries
+https://icinga.com/blog/2022/05/25/embedding-git-commit-information-in-go-binaries/
+
 
 
 -----------------------------------------------------------------

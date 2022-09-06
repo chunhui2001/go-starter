@@ -8,6 +8,7 @@ c 		?=10000
 zone 	?=UTC
 WSS_HOST	?=ws://127.0.0.1:8080
 APP_PORT 	?=8080
+GIT_HASH 	?= $(shell git rev-parse HEAD)
 
 ### 整理模块
 # 确保go.mod与模块中的源代码一致。
@@ -58,9 +59,9 @@ rm:
 
 ### 构建跨平台的可执行程序
 Built:
-	env GOOS=windows GOARCH=amd64 go build -ldflags "-X main.Author=chunhui.2001" -o ./dist/go-starter-native-windows-amd64 ./main.go
-	env GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.Author=chunhui.2001" -o ./dist/go-starter-native-darwin-amd64 ./main.go
-	env GOOS=linux GOARCH=amd64 go build -ldflags "-X main.Author=chunhui.2001" -o ./dist/go-starter-native-linux-amd64 ./main.go
+	#env GOOS=windows GOARCH=amd64 go build -ldflags "-X main.Author=chunhui.2001 -X main.Commit=$(git rev-parse HEAD)" -o ./dist/go-starter-native-windows-amd64 ./main.go
+	env GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.Author=chunhui.2001 -X main.Commit=$(GIT_HASH)" -o ./dist/go-starter-native-darwin-amd64 ./main.go
+	#env GOOS=linux GOARCH=amd64 go build -ldflags "-X main.Author=chunhui.2001 -X main.Commit=$(git rev-parse HEAD)" -o ./dist/go-starter-native-linux-amd64 ./main.go
 
 ### 删除所有缓存的依赖包
 # clear modcache

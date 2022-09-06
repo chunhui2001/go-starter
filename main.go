@@ -13,6 +13,7 @@ import (
 
 // go version devel +475d92ba4d Thu Oct 5 10:50:18 2017 +0000 darwin/amd64
 var Author string
+var Commit string
 
 var (
 	starterServer *starter.Server
@@ -21,7 +22,8 @@ var (
 
 func init() {
 
-	fmt.Printf("MainVar: %s\n", Author)
+	fmt.Printf("Author: %s\n", Author)
+	fmt.Printf("Commit: %s\n", Commit)
 
 	starterServer = &starter.Server{
 		HandlerInfo: func(c *gin.Context) {
