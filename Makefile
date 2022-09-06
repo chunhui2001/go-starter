@@ -58,9 +58,9 @@ rm:
 
 ### 构建跨平台的可执行程序
 Built:
-	env GOOS=windows GOARCH=amd64 go build -o ./app-windows-amd64 ./main.go
-	env GOOS=darwin GOARCH=amd64 go build -o ./app-darwin-amd64 ./main.go
-	env GOOS=linux GOARCH=amd64 go build -o ./app-linux-amd64 ./main.go
+	env GOOS=windows GOARCH=amd64 go build -o ./dist/go-starter-native-windows-amd64 ./main.go
+	env GOOS=darwin GOARCH=amd64 go build -o ./dist/go-starter-native-darwin-amd64 ./main.go
+	env GOOS=linux GOARCH=amd64 go build -o ./dist/go-starter-native-linux-amd64 ./main.go
 
 ### 删除所有缓存的依赖包
 # clear modcache
@@ -68,7 +68,7 @@ clear:
 	go clean --modcache
 	rm -rf `go env GOPATH`/bin/go-starter
 	rm -rf `go env GOPATH`/bin/*
-	rm -rf app app-*-* gin-bin
+	rm -rf dist gin-bin
 
 ### 显示已安装的可执行程序
 # show install utils
