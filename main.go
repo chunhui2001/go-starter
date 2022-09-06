@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/chunhui2001/go-starter/controller"
@@ -10,12 +11,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// go version devel +475d92ba4d Thu Oct 5 10:50:18 2017 +0000 darwin/amd64
+var Author string
+
 var (
 	starterServer *starter.Server
 	WEB_PAGE_CONF *config.WebPageConf = config.WebPageSettings
 )
 
 func init() {
+
+	fmt.Printf("MainVar: %s\n", Author)
 
 	starterServer = &starter.Server{
 		HandlerInfo: func(c *gin.Context) {

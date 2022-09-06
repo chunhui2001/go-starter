@@ -185,9 +185,6 @@ func init() {
 	var env string = os.Getenv("GIN_ENV")
 	var envfile = ".env/.env." + env
 
-	var WEB_PAGE_Enable string = os.Getenv("WEB_PAGE_Enable")
-	log.Println(WEB_PAGE_Enable)
-
 	if exists, _ := utils.FileExists(filepath.Join(utils.RootDir(), envfile)); exists == true {
 		filename = envfile
 	} else {
