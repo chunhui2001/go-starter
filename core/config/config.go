@@ -49,6 +49,8 @@ type AppConf struct {
 	AppPort    string `mapstructure:"APP_PORT"`
 	TimeZone   string `mapstructure:"APP_TIMEZONE"`
 	DemoEnable bool   `mapstructure:"ENABLE_DEMO"`
+	AppVersion string `mapstructure:"APP_VERSION"`
+	OS         string `mapstructure:"APP_OS"`
 }
 
 type Wss struct {
@@ -341,14 +343,21 @@ func InitLog() {
 }
 
 func loadAppSettings(v1 *viper.Viper, filename string) {
+
 	err := v1.Unmarshal(&AppSetting)
+
 	if err != nil {
-		log.Println("viper parse AppSettings error: configFile=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		AppSetting.AppVersion = built.INFO.Commit
+		AppSetting.OS = built.INFO.OS
+		log.Println("viper parse AppSettings error: Version=" + AppSetting.AppVersion + ", OS=" + AppSetting.OS + ", configFile=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
 		os.Exit(3)
 		return
 	} else {
-		log.Println("AppSetting: TimeZone=" + AppSetting.TimeZone + ", GIN_ENV=" + AppSetting.Env + ", AppName=" + AppSetting.AppName + ", AppPort=" + AppSetting.AppPort + ", appRoot=" + utils.RootDir())
+		AppSetting.AppVersion = built.INFO.Commit
+		AppSetting.OS = built.INFO.OS
+		log.Println("AppSetting: Version=" + AppSetting.AppVersion + ", OS=" + AppSetting.OS + ", TimeZone=" + AppSetting.TimeZone + ", GIN_ENV=" + AppSetting.Env + ", AppName=" + AppSetting.AppName + ", AppPort=" + AppSetting.AppPort + ", appRoot=" + utils.RootDir())
 	}
+
 }
 
 func loadLoggerSettings(v1 *viper.Viper, filename string) {
@@ -486,22 +495,31 @@ func loadCookieSettings(v1 *viper.Viper, filename string) {
 }
 
 func readConfig(filename string, defaults map[string]interface{}) *viper.Viper {
+
+	log.Println(built.INFO.Info())
+
 	v := viper.New()
+
 	for key, value := range defaults {
 		v.SetDefault(key, value)
 	}
+
 	v.AddConfigPath(utils.RootDir())
 	v.SetConfigName(filename)
 	v.SetConfigType("env")
 	v.AutomaticEnv() // 将读取当前目录下的 .env 配置文件或"环境变量", .env 优先级最高
+
 	err := v.ReadInConfig()
+
 	if err != nil {
 		log.Println("viper loaded error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
 		os.Exit(3)
 		return nil
 	}
+
 	log.Println("viper Configuration loaded " + filepath.Join(utils.RootDir(), filename) + " successful.")
 	return v
+
 }
 
 // GetEnv returns an environment variable or a default value if not present

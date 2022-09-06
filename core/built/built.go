@@ -23,7 +23,7 @@ var INFO = &BuildInfo{
 }
 
 func (b *BuildInfo) Info() string {
-	return fmt.Sprintf("%s version devel %s %s [%s]", b.Name, b.Commit, b.OS, b.Time)
+	return fmt.Sprintf("%s version devel +%s %s [%s]", b.Name, b.Commit, b.OS, b.Time)
 }
 
 var layout = "Mon Jan 2 15:04:05 -0700 MST 2006"
@@ -44,7 +44,7 @@ func init() {
 		if strings.Trim(pair[0], " ") == "main.Author" {
 			INFO.Author = strings.Trim(pair[1], " ")
 		} else if strings.Trim(pair[0], " ") == "main.Commit" {
-			INFO.Commit = "+" + strings.Trim(pair[1], " ")[0:10]
+			INFO.Commit = strings.Trim(pair[1], " ")[0:10]
 		} else if strings.Trim(pair[0], " ") == "main.Name" {
 			INFO.Name = strings.Trim(pair[1], " ")
 		} else if strings.Trim(pair[0], " ") == "main.Time" {
