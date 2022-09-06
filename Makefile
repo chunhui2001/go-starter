@@ -8,9 +8,9 @@ c 		?=10000
 zone 	?=UTC
 WSS_HOST	?=ws://127.0.0.1:8080
 APP_PORT 	?=8080
-GIT_HASH 	?= $(shell git rev-parse HEAD)
-COMMITER 	?= $(shell git show $(git rev-parse HEAD) | grep Author| cut -d ' ' -f3- | sed 's/[\<\>]*//g')
-TIME 		?= $(shell date +%s)
+GIT_HASH 	?=$(shell git rev-parse HEAD)
+COMMITER 	?=$(shell git log --format="%H" -n 1 | grep Author| cut -d ' ' -f3- | sed 's/[\<\>]*//g')
+TIME 		?=$(shell date +%s)
 
 ### 整理模块
 # 确保go.mod与模块中的源代码一致。
