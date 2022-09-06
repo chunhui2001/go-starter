@@ -122,8 +122,8 @@ func ShortId() string {
 
 func ToJsonString(v interface{}) string {
 
-	if v.(type).String() == "string" {
-		return string(v)
+	if reflect.TypeOf(v).String() == "string" {
+		return v.(string)
 	}
 
 	b, err := json.Marshal(v)

@@ -72,7 +72,7 @@ func InitDSL() {
 			}
 
 			if len(YamlMapBlocks) == 0 {
-				logger.Warnf("Els-InitDSL-Folder-Empty: DslFolder=%s/*.yml", dslFolder)
+				logger.Warnf("Els-InitDSL-Folder-Empty: DslFolder=%s/*.yaml", dslFolder)
 			}
 
 		}
