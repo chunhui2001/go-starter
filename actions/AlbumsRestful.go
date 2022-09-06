@@ -98,6 +98,34 @@ func ElsSearcherRouter(c *gin.Context) {
 
 }
 
+func ElsSearcherAdvanceRouter(c *gin.Context) {
+
+	indexName := c.Query("indexName")
+	payload, _ := ioutil.ReadAll(c.Request.Body)
+
+	reaults, total, err := ges.Search(indexName, string(payload))
+
+	if err != nil {
+		c.JSON(http.StatusOK, R{Error: err}.Fail(400))
+		return
+	}
+
+	c.JSON(http.StatusOK, R{Data: reaults}.Msg("Total-Count: "+utils.ToString(total)).Success())
+
+}
+
+func ElsDslTemplateRouter(c *gin.Context) {
+
+	tplfile := c.Query("tplfile")
+	tplname := c.Query("tplname")
+
+	payload, _ := ioutil.ReadAll(c.Request.Body)
+
+	dslJsonString, _ := ges.DSLQuery(tplfile, tplname, utils.AsMap(payload))
+	c.JSON(http.StatusOK, R{Data: dslJsonString}.Success())
+
+}
+
 func ElsCreateOrUpdateRouter(c *gin.Context) {
 
 	var albumBook = &AlbumBook{}

@@ -1,0 +1,6 @@
+a: >
+  Easy! {{.name}}\n
+  Easy! {{.name}}
+b: >
+  c: 2
+  d: [3, 4]
