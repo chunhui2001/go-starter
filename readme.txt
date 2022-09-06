@@ -70,7 +70,8 @@ https://blog.logrocket.com/gin-binding-in-go-a-tutorial-with-examples/
 ### Embedding Git Commit Information in Go Binaries
 https://icinga.com/blog/2022/05/25/embedding-git-commit-information-in-go-binaries/
 
-
+### https://github.com/golang-standards/project-layout
+https://github.com/golang-standards/project-layout
 
 -----------------------------------------------------------------
 GOOS - Target Operating System		GOARCH - Target Platform

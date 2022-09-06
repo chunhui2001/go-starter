@@ -10,6 +10,7 @@ import (
 	"github.com/chunhui2001/go-starter/core/utils"
 	"github.com/go-errors/errors"
 	"github.com/go-redis/redis/v8"
+	"github.com/gobuffalo/events"
 	"github.com/sirupsen/logrus"
 )
 
@@ -86,11 +87,25 @@ func Init(redisConf *GRedis, log *logrus.Entry) {
 	conf = redisConf
 	logger = log
 
+	events.Listen(func(e events.Event) {
+		logger.Infof("### e2 -> %s", e)
+	})
+
+	events.NamedListen("my-listener", func(e events.Event) {
+		logger.Infof("### e1 -> %s", e)
+	})
+
 	if conf.Mode == Disabled {
 		return
 	}
 
 	ctx = context.Background()
+
+	events.Emit(events.Event{
+		Kind:    "gredis:Init:start",
+		Message: "hi!",
+		Payload: events.Payload{"context": ctx},
+	})
 
 	// Connect to Redis
 	if conf.Mode == Standalone {
