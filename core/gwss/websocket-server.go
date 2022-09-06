@@ -27,19 +27,22 @@ var upgrader = websocket.Upgrader{
 }
 
 var (
-	server = model.NewServer()
+	WSS_Conf *config.Wss = config.WssSetting
+	server               = model.NewServer()
 )
 
 func init() {
 
-	gtask.AddTask("WebSocket定时任务每秒1次(Ping-and-Pong)", "* * * * * *", func() {
-		server.ServerPing()
-		server.DetectedClientPong()
-	})
+	if WSS_Conf.Enable {
+		gtask.AddTask("WebSocket定时任务每秒1次(Ping-and-Pong)", "* * * * * *", func() {
+			server.ServerPing()
+			server.DetectedClientPong()
+		})
 
-	gtask.AddTask("WebSocket定时任务每秒15次(打印当前连接数)", "0/15 * * * * *", func() {
-		config.Log.Infof(`当前WebSocket维护的所有连接数: count=%d`, len(server.AllClients()))
-	})
+		gtask.AddTask("WebSocket定时任务每秒15次(打印当前连接数)", "0/15 * * * * *", func() {
+			config.Log.Infof(`当前WebSocket维护的所有连接数: count=%d`, len(server.AllClients()))
+		})
+	}
 
 }
 
