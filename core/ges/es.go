@@ -59,7 +59,7 @@ func Init(conf *ESConf, log *logrus.Entry) {
 	es, err := elasticsearch.NewClient(cfg)
 
 	if err != nil {
-		logger.Error(fmt.Sprintf("ElasticSearch-Client-Connect-Failed: %s, errorMessage=%s", esConf.Servers, utils.ErrorToString(err)))
+		logger.Error(fmt.Sprintf("ElasticSearch-Client-Connect-Failed: server=%s, errorMessage=%s", esConf.Servers, utils.ErrorToString(err)))
 		return
 	}
 
@@ -72,7 +72,8 @@ func Ping(es *elasticsearch.Client) *elasticsearch.Client {
 	res, err := es.Info()
 
 	if err != nil {
-		logger.Error("Error getting response: " + utils.ErrorToString(err))
+		logger.Errorf("ElasticSearch-Could-Not-Connected: server=%s, ErrorMessage=%s", esConf.Servers, err.Error())
+		return nil
 	}
 
 	defer res.Body.Close()
