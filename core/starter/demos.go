@@ -39,6 +39,9 @@ func init() {
 		AppendRouter("POST", []string{"/demo/els-searcher-Advance"}, actions.ElsSearcherAdvanceRouter)
 		AppendRouter("POST", []string{"/demo/els-dsl-Templdate"}, actions.ElsDslTemplateRouter)
 
+		// mysql books
+		AppendRouter("GET", []string{"/demo/books-query"}, actions.QueryBooksRouter)
+
 		// other simples
 		AppendRouter("POST", []string{"/websocket-client-simple"}, actions.WsClientSimple)
 

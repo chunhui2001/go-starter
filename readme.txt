@@ -77,6 +77,9 @@ https://github.com/golang-standards/project-layout
 https://github.com/jbowtie/ratago
 https://github.com/wamuir/go-xslt
 
+### sqlx is a library which provides a set of extensions on go's standard database/sql library. 
+https://github.com/jmoiron/sqlx
+
 -----------------------------------------------------------------
 GOOS - Target Operating System		GOARCH - Target Platform
 -----------------------------------------------------------------
