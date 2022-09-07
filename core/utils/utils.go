@@ -14,6 +14,7 @@ import (
 	"reflect"
 	"regexp"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -39,6 +40,10 @@ func FileExists(name string) (bool, error) {
 		return false, nil
 	}
 	return false, err
+}
+
+func ReadFile(filePath string) ([]byte, error) {
+	return os.ReadFile(filePath)
 }
 
 func DateTimeParse(s string) time.Time {
@@ -336,5 +341,23 @@ func HumanFileSize(size float64) string {
 	getSuffix := suffixes[int(math.Floor(base))]
 
 	return strconv.FormatFloat(getSize, 'f', -1, 64) + "" + string(getSuffix)
+
+}
+
+func SortedKeysInt(maps ...map[int]interface{}) (map[int]interface{}, []int) {
+
+	var keys []int
+	resultMap := make(map[int]interface{})
+
+	for _, currMap := range maps {
+		for k, v := range currMap {
+			resultMap[k] = v
+			keys = append(keys, k)
+		}
+	}
+
+	sort.Ints(keys)
+
+	return resultMap, keys
 
 }

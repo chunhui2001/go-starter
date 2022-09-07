@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"html/template"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 
 	"github.com/chunhui2001/go-starter/core/utils"
@@ -44,7 +43,7 @@ func InitDSL() {
 					continue
 				}
 
-				b, err := os.ReadFile(filepath.Join(dslFolder, file.Name())) // just pass the file name
+				b, err := utils.ReadFile(filepath.Join(dslFolder, file.Name())) // just pass the file name
 
 				if err != nil {
 					logger.Errorf("Els-InitDSL-File-Read-Error: Name=%s", file.Name())

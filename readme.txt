@@ -73,6 +73,10 @@ https://icinga.com/blog/2022/05/25/embedding-git-commit-information-in-go-binari
 ### https://github.com/golang-standards/project-layout
 https://github.com/golang-standards/project-layout
 
+### Ratago is a (mostly-compliant) implementation of an XSLT 1.0 processor written in Go and released under an MIT license.
+https://github.com/jbowtie/ratago
+https://github.com/wamuir/go-xslt
+
 -----------------------------------------------------------------
 GOOS - Target Operating System		GOARCH - Target Platform
 -----------------------------------------------------------------

@@ -3,6 +3,9 @@ package gsql
 import (
 	"database/sql"
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/chunhui2001/go-starter/core/utils"
@@ -11,22 +14,26 @@ import (
 )
 
 type MySql struct {
-	Enable bool   `mapstructure:"MYSQL_ENABLE"`
-	Dns    string `mapstructure:"MYSQL_DNS"`
+	Enable       bool   `mapstructure:"MYSQL_ENABLE"`
+	Dns          string `mapstructure:"MYSQL_DNS"`
+	InitScript   string `mapstructure:"MYSQL_INIT_SCRIPT"`
+	UpdateScript string `mapstructure:"MYSQL_UPDATE_SCRIPT"`
 }
 
 var (
-	dbClient *sql.DB
-	logger   *logrus.Entry
+	dbClient  *sql.DB
+	logger    *logrus.Entry
+	mySqlConf *MySql
 )
 
-func Init(mySqlConf *MySql, log *logrus.Entry) {
+func Init(conf *MySql, log *logrus.Entry) {
 
 	logger = log
-	dns := mySqlConf.Dns
-	hostMatch := utils.Matches(dns, `\(([0-9\.a-zA-Z_]+:[0-9]+)?\)/([A-Za-z0-9_]+)`)
+	mySqlConf = conf
+
+	hostMatch := utils.Matches(mySqlConf.Dns, `\(([0-9\.a-zA-Z_]+:[0-9]+)?\)/([A-Za-z0-9_]+)`)
 	hostName := hostMatch[0][1] + "/" + hostMatch[0][2]
-	db, err := sql.Open("mysql", dns)
+	db, err := sql.Open("mysql", mySqlConf.Dns)
 
 	if err != nil {
 		panic(err)
@@ -48,18 +55,129 @@ func Init(mySqlConf *MySql, log *logrus.Entry) {
 
 	logger.Info(fmt.Sprintf("Mysql-Client-Connected-Successful: MySqlServer=%s", hostName))
 
+	// execute the scripts
+	exceScripts()
+
 }
 
-// CreateTable(`create table if not exists book(isbn varchar(14), title varchar(200), price int, primary key(isbn))`)
-func CreateTable(ddl string) {
+func getSortedFiles(file_path string) (map[int]interface{}, []int) {
+
+	files, _ := ioutil.ReadDir(file_path)
+	var fileItemArray = make(map[int]interface{})
+
+	for _, file := range files {
+
+		fileNumberMatch := utils.Matches(file.Name(), `^([0-9]+)_((.)*\.sql)$`)
+
+		if fileNumberMatch != nil {
+			filenumber := fileNumberMatch[0][1]
+			if number, err := strconv.Atoi(filenumber); err == nil {
+				fileItemArray[number] = utils.MapOf(
+					"number", number,
+					"name", file.Name(),
+					"path", filepath.Join(file_path, file.Name()),
+					"scripts", "",
+				)
+			}
+		}
+
+	}
+
+	fileItemArray, keys := utils.SortedKeysInt(fileItemArray)
+
+	return fileItemArray, keys
+
+}
+
+func exceScripts() (bool, error) {
+
+	if mySqlConf.InitScript != "" {
+
+		initScriptFolder := filepath.Join(utils.RootDir(), mySqlConf.InitScript)
+
+		if ok, _ := utils.FileExists(initScriptFolder); !ok {
+			logger.Warnf("MySql-InitScript-Folder-Not-Exists: InitScriptFolder=%s", initScriptFolder)
+		} else {
+
+			fileItemArray, keys := getSortedFiles(initScriptFolder)
+
+			for _, number := range keys {
+
+				item := fileItemArray[number].(map[string]interface{})
+				status := ""
+
+				if fileByte, err := utils.ReadFile(item["path"].(string)); err == nil {
+					if len(fileByte) > 0 {
+						if _, fail := ExecuteDdlScripts(string(fileByte)); fail != nil {
+							status = "Executed-Error(" + fail.Error() + ")"
+						} else {
+							status = "Executed-Completed"
+						}
+					} else {
+						status = "Empty-File"
+					}
+				} else {
+					status = "Read-Error(" + err.Error() + ")"
+				}
+
+				logger.Infof("Mysql-IniterScript-File-Loading: status=%s, path=%s/%s", status, mySqlConf.InitScript, item["name"])
+
+			}
+
+		}
+
+	}
+
+	if mySqlConf.UpdateScript != "" {
+
+		updateScriptFolder := filepath.Join(utils.RootDir(), mySqlConf.UpdateScript)
+
+		if ok, _ := utils.FileExists(updateScriptFolder); !ok {
+			logger.Warnf("MySql-UpdateScript-Folder-Not-Exists: InitScriptFolder=%s", updateScriptFolder)
+		} else {
+
+			fileItemArray, keys := getSortedFiles(updateScriptFolder)
+
+			for _, number := range keys {
+
+				item := fileItemArray[number].(map[string]interface{})
+				status := ""
+
+				if fileByte, err := utils.ReadFile(item["path"].(string)); err == nil {
+					if len(fileByte) > 0 {
+						if _, fail := ExecuteDdlScripts(string(fileByte)); fail != nil {
+							status = "Executed-Error(" + fail.Error() + ")"
+						} else {
+							status = "Executed-Completed"
+						}
+					} else {
+						status = "Empty-File"
+					}
+				} else {
+					status = "Read-Error(" + err.Error() + ")"
+				}
+
+				logger.Infof("Mysql-UpdateScript-File-Loading: status=%s, path=%s/%s", status, mySqlConf.UpdateScript, item["name"])
+
+			}
+
+		}
+
+	}
+
+	return true, nil
+
+}
+
+func ExecuteDdlScripts(ddl string) (bool, error) {
 
 	_, err := dbClient.Exec(ddl)
 
 	if err != nil {
-		logger.Error(fmt.Sprintf("Mysql-Create-Table-Error: ddl=%s, errorMessage=%s", ddl, string(err.Error())))
+		return false, err
 	}
 
-	logger.Info(fmt.Sprintf("Mysql-Create-Table-Successful"))
+	return true, nil
 
 }
 
