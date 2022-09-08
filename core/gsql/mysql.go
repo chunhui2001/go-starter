@@ -161,6 +161,8 @@ func ExecuteDdlScripts(ddl string) (bool, error) {
 		return false, err
 	}
 
+	logger.Infof("Mysql-ExecuteDdlScripts: ddl=%s, IsError=%t", ddl, err != nil)
+
 	return true, nil
 
 }

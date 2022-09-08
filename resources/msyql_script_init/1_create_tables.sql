@@ -8,8 +8,10 @@ create table if not exists `t_books` (
 ) engine=innodb default charset=utf8;
 
 
+-- countries
 create table if not exists t_countries (
   f_country_id varchar (2),
   f_country_name varchar (40),
   f_region_id decimal (10, 0)
 );
+
