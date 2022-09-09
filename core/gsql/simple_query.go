@@ -34,7 +34,7 @@ func SimpleQueryWithContext(selects *SimpleSelect) ([]map[string]interface{}, er
 	if selects.BeginTrx {
 
 		// Get a Tx for making transaction requests.
-		tx, err = dbClient.BeginTx(ctx, nil)
+		tx, err = DbClient.BeginTx(ctx, nil)
 
 		if err != nil {
 			return nil, fail(err)
@@ -46,7 +46,7 @@ func SimpleQueryWithContext(selects *SimpleSelect) ([]map[string]interface{}, er
 		rows, err = tx.QueryContext(ctx, xselect, valus...)
 
 	} else {
-		rows, err = dbClient.QueryContext(ctx, xselect, valus...)
+		rows, err = DbClient.QueryContext(ctx, xselect, valus...)
 	}
 
 	if err != nil {
@@ -119,18 +119,8 @@ func SimpleQueryWithContext(selects *SimpleSelect) ([]map[string]interface{}, er
 
 func SimpleQuery(selects *SimpleSelect) ([]map[string]interface{}, error) {
 
-	// // Get a Tx for making transaction requests.
-	// tx, err := dbClient.BeginTx(ctx, nil)
-
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// // Defer a rollback in case anything fails.
-	// defer tx.Rollback()
-
 	xselect, valus := selects.ToString()
-	rows, err := dbClient.Query(xselect, valus...)
+	rows, err := DbClient.Query(xselect, valus...)
 
 	if err != nil {
 		logger.Infof("Mysql-SimpleQuery-Error: sql=%s, valus=%s, error=%s", xselect, utils.ToJsonString(valus), err.Error())

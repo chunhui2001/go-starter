@@ -1,12 +1,119 @@
 package actions
 
 import (
+	"context"
+	"database/sql"
+	"fmt"
+	"time"
+
 	. "github.com/chunhui2001/go-starter/core/commons"
-	_ "github.com/chunhui2001/go-starter/core/gsql"
+	"github.com/chunhui2001/go-starter/core/gsql"
 	_ "github.com/chunhui2001/go-starter/core/utils"
 
 	"github.com/gin-gonic/gin"
 )
+
+// MySQL发生死锁有哪些原因
+// https://blog.csdn.net/weixin_42113222/article/details/115210334
+// 查询当前数据库运行的所有事务
+// select trx_mysql_thread_id,trx_id,trx_state,trx_started,trx_rows_locked,trx_query,trx_rows_locked,trx_isolation_level from information_schema.innodb_trx;
+// 查询当前数据库运行的所有锁
+// SELECT * FROM information_schema.innodb_locks
+// 锁等待的对应关系，查看等待锁的事务
+// SELECT * FROM information_schema.INNODB_LOCK_WAITS
+
+func MySqlTrxLocks1(c *gin.Context) {
+
+	fail := func(memo string, err error) error {
+		return fmt.Errorf("SimpleQueryWithContextError: memo:%s, %v", memo, err)
+	}
+
+	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*2)
+
+	defer cancelFunc()
+
+	var rows *sql.Rows
+	var err error
+	var tx *sql.Tx
+
+	// Get a Tx for making transaction requests.
+	tx, err = gsql.DbClient.BeginTx(ctx, nil)
+
+	if err != nil {
+		c.JSON(200, R{Error: fail("BeginTxError", err)}.Fail(500))
+		return
+	}
+
+	// Defer a rollback in case anything fails.
+	defer tx.Rollback()
+
+	rows, err = tx.QueryContext(ctx, `select * from t_album where f_id in (10,8,5) for update;`)
+
+	if err != nil {
+		c.JSON(200, R{Error: fail("QueryContextError", err)}.Fail(500))
+		return
+	}
+
+	defer rows.Close()
+
+	cols, err := rows.Columns()
+
+	if err != nil {
+		c.JSON(200, R{Error: fail("RowsColumnsError", err)}.Fail(500))
+		return
+	}
+
+	colTypes, err2 := rows.ColumnTypes()
+
+	if err2 != nil {
+		c.JSON(200, R{Error: fail("ColumnTypesError", err)}.Fail(500))
+		return
+	}
+
+	var result []map[string]interface{}
+
+	for rows.Next() {
+
+		values := make([]interface{}, len(cols))
+
+		for i := range values {
+			currType := colTypes[i].DatabaseTypeName()
+			if currType == "INT" {
+				values[i] = new(int32)
+			} else if currType == "VARCHAR" {
+				values[i] = new(string)
+			} else if currType == "TIMESTAMP" {
+				values[i] = new(string)
+			} else {
+				logger.Errorf("Mysql-Current-Data-Type-Not-Cached: DatabaseTypeName=%s, ColumeName=%s", currType, colTypes[i].Name())
+				values[i] = new(interface{})
+			}
+		}
+
+		// Scan the result into the column pointers...
+		if err := rows.Scan(values...); err != nil {
+			c.JSON(200, R{Error: fail("RowsScanError", err)}.Fail(500))
+			return
+		}
+
+		currentRow := make(map[string]interface{})
+
+		for i, colName := range cols {
+			currentRow[colName] = values[i]
+		}
+
+		result = append(result, currentRow)
+	}
+
+	// // Commit the transaction.
+	// if err = tx.Commit(); err != nil {
+	// 	c.JSON(200, R{Error: fail("CommitError", err)}.Fail(500))
+	// 	return
+	// }
+
+	c.JSON(200, R{Data: result}.Success())
+
+}
 
 // https://blog.csdn.net/qq_45830276/article/details/125246751
 // --------------------------
@@ -49,18 +156,5 @@ import (
 // 事务A和事务B，事务A在操作数据库时，事务B只能排队等待 这种隔离级别很少使用，吞吐量太低，
 // 用户体验差 这种级别可以避免“幻像读”，每一次读取的都是数据库中真实存在数据，事务A与事务B串行，而不并发
 func MySqlTxnsRouter(c *gin.Context) {
-	c.JSON(200, R{Data: true}.Success())
-}
-
-// MySQL发生死锁有哪些原因
-// https://blog.csdn.net/weixin_42113222/article/details/115210334
-// 查询当前数据库运行的所有事务
-// select trx_mysql_thread_id,trx_id,trx_state,trx_started,trx_rows_locked,trx_query,trx_rows_locked,trx_isolation_level from information_schema.innodb_trx;
-// 查询当前数据库运行的所有锁
-// SELECT * FROM information_schema.innodb_locks
-// 锁等待的对应关系，查看等待锁的事务
-// SELECT * FROM information_schema.INNODB_LOCK_WAITS
-
-func MySqlTrxLocks1(c *gin.Context) {
 	c.JSON(200, R{Data: true}.Success())
 }

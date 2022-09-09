@@ -50,7 +50,7 @@ func Init(mongoConf *MongoDBConf, log *logrus.Entry) {
 
 	mongoDatabase = mongoClient.Database(mongoConf.Database)
 
-	logger.Info(fmt.Sprintf("MongoDB successfully connected: Server=%s, Database=%s", mongoConn.GetURI(), mongoConf.Database))
+	logger.Info(fmt.Sprintf("MongoDB-Successfully-Connected: Server=%s, Database=%s", mongoConn.GetURI(), mongoConf.Database))
 
 	// defer mongoClient.Disconnect(ctx)
 

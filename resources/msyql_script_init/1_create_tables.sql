@@ -16,7 +16,6 @@ CREATE TABLE if not exists t_album (
   f_title varchar(200),
   f_author varchar(200),
   f_quantity int(11),
-  f_created_at timestamp(3) not NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
   PRIMARY KEY (`f_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=74 DEFAULT CHARSET=utf8;
 

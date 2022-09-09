@@ -42,8 +42,9 @@ func init() {
 		// mysql books
 		AppendRouter("GET", []string{"/demo/books-query"}, actions.QueryBooksRouter)
 
-		// mysql books
+		// mysql trx
 		AppendRouter("GET", []string{"/demo/mysql-trans"}, actions.MySqlTxnsRouter)
+		AppendRouter("GET", []string{"/demo/mysql-trans-Lock1"}, actions.MySqlTrxLocks1)
 
 		// other simples
 		AppendRouter("POST", []string{"/websocket-client-simple"}, actions.WsClientSimple)

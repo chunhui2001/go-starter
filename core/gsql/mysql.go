@@ -30,7 +30,7 @@ func (c *MySql) connString(passwd string) string {
 }
 
 var (
-	dbClient  *sql.DB
+	DbClient  *sql.DB
 	logger    *logrus.Entry
 	mySqlConf *MySql
 )
@@ -51,9 +51,9 @@ func Init(conf *MySql, log *logrus.Entry) {
 	db.SetMaxOpenConns(10)
 	db.SetMaxIdleConns(10)
 
-	dbClient = db
+	DbClient = db
 
-	if err := dbClient.Ping(); err != nil {
+	if err := DbClient.Ping(); err != nil {
 		logger.Error(fmt.Sprintf("Mysql-Client-Connect-Error: ConnString=%s, errorMessage=%s", conf.connString("****"), string(err.Error())))
 		return
 	}
@@ -72,7 +72,7 @@ func Init(conf *MySql, log *logrus.Entry) {
 
 func Version() (string, error) {
 	var version string
-	err2 := dbClient.QueryRow("SELECT VERSION()").Scan(&version)
+	err2 := DbClient.QueryRow("SELECT VERSION()").Scan(&version)
 	return version, err2
 }
 
@@ -158,7 +158,7 @@ func exceScripts() (bool, error) {
 
 func ExecuteDdlScripts(ddl string) (bool, error) {
 
-	_, err := dbClient.Exec(ddl)
+	_, err := DbClient.Exec(ddl)
 
 	if err != nil {
 		return false, err
@@ -172,7 +172,7 @@ func ExecuteDdlScripts(ddl string) (bool, error) {
 
 func StatmentQuery(sql string) {
 
-	// dbClient.Exec("")
+	// DbClient.Exec("")
 
 }
 
@@ -198,7 +198,7 @@ func StatmentQuery(sql string) {
 func Exec(sqlStr string, args ...any) sql.Result {
 
 	// prepare the statement
-	stmt, _ := dbClient.Prepare(sqlStr)
+	stmt, _ := DbClient.Prepare(sqlStr)
 
 	// format all args at once
 	result, err := stmt.Exec(args...)

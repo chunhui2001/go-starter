@@ -13,7 +13,7 @@ func Insert(sql string, args ...any) sql.Result {
 	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Nanosecond*1000000)
 	defer cancelFunc()
 
-	result, err := dbClient.ExecContext(ctx, sql, args...)
+	result, err := DbClient.ExecContext(ctx, sql, args...)
 
 	if err != nil {
 		logger.Error(fmt.Sprintf("Mysql-Insert-Error: sql=%s, errorMessage=%s", sql, string(err.Error())))
