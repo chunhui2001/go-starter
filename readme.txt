@@ -83,6 +83,15 @@ https://github.com/jmoiron/sqlx
 ### How to Implement MySQL Transactions with Golang On Linux Server
 vultr.com/ja/docs/how-to-implement-mysql-transactions-with-golang-on-linux-server/
 
+### Setting a time limit for a transaction in MySQL/InnoDB
+https://serverfault.com/questions/241823/setting-a-time-limit-for-a-transaction-in-mysql-innodb
+
+### Executing transactions
+https://go.dev/doc/database/execute-transactions
+
+### Pointers
+// https://www.golang-book.com/books/intro/8
+
 -----------------------------------------------------------------
 GOOS - Target Operating System		GOARCH - Target Platform
 -----------------------------------------------------------------

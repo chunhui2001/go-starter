@@ -90,7 +90,7 @@ func Result(r R) map[string]interface{} {
 
 	} else {
 		if r.Message == "" {
-			m["message"] = "Ok."
+			m["message"] = "Ok"
 		}
 	}
 

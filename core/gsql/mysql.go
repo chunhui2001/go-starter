@@ -16,9 +16,17 @@ import (
 
 type MySql struct {
 	Enable       bool   `mapstructure:"MYSQL_ENABLE"`
-	Dns          string `mapstructure:"MYSQL_DNS"`
+	Opts         string `mapstructure:"MYSQL_CONN_OPTS"`
+	Server       string `mapstructure:"MYSQL_SERVER"`
+	Database     string `mapstructure:"MYSQL_DATABASE"`
+	User         string `mapstructure:"MYSQL_USER_NAME"`
+	Passwd       string `mapstructure:"MYSQL_PASSWD"`
 	InitScript   string `mapstructure:"MYSQL_INIT_SCRIPT"`
 	UpdateScript string `mapstructure:"MYSQL_UPDATE_SCRIPT"`
+}
+
+func (c *MySql) connString(passwd string) string {
+	return fmt.Sprintf(`%s:%s@tcp(%s)/%s?%s`, c.User, passwd, c.Server, c.Database, c.Opts)
 }
 
 var (
@@ -32,9 +40,7 @@ func Init(conf *MySql, log *logrus.Entry) {
 	logger = log
 	mySqlConf = conf
 
-	hostMatch := utils.Matches(mySqlConf.Dns, `\(([0-9\.a-zA-Z_]+:[0-9]+)?\)/([A-Za-z0-9_]+)`)
-	hostName := hostMatch[0][1] + "/" + hostMatch[0][2]
-	db, err := sql.Open("mysql", mySqlConf.Dns)
+	db, err := sql.Open("mysql", conf.connString(conf.Passwd))
 
 	if err != nil {
 		panic(err)
@@ -48,22 +54,19 @@ func Init(conf *MySql, log *logrus.Entry) {
 	dbClient = db
 
 	if err := dbClient.Ping(); err != nil {
-		logger.Error(fmt.Sprintf("Mysql-Client-Connect-Error: MySqlServer=%s, errorMessage=%s", hostName, string(err.Error())))
+		logger.Error(fmt.Sprintf("Mysql-Client-Connect-Error: ConnString=%s, errorMessage=%s", conf.connString("****"), string(err.Error())))
 		return
 	}
 
 	if version, err := Version(); err == nil {
-
-		logger.Info(fmt.Sprintf("Mysql-Client-Connected-Successful: MySqlServer=%s, Version=%s", hostName, version))
-
+		logger.Info(fmt.Sprintf("Mysql-Client-Connected-Successful: ServerVersion=%s, ConnString=%s", version, conf.connString("****")))
 		// execute the Embedding scripts
 		exceScripts()
-
 		return
 
 	}
 
-	logger.Error(fmt.Sprintf("Mysql-Client-Connect-Error: MySqlServer=%s, errorMessage=%s", hostName, string(err.Error())))
+	logger.Error(fmt.Sprintf("Mysql-Client-Connect-Error: ConnString=%s, errorMessage=%s", conf.connString("****"), string(err.Error())))
 
 }
 
@@ -161,82 +164,15 @@ func ExecuteDdlScripts(ddl string) (bool, error) {
 		return false, err
 	}
 
-	logger.Infof("Mysql-ExecuteDdlScripts: ddl=%s, IsError=%t", ddl, err != nil)
+	// logger.Infof("Mysql-ExecuteDdlScripts: ddl=%s, IsError=%t", ddl, err != nil)
 
 	return true, nil
 
 }
 
-// ss := &SimpleSelect{
-// 			Table:  "t_books",
-// 			Fields: []string{"f_id", "f_title", "f_created_at"},
-// 			Params: utils.MapOf("f_id", 1, "f_title", "sd"),
-// 		}
+func StatmentQuery(sql string) {
 
-// https://www.golang-book.com/books/intro/8
-func SimpleQuery(selects *SimpleSelect) ([]map[string]interface{}, error) {
-
-	xselect, valus := selects.ToString()
-	rows, err := dbClient.Query(xselect, valus...)
-
-	if err != nil {
-		logger.Infof("Mysql-SimpleQuery-Error: sql=%s, valus=%s, error=%s", xselect, utils.ToJsonString(valus), err.Error())
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	cols, err := rows.Columns()
-
-	if cols == nil {
-		return nil, err
-	}
-
-	colTypes, err2 := rows.ColumnTypes()
-
-	if err2 != nil {
-		return nil, err2
-	}
-
-	var result []map[string]interface{}
-
-	for rows.Next() {
-
-		// Create a slice of interface{}'s to represent each column,
-		// and a second slice to contain pointers to each item in the columns slice.
-		values := make([]interface{}, len(cols))
-
-		for i := range values {
-			currType := colTypes[i].DatabaseTypeName()
-			if currType == "INT" {
-				values[i] = new(int32)
-			} else if currType == "VARCHAR" {
-				values[i] = new(string)
-			} else if currType == "TIMESTAMP" {
-				values[i] = new(string)
-			} else {
-				logger.Errorf("Mysql-Current-Data-Type-Not-Cached: DatabaseTypeName=%s, ColumeName=%s", currType, colTypes[i].Name())
-				values[i] = new(interface{})
-			}
-		}
-
-		// Scan the result into the column pointers...
-		if err := rows.Scan(values...); err != nil {
-			return nil, err
-		}
-
-		// Create our map, and retrieve the value for each column from the pointers slice,
-		// storing it in the map with the name of the column as the key.
-		currentRow := make(map[string]interface{})
-
-		for i, colName := range cols {
-			currentRow[colName] = values[i]
-		}
-
-		result = append(result, currentRow)
-	}
-
-	return result, nil
+	// dbClient.Exec("")
 
 }
 
@@ -276,20 +212,6 @@ func Exec(sqlStr string, args ...any) sql.Result {
 
 }
 
-// Insert(`insert into book(isbn, title, price) values(?, ?, ?)`, "978-4798161495", "MySQL徹底入門 第4版", 4180)
-func Insert(sql string, args ...any) sql.Result {
-
-	result, err := dbClient.Exec(sql, args...)
-
-	if err != nil {
-		logger.Error(fmt.Sprintf("Mysql-Insert-Error: sql=%s, errorMessage=%s", sql, string(err.Error())))
-		return nil
-	}
-
-	return result
-
-}
-
 // ss := &SimpleSelect{
 // 			Table:  "t_books",
 // 			Fields: []string{"f_id", "f_title", "f_created_at"},
@@ -299,9 +221,11 @@ func Insert(sql string, args ...any) sql.Result {
 // 		xs, vals := ss.ToString()
 
 type SimpleSelect struct {
-	Table  string
-	Fields []string
-	Params map[string]interface{}
+	Table     string
+	Fields    []string
+	Params    map[string]interface{}
+	BeginTrx  bool
+	ForUpdate bool
 }
 
 func (s *SimpleSelect) ToString() (string, []any) {
@@ -326,7 +250,19 @@ func (s *SimpleSelect) ToString() (string, []any) {
 		pl = "1=1"
 	}
 
-	xselect := fmt.Sprintf("select %s from `%s` where %s;", fieldsString, s.Table, pl)
+	beginTrx := ""
+
+	// if s.BeginTrx {
+	// 	beginTrx = "begin; "
+	// }
+
+	forUpdate := ""
+
+	if s.ForUpdate {
+		forUpdate = " for update"
+	}
+
+	xselect := fmt.Sprintf("%sselect %s from `%s` where %s%s;", beginTrx, fieldsString, s.Table, pl, forUpdate)
 
 	return xselect, vals
 
