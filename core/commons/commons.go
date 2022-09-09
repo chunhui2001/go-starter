@@ -2,7 +2,6 @@ package commons
 
 import (
 	"errors"
-
 	_ "github.com/chunhui2001/go-starter/core/utils"
 	"github.com/go-playground/validator/v10"
 )
@@ -66,6 +65,8 @@ func Result(r R) map[string]interface{} {
 	}
 
 	if r.Data != nil {
+		// Notice:
+		// make(map[string]interface{}) 		>>> will be == null
 		m["data"] = r.Data
 	}
 

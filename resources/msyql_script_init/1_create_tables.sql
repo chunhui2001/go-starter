@@ -7,7 +7,7 @@ CREATE TABLE if not exists t_user (
   f_last_name varchar(200),
   f_email varchar(200) UNIQUE NOT NULL,
   PRIMARY KEY (`f_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=74 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 
 -- 专辑表
 CREATE TABLE if not exists t_album (
@@ -17,7 +17,7 @@ CREATE TABLE if not exists t_album (
   f_author varchar(200),
   f_quantity int(11),
   PRIMARY KEY (`f_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=74 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 
 -- 专辑订单表
 CREATE TABLE if not exists t_album_order (
@@ -27,5 +27,5 @@ CREATE TABLE if not exists t_album_order (
   f_quantity int(11), 
   f_created_at timestamp(3) not NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
   PRIMARY KEY (`f_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=74 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 

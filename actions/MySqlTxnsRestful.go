@@ -25,7 +25,7 @@ import (
 func MySqlTrxLocks1(c *gin.Context) {
 
 	fail := func(memo string, err error) error {
-		return fmt.Errorf("SimpleQueryWithContextError: memo:%s, %v", memo, err)
+		return fmt.Errorf("Query-Album-Error: memo:%s, %v", memo, err)
 	}
 
 	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*2)
@@ -48,6 +48,8 @@ func MySqlTrxLocks1(c *gin.Context) {
 	defer tx.Rollback()
 
 	rows, err = tx.QueryContext(ctx, `select * from t_album where f_id in (10,8,5) for update;`)
+
+	time.Sleep(1000 * time.Second)
 
 	if err != nil {
 		c.JSON(200, R{Error: fail("QueryContextError", err)}.Fail(500))
@@ -103,6 +105,10 @@ func MySqlTrxLocks1(c *gin.Context) {
 		}
 
 		result = append(result, currentRow)
+	}
+
+	if len(result) == 0 {
+		result = []map[string]interface{}{}
 	}
 
 	// // Commit the transaction.

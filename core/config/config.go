@@ -17,6 +17,7 @@ import (
 	"github.com/chunhui2001/go-starter/core/built"
 	"github.com/chunhui2001/go-starter/core/ges"
 	"github.com/chunhui2001/go-starter/core/ghttp"
+	"github.com/chunhui2001/go-starter/core/gid"
 	"github.com/chunhui2001/go-starter/core/gmongo"
 	"github.com/chunhui2001/go-starter/core/gredis"
 	"github.com/chunhui2001/go-starter/core/gsql"
@@ -44,6 +45,7 @@ func (writer logWriter) Write(bytes []byte) (int, error) {
 }
 
 type AppConf struct {
+	ServerId   int64  `mapstructure:"SERVER_ID"`
 	Env        string `mapstructure:"GIN_ENV"`
 	AppName    string `mapstructure:"APP_NAME"`
 	AppPort    string `mapstructure:"APP_PORT"`
@@ -87,11 +89,11 @@ func (w *Wss) Wss() string {
 }
 
 var AppSetting = &AppConf{
-	// Env:     "development",
 	Env:        "production",
 	AppName:    "go-starter",
 	AppPort:    "8080",
 	TimeZone:   map[bool]string{true: os.Getenv("TZ"), false: "UTC"}[os.Getenv("TZ") != ""],
+	ServerId:   1,
 	DemoEnable: true,
 }
 
@@ -222,6 +224,7 @@ func init() {
 	printConfigLogLines()
 
 	ghttp.Init(Log)
+	gid.Init(Log, AppSetting.ServerId)
 
 }
 
