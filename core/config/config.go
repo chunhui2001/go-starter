@@ -21,7 +21,7 @@ import (
 	"github.com/chunhui2001/go-starter/core/gmongo"
 	"github.com/chunhui2001/go-starter/core/gredis"
 	"github.com/chunhui2001/go-starter/core/gsql"
-	_ "github.com/chunhui2001/go-starter/core/gzk"
+	"github.com/chunhui2001/go-starter/core/gzk"
 	"github.com/chunhui2001/go-starter/core/utils"
 	_ "github.com/joho/godotenv"
 	"github.com/spf13/viper"
@@ -175,6 +175,12 @@ var MySqlConf = &gsql.MySql{
 	Enable: false,
 }
 
+var GZkConf = &gzk.GZk{
+	Servers: "127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183",
+	ChRoot:  "/__locker",
+	TimeOut: 20,
+}
+
 var Log *logrus.Entry
 var filename string = ".env"
 
@@ -220,6 +226,7 @@ func init() {
 	loadCookieSettings(v1, filename)
 	loadMySqlSettings(v1, filename)
 	loadEsSettings(v1, filename)
+	loadZookeeperSettings(v1, filename)
 
 	printConfigLogLines()
 
@@ -420,6 +427,23 @@ func loadEsSettings(v1 *viper.Viper, filename string) {
 		configLoggerLines = append(configLoggerLines, []string{"EsSettings", "Enabled=" + utils.ToString(EsSettings.Enable)})
 		if EsSettings.Enable != false {
 			ges.Init(EsSettings, Log)
+		}
+	}
+
+}
+
+func loadZookeeperSettings(v1 *viper.Viper, filename string) {
+
+	err := v1.Unmarshal(&GZkConf)
+
+	if err != nil {
+		Log.Info("viper parse GZkConf error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		os.Exit(3)
+		return
+	} else {
+		configLoggerLines = append(configLoggerLines, []string{"GZkConf", "Enabled=" + utils.ToString(GZkConf.Enable)})
+		if GZkConf.Enable != false {
+			gzk.Init(GZkConf, Log)
 		}
 	}
 

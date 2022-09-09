@@ -1,30 +1,64 @@
 package gzk
 
 import (
-	_ "fmt"
-	_ "time"
+	"strings"
+	"time"
 
-	_ "github.com/go-zookeeper/zk"
+	DLocker "github.com/nladuo/go-zk-lock"
+	"github.com/sirupsen/logrus"
 )
 
-func init() {
+var (
+	logger  *logrus.Entry
+	servers string               // the zookeeper hosts
+	chroot  string = "/__locker" //the application znode path
+)
 
-	// _, _, err := zk.Connect([]string{"127.0.0.1:2181", "127.0.0.1:2182", "127.0.0.1:2183"}, time.Second) //*10)
+type GZk struct {
+	Enable  bool   `mapstructure:"ZOOKEEPER_ENABLE"`
+	Servers string `mapstructure:"ZOOKEEPER_SERVERS"` // the zookeeper hosts
+	ChRoot  string `mapstructure:"ZOOKEEPER_CHROOT"`  // the application znode path
+	TimeOut int    `mapstructure:"ZOOKEEPER_TIMEOUT"` // the zk connection timeout // 20 * time.Second
+}
 
-	// if err != nil {
-	// 	panic(err)
-	// }
+func Init(gzk *GZk, log *logrus.Entry) {
 
-	// children, stat, ch, err := c.ChildrenW("/")
+	logger = log
 
-	// if err != nil {
-	// 	panic(err)
-	// }
+	err := DLocker.EstablishZkConn(strings.Split(gzk.Servers, ","), time.Duration(gzk.TimeOut)*time.Second)
 
-	// fmt.Printf("%+v %+v\n", children, stat)
+	if err != nil {
+		logger.Errorf(`Zookeeper-Connect-Failed: Servers=%s, TimeOut=%d/s, ErrorMessage=%s`, gzk.Servers, gzk.TimeOut, err.Error())
+		return
+	}
 
-	// e := <-ch
+	logger.Infof(`Zookeeper-Connected-Successful: TimeOut=%d/s, ChRoot=%s, Servers=%s`, gzk.TimeOut, gzk.ChRoot, gzk.Servers)
 
-	// fmt.Printf("%+v\n", e)
+	chroot = gzk.ChRoot
+	servers = gzk.Servers
+
+	FocusLock("lock2", func() {
+		logger.Infof(`Zookeeper-Get-Lock-Succeed: %s, executed`, "FocusLock")
+	})
+
+}
+
+func FocusLock(lockPath string, f func()) {
+
+	go func() {
+
+		locker := DLocker.NewLocker(chroot+"/"+lockPath, time.Duration(999999)*time.Hour) // 锁100年
+		locker.Unlock()
+		locker.Lock() // like mutex.Lock()
+
+		// do something of which time not excceed lockerTimeout
+		// if !locker.Unlock() { // like mutex.Unlock(), return false when zookeeper connection error or locker timeout
+		// 	logger.Infof("Sorry, unlock failed, Servers=%s", servers)
+		// }
+
+		logger.Infof(`Zookeeper-Get-Lock-Succeed: Path=%s`, chroot+"/"+lockPath)
+
+		f()
+	}()
 
 }

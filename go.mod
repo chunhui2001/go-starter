@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/JGLTechnologies/gin-rate-limit v1.5.1
+	github.com/bwmarrin/snowflake v0.3.0
 	github.com/cenkalti/backoff/v4 v4.1.3
 	github.com/elastic/go-elasticsearch v0.0.0
 	github.com/elastic/go-elasticsearch/v8 v8.4.0
@@ -18,7 +19,6 @@ require (
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/go-zookeeper/zk v1.0.3
 	github.com/gobuffalo/events v1.4.3
 	github.com/gobwas/ws v1.1.0
 	github.com/google/uuid v1.3.0
@@ -26,6 +26,7 @@ require (
 	github.com/hhsnopek/etag v0.0.0-20171206181245-aea95f647346
 	github.com/jinzhu/copier v0.3.5
 	github.com/joho/godotenv v1.4.0
+	github.com/nladuo/go-zk-lock v0.0.0-20160827065904-f01e95e75d22
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/robfig/cron v1.2.0
@@ -41,7 +42,6 @@ require (
 require (
 	github.com/Shopify/sarama v1.36.0 // indirect
 	github.com/bradfitz/gomemcache v0.0.0-20220106215444-fb4bf637b56d // indirect
-	github.com/bwmarrin/snowflake v0.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
@@ -87,6 +87,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/robfig/go-cache v0.0.0-20130306151617-9fc39e0dbf62 // indirect
+	github.com/samuel/go-zookeeper v0.0.0-20201211165307-7117e9ea2414 // indirect
 	github.com/smartystreets/goconvey v1.7.2 // indirect
 	github.com/spf13/afero v1.9.2 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
