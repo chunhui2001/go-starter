@@ -15,10 +15,11 @@ var (
 )
 
 type GZk struct {
-	Enable  bool   `mapstructure:"ZOOKEEPER_ENABLE"`
-	Servers string `mapstructure:"ZOOKEEPER_SERVERS"` // the zookeeper hosts
-	ChRoot  string `mapstructure:"ZOOKEEPER_CHROOT"`  // the application znode path
-	TimeOut int    `mapstructure:"ZOOKEEPER_TIMEOUT"` // the zk connection timeout // 20 * time.Second
+	Enable     bool   `mapstructure:"ZOOKEEPER_ENABLE"`
+	Servers    string `mapstructure:"ZOOKEEPER_SERVERS"` // the zookeeper hosts
+	ChRoot     string `mapstructure:"ZOOKEEPER_CHROOT"`  // the application znode path
+	TimeOut    int    `mapstructure:"ZOOKEEPER_TIMEOUT"` // the zk connection timeout // 20 * time.Second
+	SimpleLock bool   `mapstructure:"ZOOKEEPER_SIMPLE_LOCK"`
 }
 
 func Init(gzk *GZk, log *logrus.Entry) {
@@ -37,9 +38,11 @@ func Init(gzk *GZk, log *logrus.Entry) {
 	chroot = gzk.ChRoot
 	servers = gzk.Servers
 
-	FocusLock("lock2", func() {
-		logger.Infof(`Zookeeper-Get-Lock-Succeed: %s, executed`, "FocusLock")
-	})
+	if gzk.SimpleLock {
+		FocusLock("lock2", func() {
+			logger.Infof(`Zookeeper-Get-Simple-Lock-Succeed: %s, executed`, "FocusLock")
+		})
+	}
 
 }
 
@@ -56,7 +59,7 @@ func FocusLock(lockPath string, f func()) {
 		// 	logger.Infof("Sorry, unlock failed, Servers=%s", servers)
 		// }
 
-		logger.Infof(`Zookeeper-Get-Lock-Succeed: Path=%s`, chroot+"/"+lockPath)
+		logger.Infof(`Zookeeper-Get-Simple-Lock-Succeed: Path=%s`, chroot+"/"+lockPath)
 
 		f()
 	}()

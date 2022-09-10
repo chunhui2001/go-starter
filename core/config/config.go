@@ -176,9 +176,10 @@ var MySqlConf = &gsql.MySql{
 }
 
 var GZkConf = &gzk.GZk{
-	Servers: "127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183",
-	ChRoot:  "/__locker",
-	TimeOut: 20,
+	Servers:    "127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183",
+	ChRoot:     "/__locker",
+	TimeOut:    20,
+	SimpleLock: true,
 }
 
 var Log *logrus.Entry
@@ -441,7 +442,7 @@ func loadZookeeperSettings(v1 *viper.Viper, filename string) {
 		os.Exit(3)
 		return
 	} else {
-		configLoggerLines = append(configLoggerLines, []string{"GZkConf", "Enabled=" + utils.ToString(GZkConf.Enable)})
+		configLoggerLines = append(configLoggerLines, []string{"GZkConf", "Enabled=" + utils.ToString(GZkConf.Enable) + ", SimpleLock=" + utils.ToString(GZkConf.SimpleLock)})
 		if GZkConf.Enable != false {
 			gzk.Init(GZkConf, Log)
 		}
