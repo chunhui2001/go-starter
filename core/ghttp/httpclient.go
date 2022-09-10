@@ -62,7 +62,7 @@ func (r *HttpResult) Success() bool {
 var (
 	logger              *logrus.Entry
 	myHttpClient        *http.Client
-	defaultTimeOut      int = 5 // * time.Second
+	defaultTimeOut      int = 150 // * time.Second
 	maxIdleConns        int = 100
 	idleConnTimeout     int = 90
 	maxIdleConnsPerHost int = 100
@@ -149,7 +149,7 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 	var res *http.Response
 	var err error
 
-	ctx, cancel := context.WithTimeout(context.Background(), 150*time.Second) // 避免 ioutil.ReadAll(res.Body) 超时
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second) // 避免 ioutil.ReadAll(res.Body) 超时
 	defer cancel()
 
 	go func() {
@@ -157,10 +157,11 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 		case <-time.After(10 * time.Second):
 			logger.Error(
 				fmt.Sprintf(
-					"Send-HttpRequest-Context-Time: Url=%s, ErrorMessage=%s", httpClient.Url, ctx.Err()))
-			fmt.Println(ctx.Err())
+					"Send-HttpRequest-Context-TimeOut-After: Url=%s, Message=%s", httpClient.Url, ctx.Err()))
 		case <-ctx.Done():
-			// prints "context deadline exceeded"
+			logger.Infof(
+				fmt.Sprintf(
+					"Send-HttpRequest-Context-TimeOut-Done: Url=%s, Message=%s", httpClient.Url, ctx.Err()))
 		}
 	}()
 
@@ -203,9 +204,15 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 	command, _ := http2curl.GetCurlCommand(req)
 
 	if err != nil {
-		logger.Error(
-			fmt.Sprintf(
-				"Send-HttpRequest-Failed: Curl=%s, ErrorMessage=%s", command, err))
+		if res != nil {
+			logger.Error(
+				fmt.Sprintf(
+					"Send-HttpRequest-Failed: Curl=%s, ErrorMessage=%s", command, err))
+		} else {
+			logger.Error(
+				fmt.Sprintf(
+					"Send-HttpRequest-Failed: StatusCode=%d, Curl=%s, ErrorMessage=%s", res.StatusCode, command, err))
+		}
 		return &HttpResult{
 			Error: err,
 		}
