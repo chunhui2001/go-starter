@@ -2,7 +2,7 @@ package ghttp
 
 import (
 	"bytes"
-	"context"
+	_ "context"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -149,21 +149,21 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 	var res *http.Response
 	var err error
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second) // 避免 ioutil.ReadAll(res.Body) 超时
-	defer cancel()
+	// ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second) // 避免 ioutil.ReadAll(res.Body) 超时
+	// defer cancel()
 
-	go func() {
-		select {
-		case <-time.After(10 * time.Second):
-			logger.Error(
-				fmt.Sprintf(
-					"Send-HttpRequest-Context-TimeOut-After: Url=%s, Message=%s", httpClient.Url, ctx.Err()))
-		case <-ctx.Done():
-			logger.Infof(
-				fmt.Sprintf(
-					"Send-HttpRequest-Context-TimeOut-Done: Url=%s, Message=%s", httpClient.Url, ctx.Err()))
-		}
-	}()
+	// go func() {
+	// 	select {
+	// 	case <-time.After(10 * time.Second):
+	// 		logger.Error(
+	// 			fmt.Sprintf(
+	// 				"Send-HttpRequest-Context-TimeOut-After: Url=%s, Message=%s", httpClient.Url, ctx.Err()))
+	// 	case <-ctx.Done():
+	// 		logger.Infof(
+	// 			fmt.Sprintf(
+	// 				"Send-HttpRequest-Context-TimeOut-Done: Url=%s, Message=%s", httpClient.Url, ctx.Err()))
+	// 	}
+	// }()
 
 	if strings.EqualFold(http.MethodGet, strings.TrimSpace(httpClient.Method)) {
 		req, err = http.NewRequest(httpClient.Method, httpClient.Url, nil)
@@ -196,7 +196,7 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 
 	}
 
-	req = req.WithContext(ctx)
+	// req = req.WithContext(ctx)
 
 	start := time.Now()
 	res, err = myHttpClient.Do(req)
