@@ -106,6 +106,12 @@ func RedisLpushRouter(c *gin.Context) {
 	c.JSON(http.StatusOK, R{Data: gredis.Llen(key)}.Success())
 }
 
+func RedisLrangeRouter(c *gin.Context) {
+	key := c.Query("key")
+	gredis.Lrange(key, 0, -1)
+	c.JSON(http.StatusOK, R{Data: gredis.Lrange(key, 0, -1)}.Success())
+}
+
 func RedisHsetRouter(c *gin.Context) {
 	key := c.Query("key")
 	f1 := c.Query("f1")

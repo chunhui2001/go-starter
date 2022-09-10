@@ -231,16 +231,34 @@ func Get(key string) string {
 
 }
 
+// 列表操作
 func Lpush(key string, values ...interface{}) {
 	if err := Client().LPush(ctx, key, values...).Err(); err != nil {
 		panic(err)
 	}
 }
 
+// 列表操作
 func Rpush(key string, values ...interface{}) {
 	if err := Client().RPush(ctx, key, values...).Err(); err != nil {
 		panic(err)
 	}
+}
+
+// 读取列表元素: end=-1, 读取所有
+func Lrange(key string, start int64, end int64) []string {
+
+	val, err := Client().LRange(ctx, key, start, end).Result()
+
+	switch {
+	case err == redis.Nil:
+		return []string{}
+	case err != nil:
+		logger.Errorf(`Redis-Lrange-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
+		return nil
+	}
+
+	return val
 }
 
 func Lpop(key string) string {
