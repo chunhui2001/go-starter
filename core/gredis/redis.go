@@ -261,6 +261,13 @@ func Lrange(key string, start int64, end int64) []string {
 	return val
 }
 
+// 删除指定范围的列表元素
+func Ltrim(key string, start int64, end int64) {
+	if err := Client().LTrim(ctx, key, start, end).Err(); err != nil {
+		panic(err)
+	}
+}
+
 func Lpop(key string) string {
 
 	val, err := Client().LPop(ctx, key).Result()
