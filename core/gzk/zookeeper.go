@@ -4,6 +4,8 @@ import (
 	"strings"
 	"time"
 
+	"context"
+
 	DLocker "github.com/nladuo/go-zk-lock"
 	"github.com/sirupsen/logrus"
 )
@@ -50,20 +52,30 @@ func FocusLock(lockPath string, f func()) {
 
 	go func() {
 
+		ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*15)
+		defer cancelFunc()
+
+		go func() {
+			select {
+			case <-time.After(2 * time.Second):
+				// time out
+				logger.Infof(`Zookeeper-Get-Locked-Failed: Path=%s, TimeOut=%s`, chroot+"/"+lockPath, 2*time.Second)
+			case <-ctx.Done():
+				if deadline, ok := ctx.Deadline(); ok {
+					logger.Infof(`Zookeeper-Get-Locked-Succeed: Path=%s, Deadline=%s`, chroot+"/"+lockPath, time.Until(deadline))
+				} else {
+					logger.Infof(`Zookeeper-Get-Locked-Error: Path=%s, Deadline=%s, Error=%s`, chroot+"/"+lockPath, time.Since(deadline), ctx.Err())
+				}
+			}
+		}()
+
 		locker := DLocker.NewLocker(chroot+"/"+lockPath, time.Duration(999999)*time.Hour) // 锁100年
+		locker.Lock()                                                                     // like mutex.Lock()
 
-		// locker.Unlock()
-
-		locker.Lock() // like mutex.Lock()
-
-		// do something of which time not excceed lockerTimeout
-		// if !locker.Unlock() { // like mutex.Unlock(), return false when zookeeper connection error or locker timeout
-		// 	logger.Infof("Sorry, unlock failed, Servers=%s", servers)
-		// }
-
-		logger.Infof(`Zookeeper-Get-Simple-Lock-Succeed: Path=%s`, chroot+"/"+lockPath)
+		ctx.Done()
 
 		f()
+
 	}()
 
 }
