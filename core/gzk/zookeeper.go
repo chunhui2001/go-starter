@@ -52,7 +52,7 @@ func FocusLock(lockPath string, f func()) {
 
 	go func() {
 
-		ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*15)
+		ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*2)
 		defer cancelFunc()
 
 		go func() {
