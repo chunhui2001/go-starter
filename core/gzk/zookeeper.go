@@ -41,38 +41,44 @@ func Init(gzk *GZk, log *logrus.Entry) {
 	servers = gzk.Servers
 
 	if gzk.SimpleLock {
-		FocusLock("lock2", func() {
-			logger.Infof(`Zookeeper-Get-Simple-Lock-Succeed: %s, executed`, "FocusLock")
+
+		FocusLock("lock2", 3, func(locked bool) {
+			if locked {
+				logger.Infof(`Zookeeper-Get-Simple-Lock-Succeed: %s, executed`, "FocusLock")
+			}
 		})
 	}
 
 }
 
-func FocusLock(lockPath string, f func()) {
+func FocusLock(lockPath string, timeOut int, f func(bool)) {
 
 	currLockPath := chroot + "/" + lockPath
 
 	go func() {
 
-		ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*10)
+		ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*time.Duration(timeOut))
 
 		defer cancelFunc()
 
 		go func() {
 			select {
-			case <-time.After(10 * time.Second):
+			case <-time.After(time.Duration(timeOut) * time.Second):
 				// time out
 				if deadline, ok := ctx.Deadline(); ok {
-					logger.Warnf(`Zookeeper-Get-Locked-Failed: Path=%s, Deadline=%s, Error=%s`, currLockPath, time.Since(deadline), ctx.Err().Error())
+					logger.Warnf(`Zookeeper-Get-Locked-Failed: Path=%s, Deadline=%s`, currLockPath, time.Since(deadline))
+					f(false)
 				} else {
-					logger.Errorf(`Zookeeper-Get-Locked-Error-TimeOut: Path=%s, Deadline=%s, Error=%s`, currLockPath, time.Since(deadline), ctx.Err().Error())
+					logger.Errorf(`Zookeeper-Get-Locked-Error-TimeOut: Path=%s, Deadline=%s, Error=%s`, currLockPath, time.Since(deadline), ctx.Err())
+					f(false)
 				}
 			case <-ctx.Done():
 				if deadline, ok := ctx.Deadline(); ok {
-					logger.Infof(`Zookeeper-Get-Locked-Succeed: Path=%s, SpentTime=%s, Status=%s`, currLockPath, time.Until(deadline), ctx.Err().Error())
-					f() // like mutex.Lock()
+					logger.Infof(`Zookeeper-Get-Locked-Succeed: Path=%s, SpentTime=%s, Status=%s`, currLockPath, time.Until(deadline), ctx.Err())
+					f(true) // like mutex.Lock()
 				} else {
-					logger.Warnf(`Zookeeper-Get-Locked-Error-Done: Path=%s, Deadline=%s, Error=%s`, currLockPath, time.Since(deadline), ctx.Err().Error())
+					logger.Warnf(`Zookeeper-Get-Locked-Error-Done: Path=%s, Deadline=%s, Error=%s`, currLockPath, time.Since(deadline), ctx.Err())
+					f(false)
 				}
 			}
 		}()
