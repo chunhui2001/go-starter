@@ -50,6 +50,8 @@ func Init(gzk *GZk, log *logrus.Entry) {
 
 func FocusLock(lockPath string, f func()) {
 
+	currLockPath := chroot + "/" + lockPath
+
 	go func() {
 
 		ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*10)
@@ -61,21 +63,21 @@ func FocusLock(lockPath string, f func()) {
 			case <-time.After(10 * time.Second):
 				// time out
 				if deadline, ok := ctx.Deadline(); ok {
-					logger.Warnf(`Zookeeper-Get-Locked-Failed: Path=%s, Deadline=%s, Error=%s`, chroot+"/"+lockPath, time.Since(deadline), ctx.Err().Error())
+					logger.Warnf(`Zookeeper-Get-Locked-Failed: Path=%s, Deadline=%s, Error=%s`, currLockPath, time.Since(deadline), ctx.Err().Error())
 				} else {
-					logger.Errorf(`Zookeeper-Get-Locked-Error-TimeOut: Path=%s, Deadline=%s, Error=%s`, chroot+"/"+lockPath, time.Since(deadline), ctx.Err().Error())
+					logger.Errorf(`Zookeeper-Get-Locked-Error-TimeOut: Path=%s, Deadline=%s, Error=%s`, currLockPath, time.Since(deadline), ctx.Err().Error())
 				}
 			case <-ctx.Done():
 				if deadline, ok := ctx.Deadline(); ok {
-					logger.Infof(`Zookeeper-Get-Locked-Succeed: Path=%s, SpentTime=%s, Status=%s`, chroot+"/"+lockPath, time.Until(deadline), ctx.Err().Error())
+					logger.Infof(`Zookeeper-Get-Locked-Succeed: Path=%s, SpentTime=%s, Status=%s`, currLockPath, time.Until(deadline), ctx.Err().Error())
 					f() // like mutex.Lock()
 				} else {
-					logger.Warnf(`Zookeeper-Get-Locked-Error-Done: Path=%s, Deadline=%s, Error=%s`, chroot+"/"+lockPath, time.Since(deadline), ctx.Err().Error())
+					logger.Warnf(`Zookeeper-Get-Locked-Error-Done: Path=%s, Deadline=%s, Error=%s`, currLockPath, time.Since(deadline), ctx.Err().Error())
 				}
 			}
 		}()
 
-		locker := DLocker.NewLocker(chroot+"/"+lockPath, time.Duration(999999)*time.Hour) // 锁100年
+		locker := DLocker.NewLocker(currLockPath, time.Duration(999999)*time.Hour) // 锁100年
 		locker.Lock()
 
 		ctx.Done()
