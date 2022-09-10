@@ -60,15 +60,15 @@ func FocusLock(lockPath string, f func()) {
 			case <-time.After(2 * time.Second):
 				// time out
 				if deadline, ok := ctx.Deadline(); ok {
-					logger.Infof(`Zookeeper-Get-Locked-Failed: Path=%s, Deadline=%s, Error=%s`, chroot+"/"+lockPath, time.Since(deadline), ctx.Err())
+					logger.Warnf(`Zookeeper-Get-Locked-Failed: Path=%s, Deadline=%s, Error=%s`, chroot+"/"+lockPath, time.Since(deadline), ctx.Err())
 				} else {
-					logger.Infof(`Zookeeper-Get-Locked-Error-TimeOut: Path=%s, Deadline=%s, Error=%s`, chroot+"/"+lockPath, time.Since(deadline), ctx.Err())
+					logger.Errorf(`Zookeeper-Get-Locked-Error-TimeOut: Path=%s, Deadline=%s, Error=%s`, chroot+"/"+lockPath, time.Since(deadline), ctx.Err())
 				}
 			case <-ctx.Done():
 				if deadline, ok := ctx.Deadline(); ok {
 					logger.Infof(`Zookeeper-Get-Locked-Succeed: Path=%s, Deadline=%s, Status=%s`, chroot+"/"+lockPath, time.Until(deadline), ctx.Err())
 				} else {
-					logger.Infof(`Zookeeper-Get-Locked-Error-Done: Path=%s, Deadline=%s, Error=%s`, chroot+"/"+lockPath, time.Since(deadline), ctx.Err())
+					logger.Warnf(`Zookeeper-Get-Locked-Error-Done: Path=%s, Deadline=%s, Error=%s`, chroot+"/"+lockPath, time.Since(deadline), ctx.Err())
 				}
 			}
 		}()
