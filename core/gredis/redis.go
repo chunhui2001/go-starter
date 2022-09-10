@@ -391,6 +391,10 @@ func Pub(channel string, payload string) {
 
 func Sub(channel string, handler MessageHandler) {
 
+	if channel == "" {
+		return
+	}
+
 	if conf != nil && conf.Mode == Disabled {
 		panic(errors.New("Redis-Not-Enabled"))
 	}
