@@ -51,7 +51,9 @@ func FocusLock(lockPath string, f func()) {
 	go func() {
 
 		locker := DLocker.NewLocker(chroot+"/"+lockPath, time.Duration(999999)*time.Hour) // 锁100年
-		locker.Unlock()
+
+		// locker.Unlock()
+
 		locker.Lock() // like mutex.Lock()
 
 		// do something of which time not excceed lockerTimeout
