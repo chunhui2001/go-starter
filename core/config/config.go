@@ -444,8 +444,8 @@ func loadZookeeperSettings(v1 *viper.Viper, filename string) {
 	} else {
 		configLoggerLines = append(configLoggerLines, []string{"GZkConf", "Enabled=" + utils.ToString(GZkConf.Enable) + ", SimpleLock=" + utils.ToString(GZkConf.SimpleLock)})
 		if GZkConf.Enable {
-			// gzk.Init(GZkConf, Log)
-			gzk.Init2(GZkConf, Log)
+			gzk.Init(GZkConf, Log)
+			// gzk.Init2(GZkConf, Log)
 		}
 	}
 
