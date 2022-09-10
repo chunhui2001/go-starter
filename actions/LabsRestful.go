@@ -115,8 +115,36 @@ func RedisHsetRouter(c *gin.Context) {
 }
 
 func HttpClientSimpleRouter(c *gin.Context) {
+
 	httpResult := ghttp.SendRequest(ghttp.GET("https://www.google.com?fff=gg").Query(utils.MapOf("a", "b", "v", "你好")))
-	c.JSON(http.StatusOK, R{Data: string(httpResult.ResponseBody)}.Success())
+
+	if httpResult.Success() {
+		c.JSON(http.StatusOK, R{Data: string(httpResult.ResponseBody)}.Success())
+		return
+	}
+
+	c.JSON(http.StatusOK, R{Error: httpResult.Error}.Fail(400))
+
+}
+
+func HttpClientTimeOutRouter(c *gin.Context) {
+
+	queryParams := utils.MapOf(
+		"module", "account",
+		"action", "txlist",
+		"address", "0xf915a84bbcaff206d7745c448c0808d7c863731d",
+		"startblock", "0",
+		"sort", "asc",
+	)
+
+	httpResult := ghttp.SendRequest(ghttp.GET("https://api.etherscan.io/api").Query(queryParams))
+
+	if httpResult.Success() {
+		c.JSON(http.StatusOK, R{Data: string(httpResult.ResponseBody)}.Success())
+		return
+	}
+
+	c.JSON(http.StatusOK, R{Error: httpResult.Error}.Fail(400))
 }
 
 func UploadFileRouterOne(c *gin.Context) {

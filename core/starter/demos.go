@@ -11,6 +11,8 @@ func init() {
 
 		// commons simples
 		AppendRouter("GET", []string{"/httpclient-simple"}, actions.HttpClientSimpleRouter)
+		AppendRouter("GET", []string{"/httpclient-timeout"}, actions.HttpClientTimeOutRouter)
+
 		AppendRouter("GET", []string{"/labs-bigint"}, actions.BigRouter)
 		AppendRouter("GET", []string{"/labs-ytld"}, actions.YtIdRouter)
 		AppendRouter("GET", []string{"/labs-pem"}, actions.PemRouter)

@@ -2,8 +2,10 @@ package ghttp
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -20,6 +22,10 @@ const (
 )
 
 var DefaultTransport http.RoundTripper = &http.Transport{
+	Dial: (&net.Dialer{
+		Timeout: 160 * time.Second,
+	}).Dial,
+	TLSHandshakeTimeout: 160 * time.Second,
 	MaxIdleConns:        maxIdleConns,
 	IdleConnTimeout:     time.Duration(idleConnTimeout) * time.Second,
 	DisableCompression:  true,
@@ -70,6 +76,9 @@ func Init(log *logrus.Entry) {
 	myHttpClient = &http.Client{
 		Transport: DefaultTransport,
 		Timeout:   time.Duration(defaultTimeOut) * time.Second,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
 	}
 
 	logger.Info("Initialization-a-HttpClient: " +
@@ -140,6 +149,21 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 	var res *http.Response
 	var err error
 
+	ctx, cancel := context.WithTimeout(context.Background(), 150*time.Second) // 避免 ioutil.ReadAll(res.Body) 超时
+	defer cancel()
+
+	go func() {
+		select {
+		case <-time.After(10 * time.Second):
+			logger.Error(
+				fmt.Sprintf(
+					"Send-HttpRequest-Context-Time: Url=%s, ErrorMessage=%s", httpClient.Url, ctx.Err()))
+			fmt.Println(ctx.Err())
+		case <-ctx.Done():
+			// prints "context deadline exceeded"
+		}
+	}()
+
 	if strings.EqualFold(http.MethodGet, strings.TrimSpace(httpClient.Method)) {
 		req, err = http.NewRequest(httpClient.Method, httpClient.Url, nil)
 	} else {
@@ -171,9 +195,11 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 
 	}
 
+	req = req.WithContext(ctx)
+
 	start := time.Now()
 	res, err = myHttpClient.Do(req)
-	latency := time.Now().Sub(start)
+	latency := time.Since(start)
 	command, _ := http2curl.GetCurlCommand(req)
 
 	if err != nil {
@@ -190,7 +216,7 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 	if err != nil {
 		logger.Error(
 			fmt.Sprintf(
-				"HttpRequest-Could-Not-Read-Response-Body: Curl=%s, ErrorMessage=%s", command, err))
+				"HttpRequest-Could-Not-Read-Response-Body: StatusCode=%d, Curl=%s, ErrorMessage=%s", res.StatusCode, command, err))
 		return &HttpResult{
 			Error: err,
 		}
