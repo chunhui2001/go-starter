@@ -233,6 +233,10 @@ func Split(s string, sep string) []string {
 	return strings.Split(s, sep)
 }
 
+func Lower(s string) string {
+	return strings.ToLower(s)
+}
+
 func Matches(s string, regx string) [][]string {
 	re := regexp.MustCompile(regx)
 	return re.FindAllStringSubmatch(s, -1)

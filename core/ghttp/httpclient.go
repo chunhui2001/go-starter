@@ -219,11 +219,15 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 		}
 	}
 
-	keys := make([]string, 0, len(res.Header))
+	// keys := make([]string, 0, len(res.Header))
 
-	for k := range res.Header {
-		keys = append(keys, k)
-	}
+	// for k := range res.Header {
+	// 	keys = append(keys, k)
+	// }
+
+	// logger.Info(
+	// 	fmt.Sprintf(
+	// 		"HttpRequest-Response-Headers: Keys=%s", utils.ToJsonString(keys)))
 
 	contentLength := res.Header.Get("Content-Length")
 	keepAlived := res.Header.Get("Connection")

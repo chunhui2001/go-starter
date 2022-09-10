@@ -111,7 +111,11 @@ func RedisHsetRouter(c *gin.Context) {
 	f1 := c.Query("f1")
 	v1 := c.Query("v1")
 	gredis.Hset(key, f1, v1)
-	c.JSON(http.StatusOK, R{Data: gredis.Hgetall(key)}.Success())
+	result := []interface{}{
+		gredis.Hgetall(key),
+		gredis.Hget(key, f1),
+	}
+	c.JSON(http.StatusOK, R{Data: result}.Success())
 }
 
 func HttpClientSimpleRouter(c *gin.Context) {
