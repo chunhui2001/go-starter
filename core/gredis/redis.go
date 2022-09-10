@@ -262,6 +262,7 @@ func Lrange(key string, start int64, end int64) []string {
 }
 
 // 删除指定范围的列表元素
+// start=100, end=-1, 将第100个之前的全部删除, 即保留100个之后的元素
 func Ltrim(key string, start int64, end int64) {
 	if err := Client().LTrim(ctx, key, start, end).Err(); err != nil {
 		panic(err)
