@@ -283,7 +283,7 @@ func Llen(key string) int64 {
 	case err == redis.Nil:
 		return 0
 	case err != nil:
-		logger.Errorf(`Redis-Rpop-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
+		logger.Errorf(`Redis-Llen-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
 		return 0
 	}
 

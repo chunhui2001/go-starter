@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -23,9 +24,9 @@ const (
 
 var DefaultTransport http.RoundTripper = &http.Transport{
 	Dial: (&net.Dialer{
-		Timeout: 160 * time.Second,
+		Timeout: time.Duration(defaultTimeOut) * time.Second,
 	}).Dial,
-	TLSHandshakeTimeout: 160 * time.Second,
+	TLSHandshakeTimeout: time.Duration(defaultTimeOut) * time.Second,
 	MaxIdleConns:        maxIdleConns,
 	IdleConnTimeout:     time.Duration(idleConnTimeout) * time.Second,
 	DisableCompression:  true,
@@ -218,12 +219,27 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 		}
 	}
 
+	keys := make([]string, 0, len(res.Header))
+
+	for k := range res.Header {
+		keys = append(keys, k)
+	}
+
+	contentLength := res.Header.Get("Content-Length")
+	keepAlived := res.Header.Get("Connection")
 	resBody, err := ioutil.ReadAll(res.Body)
+	contentLengthValue, err2 := strconv.Atoi(contentLength)
+
+	if err2 != nil {
+		contentLengthValue = -1
+	}
 
 	if err != nil {
+
 		logger.Error(
 			fmt.Sprintf(
-				"HttpRequest-Could-Not-Read-Response-Body: StatusCode=%d, Curl=%s, ErrorMessage=%s", res.StatusCode, command, err))
+				"HttpRequest-Could-Not-Read-Response-Body: StatusCode=%d, ContentLength=%s, Connection=%s, Curl=%s, ErrorMessage=%s",
+				res.StatusCode, utils.HumanFileSizeWithInt(contentLengthValue), keepAlived, command, err))
 		return &HttpResult{
 			Error: err,
 		}
@@ -232,7 +248,8 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 
 	logger.Info(
 		fmt.Sprintf(
-			"HttpRequest-Successful: Latency=%s, StatusCode=%d, Curl=%s", latency, res.StatusCode, command))
+			"HttpRequest-Successful: Latency=%s, StatusCode=%d, ContentLength=%s, Connection=%s, Curl=%s",
+			latency, res.StatusCode, utils.HumanFileSizeWithInt(contentLengthValue), keepAlived, command))
 
 	return &HttpResult{
 		Status:       res.StatusCode,

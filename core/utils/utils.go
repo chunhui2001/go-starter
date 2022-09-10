@@ -324,6 +324,10 @@ func Round(val float64, roundOn float64, places int) (newVal float64) {
 	return
 }
 
+func HumanFileSizeWithInt(size int) string {
+	return HumanFileSize(float64(size))
+}
+
 func HumanFileSize(size float64) string {
 
 	var suffixes [5]string
