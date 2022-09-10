@@ -426,7 +426,7 @@ func loadEsSettings(v1 *viper.Viper, filename string) {
 		return
 	} else {
 		configLoggerLines = append(configLoggerLines, []string{"EsSettings", "Enabled=" + utils.ToString(EsSettings.Enable)})
-		if EsSettings.Enable != false {
+		if EsSettings.Enable {
 			ges.Init(EsSettings, Log)
 		}
 	}
@@ -443,8 +443,9 @@ func loadZookeeperSettings(v1 *viper.Viper, filename string) {
 		return
 	} else {
 		configLoggerLines = append(configLoggerLines, []string{"GZkConf", "Enabled=" + utils.ToString(GZkConf.Enable) + ", SimpleLock=" + utils.ToString(GZkConf.SimpleLock)})
-		if GZkConf.Enable != false {
-			gzk.Init(GZkConf, Log)
+		if GZkConf.Enable {
+			// gzk.Init(GZkConf, Log)
+			gzk.Init2(GZkConf, Log)
 		}
 	}
 
