@@ -52,33 +52,36 @@ func FocusLock(lockPath string, f func()) {
 
 	go func() {
 
-		ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*2)
+		ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancelFunc()
 
 		go func() {
 			select {
-			case <-time.After(2 * time.Second):
+			case <-time.After(10 * time.Second):
 				// time out
 				if deadline, ok := ctx.Deadline(); ok {
-					logger.Warnf(`Zookeeper-Get-Locked-Failed: Path=%s, Deadline=%s, Error=%s`, chroot+"/"+lockPath, time.Since(deadline), ctx.Err())
+					logger.Warnf(`Zookeeper-Get-Locked-Failed: Path=%s, Deadline=%s, Error=%s`, chroot+"/"+lockPath, time.Since(deadline), ctx.Err().Error())
 				} else {
-					logger.Errorf(`Zookeeper-Get-Locked-Error-TimeOut: Path=%s, Deadline=%s, Error=%s`, chroot+"/"+lockPath, time.Since(deadline), ctx.Err())
+					logger.Errorf(`Zookeeper-Get-Locked-Error-TimeOut: Path=%s, Deadline=%s, Error=%s`, chroot+"/"+lockPath, time.Since(deadline), ctx.Err().Error())
 				}
 			case <-ctx.Done():
 				if deadline, ok := ctx.Deadline(); ok {
-					logger.Infof(`Zookeeper-Get-Locked-Succeed: Path=%s, Deadline=%s, Status=%s`, chroot+"/"+lockPath, time.Until(deadline), ctx.Err())
+					// logger.Infof(`Zookeeper-Get-Locked-Succeed: Path=%s, SpentTime=%s, Status=%s`, chroot+"/"+lockPath, time.Until(deadline), ctx.Err().Error())
 				} else {
-					logger.Warnf(`Zookeeper-Get-Locked-Error-Done: Path=%s, Deadline=%s, Error=%s`, chroot+"/"+lockPath, time.Since(deadline), ctx.Err())
+					logger.Warnf(`Zookeeper-Get-Locked-Error-Done: Path=%s, Deadline=%s, Error=%s`, chroot+"/"+lockPath, time.Since(deadline), ctx.Err().Error())
 				}
 			}
 		}()
 
+		start := time.Now()
 		locker := DLocker.NewLocker(chroot+"/"+lockPath, time.Duration(999999)*time.Hour) // 锁100年
-		locker.Lock()                                                                     // like mutex.Lock()
+		locker.Lock()
 
 		ctx.Done()
 
-		f()
+		logger.Infof(`Zookeeper-Get-Locked-Succeed: Path=%s, SpendTime=%s`, chroot+"/"+lockPath, time.Since(start))
+
+		f() // like mutex.Lock()
 
 	}()
 
