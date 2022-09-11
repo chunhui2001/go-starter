@@ -70,7 +70,7 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 
 		lockedNode := gredis.Get(lockKey)
 
-		logger.Infof(`GRTask-Started: LockKey=%s, expr='%s', lockedNode=%s`, lockKey, expr, lockedNode)
+		logger.Infof(`GRTask-Started: LockKey=%s, expr='%s', currentNode=%s`, lockKey, expr, lockedNode)
 
 		// 避免定时任务执行时间过长给当前锁续命，避免重复启动
 		go func() {
