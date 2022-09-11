@@ -144,6 +144,17 @@ func RedisSetNxRouter(c *gin.Context) {
 	c.JSON(http.StatusOK, R{Data: gredis.SetNX(key, "asdfasd", 5)}.Success())
 }
 
+func RedisTtlRouter(c *gin.Context) {
+	key := c.Query("key")
+	if ttl, err := gredis.Ttl(key); err != nil {
+		fmt.Println("1" + utils.ToString(ttl))
+		c.JSON(http.StatusOK, R{Error: err}.Fail(400))
+	} else {
+		fmt.Println("2" + utils.ToString(ttl))
+		c.JSON(http.StatusOK, R{Data: ttl}.Success())
+	}
+}
+
 func HttpClientSimpleRouter(c *gin.Context) {
 
 	httpResult := ghttp.SendRequest(ghttp.GET("https://www.google.com?fff=gg").Query(utils.MapOf("a", "b", "v", "你好")))

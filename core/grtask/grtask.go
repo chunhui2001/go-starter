@@ -53,9 +53,6 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 		if ttl, err := gredis.Ttl(lockKey); err == nil {
 			if ttl.String() == "-1ns" {
 				gredis.Del(lockKey)
-			} else {
-				logger.Warnf(`GRTask-Ttl-Warn: LockKey=%s, expr='%s', Ttl=%s`, lockKey, expr, ttl.String())
-				return
 			}
 		} else {
 			logger.Errorf(`GRTask-Ttl-Error: LockKey=%s, expr='%s', ErrorMessage=%s`, lockKey, expr, utils.ErrorToString(err))
