@@ -277,6 +277,67 @@ func WsClientSimple(c *gin.Context) {
 
 }
 
+// // https://github.com/wamuir/go-xslt
+// func XsltDemoRouter(c *gin.Context) {
+// 	style := `<?xml version="1.0" encoding="UTF-8"?>
+// <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+//   <xsl:output method="xml" indent="yes"/>
+
+//   <xsl:template match="/persons">
+//     <root>
+//       <xsl:apply-templates select="person"/>
+//     </root>
+//   </xsl:template>
+
+//   <xsl:template match="person">
+//   	<xsl:variable name="family">
+//       <xsl:value-of select="family-name"/>
+//     </xsl:variable>
+//     <name username="{@username}" family-name26="{$family}">
+//       <xsl:value-of select="name" />
+//     </name>
+//   </xsl:template>
+
+// </xsl:stylesheet>`
+
+// 	doc := `<?xml version="1.0" ?>
+// <persons>
+//   <person username="JS1">
+//     <name>John春辉张</name>
+//     <family-name>Smith</family-name>
+//   </person>
+//   <person username="MI1">
+//     <name>Morka</name>
+//     <family-name>Ismincius</family-name>
+//   </person>
+// </persons>`
+
+// 	xs, err := xslt.NewStylesheet([]byte(style))
+
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	defer xs.Close()
+
+// 	// doc is an XML document to be transformed and res is the result of
+// 	// the XSL transformation, both as []byte.
+// 	data, err := xs.Transform([]byte(doc))
+
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	c.Header("Content-Type", "application/xml")
+// 	// Browser download or preview
+// 	c.Header("Content-Disposition", "inline;filename=public.pem")
+// 	c.Header("Content-Transfer-Encoding", "binary")
+// 	c.Header("Cache-Control", "no-cache")
+
+// 	c.Writer.Write(data)
+
+// }
+
 type Client struct {
 	ID        string
 	LastPong  time.Time

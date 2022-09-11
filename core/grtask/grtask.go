@@ -37,15 +37,15 @@ func Init(log *logrus.Entry) {
 // @daily (or @midnight)  | Run once a day, midnight                   | 0 0 0 * * *
 // @hourly                | Run once an hour, beginning of hour        | 0 0 * * * *
 // ###################################################################################
-func AddTask(taskId string, memo string, expr string, task func(taskId string)) {
+func AddTask(appName string, taskId string, memo string, expr string, task func(node string, taskId string)) {
 	logger.Infof(`GRTask-Add-a-Task: taskId=%s, expr='%s', memo=%s`, taskId, expr, memo)
 	_ = c.AddFunc(expr, func() {
-		lockKey := "__GRTASK_APP_NAME_" + taskId
+		lockKey := "__GRTASK_" + appName + "_" + taskId
 		Lock(lockKey, taskId, memo, expr, task)
 	})
 }
 
-func Lock(lockKey string, taskId string, memo string, expr string, task func(taskId string)) {
+func Lock(lockKey string, taskId string, memo string, expr string, task func(node string, taskId string)) {
 
 	currentNode := utils.Hostname() + "/" + utils.OutboundIP().String()
 
@@ -65,7 +65,7 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(tas
 
 		lockedNode := gredis.Get(lockKey)
 
-		logger.Infof(`GRTask-Run-Task-Started: LockKey=%s, expr='%s', lockedNode=%s`, lockKey, expr, lockedNode)
+		logger.Infof(`GRTask-Started: LockKey=%s, expr='%s', lockedNode=%s`, lockKey, expr, lockedNode)
 
 		// 避免定时任务执行时间过长给当前锁续命，避免重复启动
 		go func() {
@@ -80,8 +80,9 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(tas
 		}()
 
 		// 拿到了
-		task(lockKey)
+		task(lockedNode, lockKey)
 		gredis.Del(lockKey)
+
 		return
 
 	}

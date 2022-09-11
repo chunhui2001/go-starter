@@ -33,8 +33,8 @@ func init() {
 		AppendRouter("GET", []string{"/labs-redis-expire"}, actions.RedisExpireRouter)
 		AppendRouter("GET", []string{"/labs-redis-setnx"}, actions.RedisSetNxRouter)
 
-		// grtask
-		// AppendRouter("GET", []string{"/labs-add-task"}, actions.RedisAddTaskRouter)
+		// xslt
+		// AppendRouter("GET", []string{"/labs-xslt-demo"}, actions.XsltDemoRouter)
 
 		// validator data binding simples
 		AppendRouter("POST", []string{"/demo/album-create"}, actions.AlbumCreateRouter)

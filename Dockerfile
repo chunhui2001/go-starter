@@ -2,7 +2,7 @@ ARG GO_VERSION=1.19
 
 FROM golang:${GO_VERSION}-alpine AS builder
 
-RUN apk update && apk add alpine-sdk git && rm -rf /var/cache/apk/*
+RUN apk update && apk add alpine-sdk git --no-cache g++ gcc libxslt-dev libxml2-dev && rm -rf /var/cache/apk/*
 
 RUN mkdir -p /dist
 WORKDIR /dist

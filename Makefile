@@ -14,6 +14,7 @@ TIME 		?=$(shell date +%s)
 #GOOS 		?=darwin
 #GOOS 		?=windows
 GOOS 		?=linux
+CGO_ENABLED ?=0
 
 ### 整理模块
 # 确保go.mod与模块中的源代码一致。
@@ -48,7 +49,7 @@ dev:
 
 ### 构建程序镜像
 build: Built
-	docker rmi -f go-starter:1.0 && docker build . -t go-starter:1.0  -m 4g
+	docker rmi -f go-starter:1.0 && docker build . -t go-starter:1.0 -m 4g
 
 ### 通过容器启动
 up: rm
@@ -61,12 +62,11 @@ logs:
 ### 删除程序容器
 rm:
 	docker rm -f go-starter
-	rm -rf ./dist
 
 ### 构建跨平台的可执行程序
 Built:
-	env GOOS=$(GOOS) GOARCH=amd64 go build -buildvcs -ldflags "-X main.Name=go-starter -X main.Author=$(COMMITER) -X main.Commit=$(GIT_HASH) -X main.Time=$(TIME)" -o ./dist/go-starter-native-$(GOOS)-amd64 ./main.go
-	
+	env GOOS=$(GOOS) GOARCH=amd64 CGO_ENABLED=$(CGO_ENABLED) go build -buildvcs -ldflags "-X main.Name=go-starter -X main.Author=$(COMMITER) -X main.Commit=$(GIT_HASH) -X main.Time=$(TIME)" -o ./dist/go-starter-native-$(GOOS)-amd64 ./main.go
+
 ### 删除所有缓存的依赖包
 # clear modcache
 clear:

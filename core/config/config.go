@@ -84,6 +84,13 @@ type WebPageConf struct {
 	SignUpUrl string `mapstructure:"WEB_PAGE_SIGNUP"`
 }
 
+type SimpleGTask struct {
+	Enable bool   `mapstructure:"SIMPLE_GTASK_ENABLE"`
+	ID     string `mapstructure:"SIMPLE_GTASK_ID"`
+	Name   string `mapstructure:"SIMPLE_GTASK_NAME"`
+	Expr   string `mapstructure:"SIMPLE_GTASK_EXPR"`
+}
+
 func (w *Wss) Wss() string {
 	return w.Host + w.Prefix
 }
@@ -95,6 +102,13 @@ var AppSetting = &AppConf{
 	TimeZone:   map[bool]string{true: os.Getenv("TZ"), false: "UTC"}[os.Getenv("TZ") != ""],
 	ServerId:   1,
 	DemoEnable: true,
+}
+
+var SimpleGTaskConf = &SimpleGTask{
+	Enable: false,
+	ID:     "g4qUY4f17Bk",
+	Name:   "一个示例定时任务执行",
+	Expr:   "* * * * * *",
 }
 
 var LogSettings = &LogConf{
@@ -220,6 +234,7 @@ func init() {
 	loadCookieSettings(v1, filename)
 	loadMySqlSettings(v1, filename)
 	loadEsSettings(v1, filename)
+	loadSimpleGTaskSettings(v1, filename)
 
 	printConfigLogLines()
 
@@ -422,6 +437,20 @@ func loadEsSettings(v1 *viper.Viper, filename string) {
 		if EsSettings.Enable {
 			ges.Init(EsSettings, Log)
 		}
+	}
+
+}
+
+func loadSimpleGTaskSettings(v1 *viper.Viper, filename string) {
+
+	err := v1.Unmarshal(&SimpleGTaskConf)
+
+	if err != nil {
+		Log.Info("viper parse SimpleGTaskConf error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		os.Exit(3)
+		return
+	} else {
+		configLoggerLines = append(configLoggerLines, []string{"SimpleGTaskConf", "Enabled=" + utils.ToString(SimpleGTaskConf.Enable)})
 	}
 
 }

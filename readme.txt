@@ -92,6 +92,8 @@ https://go.dev/doc/database/execute-transactions
 ### Pointers
 // https://www.golang-book.com/books/intro/8
 
+https://www.ardanlabs.com/blog/2013/11/using-xslt-with-go.html
+
 -----------------------------------------------------------------
 GOOS - Target Operating System		GOARCH - Target Platform
 -----------------------------------------------------------------
