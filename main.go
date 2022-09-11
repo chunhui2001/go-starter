@@ -59,7 +59,7 @@ func main() {
 	// }
 
 	grtask.AddTask("g4qUY4f17Bk", "一个示例定时任务执行", "* * * * * *", func(taskId string) {
-		for i := 0; i < 15; i++ {
+		for i := 0; i < 3; i++ {
 			time.Sleep(1 * time.Second)
 			config.Log.Infof("定时任务正在执行每秒1次,耗时15秒: num=%d, taskId=%s", i, taskId)
 		}
