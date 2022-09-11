@@ -49,15 +49,21 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 
 	currentNode := utils.Hostname() + "/" + utils.OutboundIP().String()
 
-	if ok, _ := gredis.Exists(lockKey); ok {
+	if ok, e := gredis.Exists(lockKey); ok {
 		if ttl, err := gredis.Ttl(lockKey); err == nil {
 			if ttl.String() == "-1ns" {
 				gredis.Del(lockKey)
 			} else {
+				logger.Warnf(`GRTask-Ttl-Warn: LockKey=%s, expr='%s', Ttl=%s`, lockKey, expr, ttl.String())
 				return
 			}
 		} else {
+			logger.Errorf(`GRTask-Ttl-Error: LockKey=%s, expr='%s', ErrorMessage=%s`, lockKey, expr, utils.ErrorToString(err))
 			return
+		}
+	} else {
+		if e != nil {
+			logger.Errorf(`GRTask-Exists-Error: LockKey=%s, expr='%s', ErrorMessage=%s`, lockKey, expr, utils.ErrorToString(e))
 		}
 	}
 
