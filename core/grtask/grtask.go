@@ -66,7 +66,7 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 
 	if gredis.SetNX(lockKey, currentNode, 5) {
 
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(300 * time.Millisecond) // 暂停300毫秒, 避免定时任务执行的太快, 同时拿到锁
 
 		lockedNode := gredis.Get(lockKey)
 
