@@ -250,19 +250,19 @@ func Exists(key string) (bool, error) {
 
 }
 
-func Ttl(key string) (time.Duration, error) {
+func Ttl(key string) (int64, error) {
 
 	val, err := Client().TTL(ctx, key).Result()
 
 	switch {
 	case err == redis.Nil:
-		return time.Duration(0), nil
+		return 0, nil
 	case err != nil:
 		logger.Errorf(`Redis-Get-Key-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
-		return time.Duration(0), err
+		return 0, err
 	}
 
-	return val, nil
+	return val.Nanoseconds(), nil
 
 }
 

@@ -51,7 +51,7 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 
 	if ok, e := gredis.Exists(lockKey); ok {
 		if ttl, err := gredis.Ttl(lockKey); err == nil {
-			if ttl.String() == "-1ns" || ttl.String() == "-2" {
+			if ttl <= 0 {
 				gredis.Del(lockKey)
 			}
 		} else {

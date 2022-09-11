@@ -150,7 +150,7 @@ func RedisTtlRouter(c *gin.Context) {
 		fmt.Println("1" + utils.ToString(ttl))
 		c.JSON(http.StatusOK, R{Error: err}.Fail(400))
 	} else {
-		fmt.Println("2" + utils.ToString(ttl))
+		fmt.Println(ttl <= 0)
 		c.JSON(http.StatusOK, R{Data: ttl}.Success())
 	}
 }
