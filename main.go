@@ -2,10 +2,12 @@ package main
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/chunhui2001/go-starter/controller"
 	. "github.com/chunhui2001/go-starter/core/commons"
 	"github.com/chunhui2001/go-starter/core/config"
+	"github.com/chunhui2001/go-starter/core/grtask"
 	"github.com/chunhui2001/go-starter/core/starter"
 	"github.com/gin-gonic/gin"
 )
@@ -55,6 +57,13 @@ func main() {
 	// 	config.Log.Info("Congratulations! Your server startup successfully, Listening and serving HTTP on " + config.AppSetting.AppPort)
 
 	// }
+
+	grtask.AddTask("g4qUY4f17Bk", "一个示例定时任务执行", "* * * * * *", func(taskId string) {
+		for i := 0; i < 15; i++ {
+			time.Sleep(1 * time.Second)
+			config.Log.Infof("定时任务正在执行每秒1次,耗时15秒: num=%d, taskId=%s", i, taskId)
+		}
+	})
 
 	r.Run(config.AppSetting.AppPort)
 }

@@ -124,6 +124,26 @@ func RedisHsetRouter(c *gin.Context) {
 	c.JSON(http.StatusOK, R{Data: result}.Success())
 }
 
+func RedisIncrRouter(c *gin.Context) {
+	key := c.Query("key")
+	if result, err := gredis.Zincr(key); err == nil {
+		c.JSON(http.StatusOK, R{Data: result}.Success())
+		return
+	}
+	c.JSON(http.StatusOK, R{Data: false}.Success())
+}
+
+func RedisExpireRouter(c *gin.Context) {
+	key := c.Query("key")
+	gredis.Expire(key, 1)
+	c.JSON(http.StatusOK, R{Data: true}.Success())
+}
+
+func RedisSetNxRouter(c *gin.Context) {
+	key := c.Query("key")
+	c.JSON(http.StatusOK, R{Data: gredis.SetNX(key, "asdfasd", 5)}.Success())
+}
+
 func HttpClientSimpleRouter(c *gin.Context) {
 
 	httpResult := ghttp.SendRequest(ghttp.GET("https://www.google.com?fff=gg").Query(utils.MapOf("a", "b", "v", "你好")))

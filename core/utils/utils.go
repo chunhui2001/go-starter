@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"net"
 	"os"
 	"reflect"
 	"regexp"
@@ -25,6 +26,18 @@ import (
 
 // 2006-01-02T15:04:05.999Z
 var TimeStampFormat = "2006-01-02T15:04:05.000Z07:00"
+
+func Hostname() string {
+	hostname, _ := os.Hostname()
+	return hostname
+}
+
+func OutboundIP() net.IP {
+	conn, _ := net.Dial("udp", "8.8.8.8:80")
+	defer conn.Close()
+	localAddr := conn.LocalAddr().(*net.UDPAddr)
+	return localAddr.IP
+}
 
 func RootDir() string {
 	dir, _ := os.Getwd()

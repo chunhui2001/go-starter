@@ -61,6 +61,7 @@ logs:
 ### 删除程序容器
 rm:
 	docker rm -f go-starter
+	rm -rf ./dist
 
 ### 构建跨平台的可执行程序
 Built:

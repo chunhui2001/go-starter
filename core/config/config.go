@@ -20,6 +20,7 @@ import (
 	"github.com/chunhui2001/go-starter/core/gid"
 	"github.com/chunhui2001/go-starter/core/gmongo"
 	"github.com/chunhui2001/go-starter/core/gredis"
+	"github.com/chunhui2001/go-starter/core/grtask"
 	"github.com/chunhui2001/go-starter/core/gsql"
 	"github.com/chunhui2001/go-starter/core/gzk"
 	"github.com/chunhui2001/go-starter/core/utils"
@@ -232,6 +233,7 @@ func init() {
 	printConfigLogLines()
 
 	ghttp.Init(Log)
+	grtask.Init(Log)
 	gid.Init(Log, AppSetting.ServerId)
 
 }

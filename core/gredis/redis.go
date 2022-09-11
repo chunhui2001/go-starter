@@ -200,6 +200,12 @@ func Client() redis.UniversalClient {
 	return universalClient
 }
 
+func Expire(key string, expiration int) {
+	if err := Client().Expire(ctx, key, time.Duration(expiration)*time.Second).Err(); err != nil {
+		panic(err)
+	}
+}
+
 func Del(key ...string) {
 	if err := Client().Del(ctx, key...).Err(); err != nil {
 		panic(err)
@@ -211,6 +217,53 @@ func Set(key string, value string, expir int) {
 	if err := Client().Set(ctx, key, value, time.Duration(expir)*time.Second).Err(); err != nil {
 		panic(err)
 	}
+}
+
+func SetNX(key string, value string, expir int) bool {
+	if result, _ := Client().SetNX(ctx, key, value, time.Duration(expir)*time.Second).Result(); result {
+		return result
+	}
+	return false
+}
+
+func SetEX(key string, value string, expir int) (string, error) {
+
+	result, err := Client().SetEX(ctx, key, value, time.Duration(expir)*time.Second).Result()
+
+	return result, err
+
+}
+
+func Exists(key string) (bool, error) {
+
+	val, err := Client().Exists(ctx, key).Result()
+
+	switch {
+	case err == redis.Nil:
+		return false, nil
+	case err != nil:
+		logger.Errorf(`Redis-Get-Key-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
+		return false, err
+	}
+
+	return val != 0, nil
+
+}
+
+func Ttl(key string) (time.Duration, error) {
+
+	val, err := Client().TTL(ctx, key).Result()
+
+	switch {
+	case err == redis.Nil:
+		return time.Duration(0), nil
+	case err != nil:
+		logger.Errorf(`Redis-Get-Key-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
+		return time.Duration(0), err
+	}
+
+	return val, nil
+
 }
 
 func Get(key string) string {
@@ -323,6 +376,12 @@ func Hset(key string, values ...interface{}) {
 	}
 }
 
+func Hsetnx(key string, field string, value interface{}) {
+	if err := Client().HSetNX(ctx, key, field, value).Err(); err != nil {
+		panic(err)
+	}
+}
+
 func Hget(key string, field string) string {
 
 	val, err := Client().HGet(ctx, key, field).Result()
@@ -353,12 +412,6 @@ func Hgetall(key string) map[string]string {
 	return val
 }
 
-func Hsetnx(key string, field string, value interface{}) {
-	if err := Client().HSetNX(ctx, key, field, value).Err(); err != nil {
-		panic(err)
-	}
-}
-
 func Hvals(key string) []string {
 
 	val, err := Client().HVals(ctx, key).Result()
@@ -372,6 +425,19 @@ func Hvals(key string) []string {
 	}
 
 	return val
+
+}
+
+func Zincr(key string) (int64, error) {
+
+	result, err := Client().Incr(ctx, key).Result()
+
+	if err != nil {
+		logger.Errorf(`Redis-Zincr-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
+		return 0, err
+	}
+
+	return result, nil
 
 }
 
