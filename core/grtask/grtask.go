@@ -65,30 +65,24 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(tas
 
 		lockedNode := gredis.Get(lockKey)
 
-		if currentNode == lockedNode {
+		logger.Infof(`GRTask-Run-Task-Started: LockKey=%s, expr='%s', lockedNode=%s`, lockKey, expr, lockedNode)
 
-			logger.Infof(`GRTask-Run-Task-Started: LockKey=%s, expr='%s', lockedNode=%s`, lockKey, expr, lockedNode)
-
-			// 避免定时任务执行时间过长给当前锁续命，避免重复启动
-			go func() {
-				for {
-					time.Sleep(100 * time.Millisecond)
-					if ok, _ := gredis.Exists(lockKey); ok {
-						gredis.Set(lockKey, currentNode, 5)
-						// if ttl, err := gredis.Ttl(lockKey); err == nil {
-						// 	// logger.Infof(`GRTask-Run-Task-续命: LockKey=%s, ttl='%s', lockedNode=%s`, lockKey, ttl, lockedNode)
-						// }
-					} else {
-						break
-					}
+		// 避免定时任务执行时间过长给当前锁续命，避免重复启动
+		go func() {
+			for {
+				time.Sleep(100 * time.Millisecond)
+				if ok, _ := gredis.Exists(lockKey); ok {
+					gredis.Set(lockKey, currentNode, 5) // 安保线程, 里边的人没出来外边的人进不去
+				} else {
+					break
 				}
-			}()
+			}
+		}()
 
-			// 拿到了
-			task(lockKey)
-			gredis.Del(lockKey)
-			return
-		}
+		// 拿到了
+		task(lockKey)
+		gredis.Del(lockKey)
+		return
 
 	}
 
