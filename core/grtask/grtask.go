@@ -66,6 +66,8 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 
 	if gredis.SetNX(lockKey, currentNode, 5) {
 
+		time.Sleep(10 * time.Microsecond)
+
 		lockedNode := gredis.Get(lockKey)
 
 		logger.Infof(`GRTask-Started: LockKey=%s, expr='%s', lockedNode=%s`, lockKey, expr, lockedNode)
