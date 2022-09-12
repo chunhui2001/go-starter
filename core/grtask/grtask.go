@@ -65,7 +65,9 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 		}
 	}
 
-	if gredis.SetNX(lockKey, gid.YtID(), 5) {
+	lockVal := gid.YtID()
+
+	if gredis.SetNX(lockKey, lockVal, 5) {
 
 		time.Sleep(300 * time.Millisecond) // 暂停300毫秒, 避免定时任务执行的太快, 同时拿到锁
 		logger.Infof(`GRTask-Started: LockKey=%s, expr='%s', currentNode=%s`, lockKey, expr, currentNode)
@@ -89,7 +91,7 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 		return
 
 	} else {
-		logger.Infof(`GRTask-SetNx-False: LockKey=%s, expr='%s', currentNode=%s`, lockKey, expr, currentNode)
+		logger.Infof(`GRTask-SetNx-False: LockKey=%s, expr='%s', currentNode=%s, lockVal=%s`, lockKey, expr, currentNode, lockVal)
 	}
 
 }
