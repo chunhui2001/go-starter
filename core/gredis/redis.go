@@ -212,23 +212,20 @@ func Del(key ...string) {
 	}
 }
 
-// expir 0 代表无过期时间
-func Set(key string, value string, expir int) {
-	if err := Client().Set(ctx, key, value, time.Duration(expir)*time.Second).Err(); err != nil {
-		panic(err)
-	}
-}
+func Ttl(key string) (int64, error) {
 
-func SetNX(key string, value string, expir int) bool {
-	if result, err := Client().SetNX(ctx, key, value, time.Duration(expir)*time.Second).Result(); result {
-		return result
-	} else {
-		if err != nil {
-			logger.Errorf(`Redis-SetNX-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
-			panic(err)
-		}
+	val, err := Client().TTL(ctx, key).Result()
+
+	switch {
+	case err == redis.Nil:
+		return 0, nil
+	case err != nil:
+		logger.Errorf(`Redis-Get-Key-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
+		return 0, err
 	}
-	return false
+
+	return val.Nanoseconds(), nil
+
 }
 
 func Exists(key string) (bool, error) {
@@ -247,22 +244,6 @@ func Exists(key string) (bool, error) {
 
 }
 
-func Ttl(key string) (int64, error) {
-
-	val, err := Client().TTL(ctx, key).Result()
-
-	switch {
-	case err == redis.Nil:
-		return 0, nil
-	case err != nil:
-		logger.Errorf(`Redis-Get-Key-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
-		return 0, err
-	}
-
-	return val.Nanoseconds(), nil
-
-}
-
 func Get(key string) string {
 
 	val, err := Client().Get(ctx, key).Result()
@@ -272,13 +253,32 @@ func Get(key string) string {
 		return ""
 	case err != nil:
 		logger.Errorf(`Redis-Get-Key-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
-		return ""
+		panic(err)
 	case val == "":
 		return ""
 	}
 
 	return val
 
+}
+
+// expir 0 代表无过期时间
+func Set(key string, value string, expir int) {
+	if err := Client().Set(ctx, key, value, time.Duration(expir)*time.Second).Err(); err != nil {
+		panic(err)
+	}
+}
+
+func SetNX(key string, value string, expir int) bool {
+	if result, err := Client().SetNX(ctx, key, value, time.Duration(expir)*time.Second).Result(); result {
+		return result
+	} else {
+		if err != nil {
+			logger.Errorf(`Redis-SetNX-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
+			panic(err)
+		}
+	}
+	return false
 }
 
 // 列表操作
