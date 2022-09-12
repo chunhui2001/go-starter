@@ -155,6 +155,15 @@ func RedisTtlRouter(c *gin.Context) {
 	}
 }
 
+func RedisExistsRouter(c *gin.Context) {
+	key := c.Query("key")
+	if ok, err := gredis.Exists(key); err != nil {
+		c.JSON(http.StatusOK, R{Error: err}.Fail(400))
+	} else {
+		c.JSON(http.StatusOK, R{Data: ok}.Success())
+	}
+}
+
 func HttpClientSimpleRouter(c *gin.Context) {
 
 	httpResult := ghttp.SendRequest(ghttp.GET("https://www.google.com?fff=gg").Query(utils.MapOf("a", "b", "v", "你好")))

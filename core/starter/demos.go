@@ -33,6 +33,7 @@ func init() {
 		AppendRouter("GET", []string{"/labs-redis-expire"}, actions.RedisExpireRouter)
 		AppendRouter("GET", []string{"/labs-redis-setnx"}, actions.RedisSetNxRouter)
 		AppendRouter("GET", []string{"/labs-redis-ttl"}, actions.RedisTtlRouter)
+		AppendRouter("GET", []string{"/labs-redis-exists"}, actions.RedisExistsRouter)
 
 		// xslt
 		// AppendRouter("GET", []string{"/labs-xslt-demo"}, actions.XsltDemoRouter)

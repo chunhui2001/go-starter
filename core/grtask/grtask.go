@@ -90,6 +90,8 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 
 		return
 
+	} else {
+		logger.Infof(`GRTask-SetNx-False: LockKey=%s, expr='%s', currentNode=%s`, lockKey, expr, currentNode)
 	}
 
 }
