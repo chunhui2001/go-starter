@@ -223,17 +223,12 @@ func SetNX(key string, value string, expir int) bool {
 	if result, err := Client().SetNX(ctx, key, value, time.Duration(expir)*time.Second).Result(); result {
 		return result
 	} else {
-		logger.Errorf(`Redis-SetNX-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
+		if err != nil {
+			logger.Errorf(`Redis-SetNX-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
+			panic(err)
+		}
 	}
 	return false
-}
-
-func SetEX(key string, value string, expir int) (string, error) {
-
-	result, err := Client().SetEX(ctx, key, value, time.Duration(expir)*time.Second).Result()
-
-	return result, err
-
 }
 
 func Exists(key string) (bool, error) {
