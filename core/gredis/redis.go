@@ -220,8 +220,10 @@ func Set(key string, value string, expir int) {
 }
 
 func SetNX(key string, value string, expir int) bool {
-	if result, _ := Client().SetNX(ctx, key, value, time.Duration(expir)*time.Second).Result(); result {
+	if result, err := Client().SetNX(ctx, key, value, time.Duration(expir)*time.Second).Result(); result {
 		return result
+	} else {
+		logger.Errorf(`Redis-SetNX-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
 	}
 	return false
 }
