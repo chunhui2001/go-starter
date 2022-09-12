@@ -3,6 +3,7 @@ package grtask
 import (
 	"time"
 
+	"github.com/chunhui2001/go-starter/core/gid"
 	"github.com/chunhui2001/go-starter/core/gredis"
 	"github.com/chunhui2001/go-starter/core/utils"
 	"github.com/robfig/cron"
@@ -64,13 +65,10 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 		}
 	}
 
-	if gredis.SetNX(lockKey, currentNode, 5) {
+	if gredis.SetNX(lockKey, gid.YtID(), 5) {
 
 		time.Sleep(300 * time.Millisecond) // 暂停300毫秒, 避免定时任务执行的太快, 同时拿到锁
-
-		lockedNode := gredis.Get(lockKey)
-
-		logger.Infof(`GRTask-Started: LockKey=%s, expr='%s', currentNode=%s`, lockKey, expr, lockedNode)
+		logger.Infof(`GRTask-Started: LockKey=%s, expr='%s', currentNode=%s`, lockKey, expr, currentNode)
 
 		// 避免定时任务执行时间过长给当前锁续命，避免重复启动
 		go func() {
@@ -85,7 +83,7 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 		}()
 
 		// 拿到了
-		task(lockedNode, lockKey)
+		task(currentNode, lockKey)
 		gredis.Del(lockKey)
 
 		return
