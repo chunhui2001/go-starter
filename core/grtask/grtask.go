@@ -69,7 +69,7 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 
 	if gredis.SetNX(lockKey, lockVal, 5) {
 
-		time.Sleep(10 * time.Millisecond) // 暂停300毫秒, 避免定时任务执行的太快, 同时拿到锁
+		time.Sleep(10 * time.Millisecond) // 暂停10毫秒, 避免定时任务执行的太快, 同时拿到锁
 		logger.Infof(`GRTask-Started: LockKey=%s, expr='%s', currentNode=%s`, lockKey, expr, currentNode)
 
 		// 避免定时任务执行时间过长给当前锁续命，避免重复启动
