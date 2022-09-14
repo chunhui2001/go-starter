@@ -38,8 +38,16 @@ func (r R) Msg(msg string) R {
 	return r
 }
 
-func (r R) Get(code int) map[string]interface{} {
-	r.Code = code
+func (r R) Get(failCode int) map[string]interface{} {
+
+	if r.Error != nil {
+		r.Code = failCode
+	} else {
+		r.Code = 200
+	}
+
+	r.Code = failCode
+
 	return Result(r)
 }
 
