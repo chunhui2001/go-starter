@@ -60,7 +60,7 @@ func errorHandler(c *gin.Context, info ratelimit.Info) {
 var defaultServer = &Server{
 	Store: store,
 	HandlerInfo: func(c *gin.Context) {
-		c.JSON(http.StatusOK, R{Data: "info"}.Success())
+		c.JSON(http.StatusOK, R{Data: fmt.Sprintf(`Yeah, your server %s is running.`, APP_SETTINGS.AppName)}.Success())
 	},
 	HandlerIndexPage: controller.IndexRouter,
 	Handler404: func(c *gin.Context) {

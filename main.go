@@ -18,9 +18,6 @@ var (
 func init() {
 
 	starterServer = &starter.Server{
-		HandlerInfo: func(c *gin.Context) {
-			c.JSON(http.StatusOK, R{Data: "this is info page"}.Success())
-		},
 		HandlerIndexPage: controller.IndexRouter,
 		Handler404: func(c *gin.Context) {
 			if WEB_PAGE_CONF.Enable {
