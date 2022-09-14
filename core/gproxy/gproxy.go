@@ -16,6 +16,10 @@ var (
 	logger = config.Log
 )
 
+// r.Any("/scan-api/*proxyPath", func(c *gin.Context) { Proxy("", "http://localhost:4002,http://localhost:4004", c) })
+// r.Any("/scan-api/*proxyPath", func(c *gin.Context) { Proxy("/scan-api", "http://localhost:4002,http://localhost:4004", c) })
+// r.Any("/a/scan-api/*proxyPath", func(c *gin.Context) { Proxy("/scan-api", "http://localhost:4002,http://localhost:4004", c) })
+// r.Any("/b/scan-api/*proxyPath", func(c *gin.Context) { Proxy("/scan-api", "http://localhost:4002,http://localhost:4004", c) })
 func Proxy(prefix string, remotes string, c *gin.Context) {
 
 	rand.Seed(time.Now().UnixNano())
