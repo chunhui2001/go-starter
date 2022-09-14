@@ -2,6 +2,7 @@ package gproxy
 
 import (
 	"math/rand"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -13,8 +14,80 @@ import (
 )
 
 var (
-	logger = config.Log
+	logger                  = config.Log
+	defaultTimeOut      int = 150 // * time.Second
+	maxIdleConns        int = 100
+	idleConnTimeout     int = 90
+	maxIdleConnsPerHost int = 100
+	maxConnsPerHost     int = 100
 )
+
+func joinURLPath(a, b *url.URL) (path, rawpath string) {
+	if a.RawPath == "" && b.RawPath == "" {
+		return singleJoiningSlash(a.Path, b.Path), ""
+	}
+	// Same as singleJoiningSlash, but uses EscapedPath to determine
+	// whether a slash should be added
+	apath := a.EscapedPath()
+	bpath := b.EscapedPath()
+
+	aslash := strings.HasSuffix(apath, "/")
+	bslash := strings.HasPrefix(bpath, "/")
+
+	switch {
+	case aslash && bslash:
+		return a.Path + b.Path[1:], apath + bpath[1:]
+	case !aslash && !bslash:
+		return a.Path + "/" + b.Path, apath + "/" + bpath
+	}
+	return a.Path + b.Path, apath + bpath
+}
+
+func singleJoiningSlash(a, b string) string {
+	aslash := strings.HasSuffix(a, "/")
+	bslash := strings.HasPrefix(b, "/")
+	switch {
+	case aslash && bslash:
+		return a + b[1:]
+	case !aslash && !bslash:
+		return a + "/" + b
+	}
+	return a + b
+}
+
+func CustomerSingleHostReverseProxy(target *url.URL) *httputil.ReverseProxy {
+	targetQuery := target.RawQuery
+	director := func(req *http.Request) {
+		req.URL.Scheme = target.Scheme
+		req.URL.Host = target.Host
+		req.URL.Path, req.URL.RawPath = joinURLPath(target, req.URL)
+		if targetQuery == "" || req.URL.RawQuery == "" {
+			req.URL.RawQuery = targetQuery + req.URL.RawQuery
+		} else {
+			req.URL.RawQuery = targetQuery + "&" + req.URL.RawQuery
+		}
+		if _, ok := req.Header["User-Agent"]; !ok {
+			// explicitly disable User-Agent so it's not set to default value
+			req.Header.Set("User-Agent", "")
+		}
+	}
+	return &httputil.ReverseProxy{
+		Director:  director,
+		Transport: DefaultTransport,
+	}
+}
+
+var DefaultTransport http.RoundTripper = &http.Transport{
+	Dial: (&net.Dialer{
+		Timeout: time.Duration(defaultTimeOut) * time.Second,
+	}).Dial,
+	TLSHandshakeTimeout: time.Duration(defaultTimeOut) * time.Second,
+	MaxIdleConns:        maxIdleConns,
+	IdleConnTimeout:     time.Duration(idleConnTimeout) * time.Second,
+	DisableCompression:  true,
+	MaxIdleConnsPerHost: maxIdleConnsPerHost,
+	MaxConnsPerHost:     maxConnsPerHost,
+}
 
 // r.Any("/scan-api/*proxyPath", func(c *gin.Context) { Proxy("", "http://localhost:4002,http://localhost:4004", c) })
 // r.Any("/scan-api/*proxyPath", func(c *gin.Context) { Proxy("/scan-api", "http://localhost:4002,http://localhost:4004", c) })
@@ -34,15 +107,22 @@ func Proxy(prefix string, remotes string, c *gin.Context) {
 		panic(err)
 	}
 
-	proxy := httputil.NewSingleHostReverseProxy(upstream)
+	// httputil.ReverseProxy{}
+
+	proxy := CustomerSingleHostReverseProxy(upstream)
 
 	proxy.Director = func(req *http.Request) {
+
+		RequestURI := req.URL.Path
+
 		req.Header = c.Request.Header
 		req.Host = upstream.Host
 		req.URL.Scheme = upstream.Scheme
 		req.URL.Host = upstream.Host
 		req.URL.Path = prefix + "" + c.Param("proxyPath")
-		logger.Infof(`Reverse-Proxy: Upstream=%s, ProxyPath=%s`, currentRemote, prefix+""+c.Param("proxyPath"))
+
+		logger.Infof(`Reverse-Proxy: URI=%s, Upstream=%s, ProxyPath=%s`, RequestURI, currentRemote, prefix+""+c.Param("proxyPath"))
+
 	}
 
 	proxy.ServeHTTP(c.Writer, c.Request)
