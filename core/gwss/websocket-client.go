@@ -21,6 +21,7 @@ type Client struct {
 	ServerAddr string
 	CTX        context.Context
 	Connection net.Conn
+	ReCount    int32
 }
 
 func New(connectId string, serverAddress string) *Client {
@@ -81,11 +82,11 @@ func (c *Client) ListenMessage(messageHandler MessageHandler) {
 
 		if err != nil {
 			for {
-				logger.Errorf(`Write-WebSocker-Message-Error: ConnectId=%s, SeverAddress=%s, memo=Will-be-Reconnect-in-5-sec, errorMessage=%s`, c.ConnectId, c.ServerAddr, err.Error())
+				c.ReCount = c.ReCount + 1
+				logger.Errorf(`Write-WebSocker-Message-Error: ConnectId=%s, ReCount=%d, memo=%s, SeverAddress=%s, errorMessage=%s`,
+					c.ConnectId, c.ReCount, "Will-be-Reconnect-in-5-sec", c.ServerAddr, err.Error())
 				time.Sleep(5 * time.Second) // reconnect in 5 seconds
-				if _, reConnectErr := c.ReConnect(messageHandler); reConnectErr == nil {
-					break
-				}
+				c.ReConnect(messageHandler)
 			}
 		} else {
 			if messageHandler != nil {
