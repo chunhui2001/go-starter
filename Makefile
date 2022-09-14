@@ -62,7 +62,6 @@ logs:
 ### 删除程序容器
 rm:
 	docker rm -f go-starter
-	docker image prune -a -f
 
 ### 构建跨平台的可执行程序
 Built:
@@ -75,6 +74,7 @@ clear:
 	rm -rf `go env GOPATH`/bin/go-starter
 	@#rm -rf `go env GOPATH`/bin/*
 	rm -rf dist gin-bin
+	docker image prune -a -f
 
 ### 显示已安装的可执行程序
 # show install utils
