@@ -62,6 +62,7 @@ logs:
 ### 删除程序容器
 rm:
 	docker rm -f go-starter
+	docker image prune -a -f
 
 ### 构建跨平台的可执行程序
 Built:
