@@ -10,7 +10,7 @@ import (
 	"github.com/gobwas/ws/wsutil"
 )
 
-type MessageHandler func(ctx context.Context, client *Client, messageBuf []byte)
+type MessageHandler func(client *Client, messageBuf []byte)
 
 var (
 	logger = config.Log
@@ -19,46 +19,43 @@ var (
 type Client struct {
 	ConnectId  string
 	ServerAddr string
-	CTX        context.Context
 	Connection net.Conn
 	ReCount    int32
 }
 
-func New(connectId string, serverAddress string) *Client {
+func NewClient(connectId string, serverAddress string) *Client {
 	return &Client{ConnectId: connectId, ServerAddr: serverAddress}
 }
 
-func (c *Client) Connect(messageHandler MessageHandler) (context.Context, net.Conn, error) {
-
-	ctx := context.Background()
+func (c *Client) Connect(ctx context.Context, messageHandler MessageHandler) (net.Conn, error) {
 
 	conn, _, _, err := ws.DefaultDialer.Dial(ctx, c.ServerAddr)
 
 	if err != nil {
 		logger.Errorf(`Connect-WebSocker-Server-Error: ConnectId=%s, ServerAddress=%s, ErrorMessage=%s`, c.ConnectId, c.ServerAddr, err.Error())
-		return nil, nil, err
+		return nil, err
 	}
 
-	c.CTX = ctx
 	c.Connection = conn
-	// WriteMessage(ctx, conn, "asdf")
 
-	go c.ListenMessage(messageHandler)
+	go c.ListenMessage(ctx, messageHandler)
 
-	return ctx, conn, nil
+	logger.Infof(`WebSockerClient-Upgrade-Success: ConnectId=%s`, c.ConnectId)
+
+	return conn, nil
 
 }
 
-func (c *Client) ReConnect(messageHandler MessageHandler) (net.Conn, error) {
+func (c *Client) ReConnect(ctx context.Context, messageHandler MessageHandler) (net.Conn, error) {
 
-	conn, _, _, err := ws.DefaultDialer.Dial(c.CTX, c.ServerAddr)
+	conn, _, _, err := ws.DefaultDialer.Dial(ctx, c.ServerAddr)
 
 	if err != nil {
 		return nil, err
 	}
 
 	c.Connection = conn
-	go c.ListenMessage(messageHandler)
+	go c.ListenMessage(ctx, messageHandler)
 
 	return conn, nil
 
@@ -74,7 +71,7 @@ func (c *Client) WriteMessage(message string) {
 
 }
 
-func (c *Client) ListenMessage(messageHandler MessageHandler) {
+func (c *Client) ListenMessage(ctx context.Context, messageHandler MessageHandler) {
 
 	for {
 
@@ -86,11 +83,11 @@ func (c *Client) ListenMessage(messageHandler MessageHandler) {
 				logger.Errorf(`Write-WebSocker-Message-Error: ConnectId=%s, ReCount=%d, memo=%s, SeverAddress=%s, errorMessage=%s`,
 					c.ConnectId, c.ReCount, "Will-be-Reconnect-in-5-sec", c.ServerAddr, err.Error())
 				time.Sleep(5 * time.Second) // reconnect in 5 seconds
-				c.ReConnect(messageHandler)
+				c.ReConnect(ctx, messageHandler)
 			}
 		} else {
 			if messageHandler != nil {
-				go messageHandler(c.CTX, c, msg)
+				go messageHandler(c, msg)
 			} else {
 				logger.Warnf(`WebSocker-Message-Received-Not-Processed: ConnectId=%s, message=%s`, c.ConnectId, msg)
 			}
