@@ -33,8 +33,12 @@ func Init(log *logrus.Entry, node int64) {
 
 }
 
-func Get(node int64) int64 {
+func Get() int64 {
 	return gid.Generate().Int64()
+}
+
+func ID() string {
+	return YtID()
 }
 
 func YtID() string {

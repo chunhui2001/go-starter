@@ -38,7 +38,8 @@ func (r R) Msg(msg string) R {
 	return r
 }
 
-func (r R) Get() map[string]interface{} {
+func (r R) Get(code int) map[string]interface{} {
+	r.Code = code
 	return Result(r)
 }
 
