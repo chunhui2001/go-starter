@@ -29,7 +29,6 @@ func NewClient(connectId string, serverAddress string) *Client {
 }
 
 func (c *Client) OnSuccess(handler OnSuccessHandler) {
-	logger.Infof(`WebSockerClient-Upgrade-Success: ServerAddress=%s, ConnectId=%s`, c.ServerAddr, c.ConnectId)
 	handler(c)
 }
 
@@ -43,6 +42,8 @@ func (c *Client) Connect(ctx context.Context, messageHandler MessageHandler) (ne
 	}
 
 	c.Connection = conn
+
+	logger.Infof(`WebSockerClient-Upgrade-Success: ServerAddress=%s, ConnectId=%s`, c.ServerAddr, c.ConnectId)
 
 	go c.ListenMessage(ctx, messageHandler)
 
