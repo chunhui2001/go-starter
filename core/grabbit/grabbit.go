@@ -43,6 +43,8 @@ func Init(conf *GRabbitConf, log *logrus.Entry) {
 
 	channel = ch
 
+	logger.Infof("RabbitMQ-Connect-Success: Server=%s", server)
+
 	for _, q := range conf.Queues {
 		if err := QueueDeclare(q); err != nil {
 			logger.Errorf("RabbitMQ-Failed-to-Declare-a-Queue: Server=%s, QueueName=%s, errorMessage=%s", server, q, err.Error())
