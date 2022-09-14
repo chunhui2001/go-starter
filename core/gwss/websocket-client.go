@@ -11,25 +11,26 @@ import (
 )
 
 type MessageHandler func(client *Client, messageBuf []byte)
-type OnSuccessHandler func(client *Client)
+type SuccessHandler func(client *Client)
 
 var (
 	logger = config.Log
 )
 
 type Client struct {
-	ConnectId  string
-	ServerAddr string
-	Connection net.Conn
-	ReCount    int32
+	ConnectId        string
+	ServerAddr       string
+	Connection       net.Conn
+	ReCount          int32
+	OnSuccessHandler SuccessHandler
 }
 
 func NewClient(connectId string, serverAddress string) *Client {
 	return &Client{ConnectId: connectId, ServerAddr: serverAddress}
 }
 
-func (c *Client) OnSuccess(handler OnSuccessHandler) {
-	handler(c)
+func (c *Client) OnSuccess(successHandler SuccessHandler) {
+	c.OnSuccessHandler = successHandler
 }
 
 func (c *Client) Connect(ctx context.Context, messageHandler MessageHandler) (net.Conn, error) {
@@ -43,9 +44,13 @@ func (c *Client) Connect(ctx context.Context, messageHandler MessageHandler) (ne
 
 	c.Connection = conn
 
+	go c.ListenMessage(ctx, messageHandler)
+
 	logger.Infof(`WebSockerClient-Upgrade-Success: ServerAddress=%s, ConnectId=%s`, c.ServerAddr, c.ConnectId)
 
-	go c.ListenMessage(ctx, messageHandler)
+	if c.OnSuccessHandler != nil {
+		c.OnSuccessHandler(c)
+	}
 
 	return conn, nil
 
