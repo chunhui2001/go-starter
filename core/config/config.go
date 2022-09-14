@@ -19,6 +19,7 @@ import (
 	"github.com/chunhui2001/go-starter/core/ghttp"
 	"github.com/chunhui2001/go-starter/core/gid"
 	"github.com/chunhui2001/go-starter/core/gmongo"
+	"github.com/chunhui2001/go-starter/core/grabbit"
 	"github.com/chunhui2001/go-starter/core/gredis"
 	"github.com/chunhui2001/go-starter/core/grtask"
 	"github.com/chunhui2001/go-starter/core/gsql"
@@ -189,6 +190,10 @@ var MySqlConf = &gsql.MySql{
 	Enable: false,
 }
 
+var RabbitMQConf = &grabbit.GRabbitConf{
+	Enable: false,
+}
+
 var Log *logrus.Entry
 var filename string = ".env"
 
@@ -235,6 +240,7 @@ func init() {
 	loadMySqlSettings(v1, filename)
 	loadEsSettings(v1, filename)
 	loadSimpleGTaskSettings(v1, filename)
+	loadRabbitSettings(v1, filename)
 
 	printConfigLogLines()
 
@@ -451,6 +457,26 @@ func loadSimpleGTaskSettings(v1 *viper.Viper, filename string) {
 		return
 	} else {
 		configLoggerLines = append(configLoggerLines, []string{"SimpleGTaskConf", "Enabled=" + utils.ToString(SimpleGTaskConf.Enable)})
+	}
+
+}
+
+func loadRabbitSettings(v1 *viper.Viper, filename string) {
+
+	err := v1.Unmarshal(&RabbitMQConf)
+
+	if err != nil {
+		Log.Info("viper parse SimpleGTaskConf error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		os.Exit(3)
+		return
+	} else {
+
+		configLoggerLines = append(configLoggerLines, []string{"RabbitMQConf", "Enabled=" + utils.ToString(RabbitMQConf.Enable)})
+
+		if RabbitMQConf.Enable {
+			grabbit.Init(RabbitMQConf, Log)
+		}
+
 	}
 
 }
