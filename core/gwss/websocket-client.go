@@ -96,7 +96,7 @@ func (c *Client) ListenMessage(messageHandler MessageHandler) {
 			if strings.Contains(err.Error(), "connection reset by peer") {
 
 				// 重建创建连接
-				logger.Errorf(`WebSocket-Connection-Has-Been-Closed: ConnectId=%s, SeverAddress=%s, opcode=%x, errorMessage=%s`, c.ConnectId, c.ServerAddr, OpCode, err.Error())
+				logger.Errorf(`WebSocket-Connection-Has-Been-Closed: ConnectId=%s, SeverAddress=%s, opcode=%x, errorMessage=%s`, c.ConnectId, c.ServerAddr, opcode, err.Error())
 
 				if err2 := c.Connection.Close(); err2 != nil {
 					logger.Errorf(`WebSocket-Closed-Error: ConnectId=%s, ReCount=%d, SeverAddress=%s, errorMessage=%s`,

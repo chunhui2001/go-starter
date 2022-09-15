@@ -277,7 +277,7 @@ func WsClientSimple(c *gin.Context) {
 	connectId := utils.ShortId()
 	serverAddress := c.Query("serverAddress")
 
-	_, err := gwss.NewClient(connectId, serverAddress).Connect(func(client *gwss.Client, messageBuf []byte) {
+	_, err := gwss.NewClient(connectId, serverAddress).Connect(func(client *gwss.Client, opcode string, messageBuf []byte) {
 		message := utils.AsMap(messageBuf)
 		if message != nil && message["topic"] != nil && message["topic"] == "server_ping" {
 			msg := fmt.Sprintf(`{"message":"%s","action": "pong"}`, utils.DateTimeUTCString())
