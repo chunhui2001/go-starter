@@ -67,7 +67,7 @@ func (c *Client) ReConnect(messageHandler MessageHandler) (net.Conn, error) {
 
 	c.Connection = conn
 
-	logger.Infof(`WebSockerClient-Upgrade-Success: ServerAddress=%s, ConnectId=%s, ReCount=%d`, c.ServerAddr, c.ConnectId, c.ReCount)
+	logger.Infof(`WebSockerClient-ReConnect-Success: ServerAddress=%s, ConnectId=%s, ReCount=%d`, c.ServerAddr, c.ConnectId, c.ReCount)
 
 	return conn, nil
 
@@ -92,7 +92,7 @@ func (c *Client) ListenMessage(messageHandler MessageHandler) {
 		if err != nil {
 			for {
 				c.ReCount = c.ReCount + 1
-				logger.Errorf(`Write-WebSocker-Message-Error: ConnectId=%s, ReCount=%d, memo=%s, SeverAddress=%s, errorMessage=%s`,
+				logger.Errorf(`Read-WebSocker-Message-Error: ConnectId=%s, ReCount=%d, memo=%s, SeverAddress=%s, errorMessage=%s`,
 					c.ConnectId, c.ReCount, "Will-be-Reconnect-in-5-sec", c.ServerAddr, err.Error())
 				c.Connection.Close()
 				time.Sleep(5 * time.Second) // reconnect in 5 seconds
