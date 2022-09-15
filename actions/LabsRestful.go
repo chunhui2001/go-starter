@@ -278,13 +278,13 @@ func WsClientSimple(c *gin.Context) {
 	serverAddress := c.Query("serverAddress")
 
 	_, err := gwss.NewClient(connectId, serverAddress).Connect(func(client *gwss.Client, opcode string, messageBuf []byte) {
-		message := utils.AsMap(messageBuf)
-		if message != nil && message["topic"] != nil && message["topic"] == "server_ping" {
-			msg := fmt.Sprintf(`{"message":"%s","action": "pong"}`, utils.DateTimeUTCString())
-			client.WriteMessage(msg)
-		} else {
-			logger.Info(fmt.Sprintf(`WebSocket-Receive-a-Message: connectId=%s, message=%s`, client.ConnectId, string(messageBuf)))
-		}
+		// message := utils.AsMap(messageBuf)
+		// if message != nil && message["topic"] != nil && message["topic"] == "server_ping" {
+		// 	msg := fmt.Sprintf(`{"message":"%s","action": "pong"}`, utils.DateTimeUTCString())
+		// 	client.WriteMessage(msg)
+		// } else {
+		logger.Info(fmt.Sprintf(`WebSocket-Receive-a-Message: connectId=%s, opcode=%s, message=%s`, client.ConnectId, opcode, string(messageBuf)))
+		// }
 	})
 
 	if err != nil {

@@ -20,6 +20,24 @@ $ go get -u github.com/elazarl/go-bindata-assetfs/...
 
 $ go get && go run .
 
+### 查看当前进程打开的文件描述符
+$ lsof -p 1243 | wc -l
+
+### 查看系统设置
+$ ulimit -a 
+
+### 
+$ ulimit -Sn
+
+### 设置
+$ ulimit -n 1000000
+OR
+$ sysctl -w fs.file-max=1000000
+
+### and /etc/security/limits.conf or /etc/sysctl.conf change:
+fs.file-max = 1000000
+
+
 ### websocket 
 # https://hoohoo.top/blog/20220320172715-go-websocket/
 

@@ -3,9 +3,11 @@ package gwss
 import (
 	"context"
 	"net"
+	"runtime"
 	"strings"
 	"time"
 
+	"github.com/alitto/pond"
 	"github.com/chunhui2001/go-starter/core/config"
 	"github.com/chunhui2001/go-starter/core/utils"
 	"github.com/gobwas/ws"
@@ -103,6 +105,13 @@ func (c *Client) WriteMessage(message string) {
 */
 func (c *Client) ListenMessage(messageHandler MessageHandler) {
 
+	numCPUs := runtime.NumCPU()
+	pool := pond.New(numCPUs, 1000)
+
+	defer pool.StopAndWait()
+
+	logger.Infof(`WebSocket-Listener-Message-As-a-Pool: ConnectId=%s, SeverAddress=%s`, c.ConnectId, c.ServerAddr)
+
 	for {
 
 		msg, opcode, err := wsutil.ReadServerData(c.Connection)
@@ -112,14 +121,17 @@ func (c *Client) ListenMessage(messageHandler MessageHandler) {
 			if strings.Contains(err.Error(), "connection reset by peer") {
 
 				// 重建创建连接
-				logger.Errorf(`WebSocket-Connection-Has-Been-Closed: ConnectId=%s, opcode=%x, SeverAddress=%s, errorMessage=%s`, c.ConnectId, opcode, c.ServerAddr, err.Error())
+				logger.Errorf(`WebSocket-Connection-Has-Been-Closed: ConnectId=%s, opcode=%x, SeverAddress=%s, Msg=%s, errorMessage=%s`,
+					c.ConnectId, opcode, c.ServerAddr, msg, err.Error())
 
 				if err2 := c.Connection.Close(); err2 != nil {
 					logger.Errorf(`WebSocket-Closed-Error: ConnectId=%s, ReCount=%d, SeverAddress=%s, errorMessage=%s`,
 						c.ConnectId, c.ReCount, c.ServerAddr, err2.Error())
 				}
 
+				c.Connect(messageHandler)
 				break
+
 			}
 
 			for {
@@ -135,6 +147,7 @@ func (c *Client) ListenMessage(messageHandler MessageHandler) {
 			}
 
 		} else {
+
 			if messageHandler != nil {
 
 				if opcode == 0x9 {
@@ -145,11 +158,14 @@ func (c *Client) ListenMessage(messageHandler MessageHandler) {
 					logger.Infof(`WebSocker-Receive-Pong: ConnectId=%s, opcode=%s, message=%s`, c.ConnectId, utils.ToString(opcode), msg)
 				}
 
-				go messageHandler(c, utils.ToString(opcode), msg)
+				pool.Submit(func() {
+					messageHandler(c, utils.ToString(opcode), msg)
+				})
 
 			} else {
 				logger.Warnf(`WebSocker-Message-Received-Not-Processed: ConnectId=%s, message=%s`, c.ConnectId, msg)
 			}
+
 		}
 
 	}

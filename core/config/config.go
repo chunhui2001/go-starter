@@ -386,7 +386,14 @@ func loadAppSettings(v1 *viper.Viper, filename string) {
 	} else {
 		AppSetting.AppVersion = built.INFO.Commit
 		AppSetting.OS = built.INFO.OS
-		log.Println("AppSetting: Version=" + AppSetting.AppVersion + ", OS=" + AppSetting.OS + ", TimeZone=" + AppSetting.TimeZone + ", GIN_ENV=" + AppSetting.Env + ", AppName=" + AppSetting.AppName + ", AppPort=" + AppSetting.AppPort + ", appRoot=" + utils.RootDir())
+		log.Println("AppSetting: Version=" + AppSetting.AppVersion +
+			", OS=" + AppSetting.OS +
+			", NumCPUs=" + utils.ToString(runtime.NumCPU()) +
+			", TimeZone=" + AppSetting.TimeZone +
+			", GIN_ENV=" + AppSetting.Env +
+			", AppName=" + AppSetting.AppName +
+			", AppPort=" + AppSetting.AppPort +
+			", appRoot=" + utils.RootDir())
 	}
 
 }
@@ -429,7 +436,7 @@ func loadMySqlSettings(v1 *viper.Viper, filename string) {
 		return
 	} else {
 		configLoggerLines = append(configLoggerLines, []string{"MySqlSettings", "Enabled=" + utils.ToString(MySqlConf.Enable)})
-		if MySqlConf.Enable != false {
+		if MySqlConf.Enable {
 			gsql.Init(MySqlConf, Log)
 		}
 	}
@@ -589,9 +596,13 @@ func readConfig(filename string, defaults map[string]interface{}) *viper.Viper {
 
 // GetEnv returns an environment variable or a default value if not present
 func GetEnv(key, defaultValue string) string {
+
 	value := os.Getenv(key)
+
 	if value != "" {
 		return value
 	}
+
 	return defaultValue
+
 }
