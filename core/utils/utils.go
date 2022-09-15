@@ -176,7 +176,7 @@ func ToMap(v interface{}) map[string]interface{} {
 func StrToInt(str string) int {
 	intVar, err := strconv.Atoi(str)
 	if err != nil {
-		// ...
+		panic(err)
 	}
 	return intVar
 }
@@ -190,8 +190,10 @@ func ToString(s any) string {
 		return fmt.Sprintf("%s", s)
 	case bool:
 		return fmt.Sprintf("%t", s)
+	case byte:
+		return fmt.Sprintf("%x", s)
 	case []uint8:
-		return fmt.Sprintf("%s", string(s.([]byte)))
+		return string(s.([]byte))
 	default:
 		return fmt.Sprintf("%d", s)
 	}

@@ -29,6 +29,9 @@ https://www.freecodecamp.org/news/million-websockets-and-go-cc58418460bb/
 ### How to use websockets in Golang: best tools and step-by-step guide
 https://yalantis.com/blog/how-to-build-websockets-in-go/
 
+### Handle 'connection reset by peer' error in Go
+https://gosamples.dev/connection-reset-by-peer/
+
 $ go get github.com/gorilla/websocket
 
 ### html template

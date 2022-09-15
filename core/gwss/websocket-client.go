@@ -3,14 +3,16 @@ package gwss
 import (
 	"context"
 	"net"
+	"strings"
 	"time"
 
 	"github.com/chunhui2001/go-starter/core/config"
+	"github.com/chunhui2001/go-starter/core/utils"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 )
 
-type MessageHandler func(client *Client, messageBuf []byte)
+type MessageHandler func(client *Client, opcode string, messageBuf []byte)
 type SuccessHandler func(client *Client)
 
 var (
@@ -87,20 +89,38 @@ func (c *Client) ListenMessage(messageHandler MessageHandler) {
 
 	for {
 
-		msg, _, err := wsutil.ReadServerData(c.Connection)
+		msg, opcode, err := wsutil.ReadServerData(c.Connection)
 
 		if err != nil {
+
+			if strings.Contains(err.Error(), "connection reset by peer") {
+
+				// 重建创建连接
+				logger.Errorf(`WebSocket-Connection-Has-Been-Closed: ConnectId=%s, SeverAddress=%s, opcode=%x, errorMessage=%s`, c.ConnectId, c.ServerAddr, OpCode, err.Error())
+
+				if err2 := c.Connection.Close(); err2 != nil {
+					logger.Errorf(`WebSocket-Closed-Error: ConnectId=%s, ReCount=%d, SeverAddress=%s, errorMessage=%s`,
+						c.ConnectId, c.ReCount, c.ServerAddr, err.Error())
+				}
+
+				break
+			}
+
 			for {
+
 				c.ReCount = c.ReCount + 1
-				logger.Errorf(`Read-WebSocker-Message-Error: ConnectId=%s, ReCount=%d, memo=%s, SeverAddress=%s, errorMessage=%s`,
+
+				logger.Errorf(`Read-WebSocket-Message-Error: ConnectId=%s, ReCount=%d, memo=%s, SeverAddress=%s, errorMessage=%s`,
 					c.ConnectId, c.ReCount, "Will-be-Reconnect-in-5-sec", c.ServerAddr, err.Error())
-				c.Connection.Close()
+
 				time.Sleep(5 * time.Second) // reconnect in 5 seconds
 				c.ReConnect(messageHandler)
+
 			}
+
 		} else {
 			if messageHandler != nil {
-				go messageHandler(c, msg)
+				go messageHandler(c, utils.ToString(opcode), msg)
 			} else {
 				logger.Warnf(`WebSocker-Message-Received-Not-Processed: ConnectId=%s, message=%s`, c.ConnectId, msg)
 			}
