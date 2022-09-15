@@ -23,6 +23,12 @@ $ go get && go run .
 ### websocket 
 # https://hoohoo.top/blog/20220320172715-go-websocket/
 
+### A Million WebSockets and Go
+https://www.freecodecamp.org/news/million-websockets-and-go-cc58418460bb/
+
+### How to use websockets in Golang: best tools and step-by-step guide
+https://yalantis.com/blog/how-to-build-websockets-in-go/
+
 $ go get github.com/gorilla/websocket
 
 ### html template

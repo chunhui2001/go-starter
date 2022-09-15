@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"bufio"
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -278,16 +277,15 @@ func WsClientSimple(c *gin.Context) {
 	connectId := utils.ShortId()
 	serverAddress := c.Query("serverAddress")
 
-	_, err := gwss.NewClient(connectId, serverAddress).Connect(
-		context.Background(), func(client *gwss.Client, messageBuf []byte) {
-			message := utils.AsMap(messageBuf)
-			if message != nil && message["topic"] != nil && message["topic"] == "server_ping" {
-				msg := fmt.Sprintf(`{"message":"%s","action": "pong"}`, utils.DateTimeUTCString())
-				client.WriteMessage(msg)
-			} else {
-				logger.Info(fmt.Sprintf(`WebSocket-Receive-a-Message: connectId=%s, message=%s`, client.ConnectId, string(messageBuf)))
-			}
-		})
+	_, err := gwss.NewClient(connectId, serverAddress).Connect(func(client *gwss.Client, messageBuf []byte) {
+		message := utils.AsMap(messageBuf)
+		if message != nil && message["topic"] != nil && message["topic"] == "server_ping" {
+			msg := fmt.Sprintf(`{"message":"%s","action": "pong"}`, utils.DateTimeUTCString())
+			client.WriteMessage(msg)
+		} else {
+			logger.Info(fmt.Sprintf(`WebSocket-Receive-a-Message: connectId=%s, message=%s`, client.ConnectId, string(messageBuf)))
+		}
+	})
 
 	if err != nil {
 		c.JSON(http.StatusOK, R{Error: err}.Fail(400))

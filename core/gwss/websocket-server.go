@@ -13,6 +13,7 @@ import (
 	"github.com/chunhui2001/go-starter/core/gwss/model"
 )
 
+// ulimit -n == 65535
 var upgrader = websocket.Upgrader{
 
 	ReadBufferSize:  1024,

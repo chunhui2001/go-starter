@@ -34,9 +34,9 @@ func (c *Client) OnSuccess(successHandler SuccessHandler) *Client {
 	return c
 }
 
-func (c *Client) Connect(ctx context.Context, messageHandler MessageHandler) (net.Conn, error) {
+func (c *Client) Connect(messageHandler MessageHandler) (net.Conn, error) {
 
-	conn, _, _, err := ws.DefaultDialer.Dial(ctx, c.ServerAddr)
+	conn, _, _, err := ws.DefaultDialer.Dial(context.Background(), c.ServerAddr)
 
 	if err != nil {
 		logger.Errorf(`Connect-WebSocker-Server-Error: ConnectId=%s, ServerAddress=%s, ErrorMessage=%s`, c.ConnectId, c.ServerAddr, err.Error())
@@ -45,7 +45,7 @@ func (c *Client) Connect(ctx context.Context, messageHandler MessageHandler) (ne
 
 	c.Connection = conn
 
-	go c.ListenMessage(ctx, messageHandler)
+	go c.ListenMessage(messageHandler)
 
 	logger.Infof(`WebSockerClient-Upgrade-Success: ServerAddress=%s, ConnectId=%s`, c.ServerAddr, c.ConnectId)
 
@@ -57,16 +57,15 @@ func (c *Client) Connect(ctx context.Context, messageHandler MessageHandler) (ne
 
 }
 
-func (c *Client) ReConnect(ctx context.Context, messageHandler MessageHandler) (net.Conn, error) {
+func (c *Client) ReConnect(messageHandler MessageHandler) (net.Conn, error) {
 
-	conn, _, _, err := ws.DefaultDialer.Dial(ctx, c.ServerAddr)
+	conn, _, _, err := ws.DefaultDialer.Dial(context.Background(), c.ServerAddr)
 
 	if err != nil {
 		return nil, err
 	}
 
 	c.Connection = conn
-	// go c.ListenMessage(ctx, messageHandler)
 
 	logger.Infof(`WebSockerClient-Upgrade-Success: ServerAddress=%s, ConnectId=%s, ReCount=%d`, c.ServerAddr, c.ConnectId, c.ReCount)
 
@@ -84,7 +83,7 @@ func (c *Client) WriteMessage(message string) {
 
 }
 
-func (c *Client) ListenMessage(ctx context.Context, messageHandler MessageHandler) {
+func (c *Client) ListenMessage(messageHandler MessageHandler) {
 
 	for {
 
@@ -95,9 +94,9 @@ func (c *Client) ListenMessage(ctx context.Context, messageHandler MessageHandle
 				c.ReCount = c.ReCount + 1
 				logger.Errorf(`Write-WebSocker-Message-Error: ConnectId=%s, ReCount=%d, memo=%s, SeverAddress=%s, errorMessage=%s`,
 					c.ConnectId, c.ReCount, "Will-be-Reconnect-in-5-sec", c.ServerAddr, err.Error())
-				time.Sleep(5 * time.Second) // reconnect in 5 seconds
-				c.ReConnect(ctx, messageHandler)
 				c.Connection.Close()
+				time.Sleep(5 * time.Second) // reconnect in 5 seconds
+				c.ReConnect(messageHandler)
 			}
 		} else {
 			if messageHandler != nil {
