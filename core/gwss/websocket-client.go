@@ -85,6 +85,22 @@ func (c *Client) WriteMessage(message string) {
 
 }
 
+/*
+//	|Opcode  | Meaning                             | Reference |
+// -+--------+-------------------------------------+-----------|
+//	| 0      | Continuation Frame                  | RFC 6455  |
+// -+--------+-------------------------------------+-----------|
+//	| 1      | Text Frame                          | RFC 6455  |
+// -+--------+-------------------------------------+-----------|
+//	| 2      | Binary Frame                        | RFC 6455  |
+// -+--------+-------------------------------------+-----------|
+//	| 8      | Connection Close Frame              | RFC 6455  |
+// -+--------+-------------------------------------+-----------|
+//	| 9      | Ping Frame                          | RFC 6455  |
+// -+--------+-------------------------------------+-----------|
+//	| 10     | Pong Frame                          | RFC 6455  |
+// -+--------+-------------------------------------+-----------|
+*/
 func (c *Client) ListenMessage(messageHandler MessageHandler) {
 
 	for {
@@ -96,11 +112,11 @@ func (c *Client) ListenMessage(messageHandler MessageHandler) {
 			if strings.Contains(err.Error(), "connection reset by peer") {
 
 				// 重建创建连接
-				logger.Errorf(`WebSocket-Connection-Has-Been-Closed: ConnectId=%s, SeverAddress=%s, opcode=%x, errorMessage=%s`, c.ConnectId, c.ServerAddr, opcode, err.Error())
+				logger.Errorf(`WebSocket-Connection-Has-Been-Closed: ConnectId=%s, opcode=%x, SeverAddress=%s, errorMessage=%s`, c.ConnectId, opcode, c.ServerAddr, err.Error())
 
 				if err2 := c.Connection.Close(); err2 != nil {
 					logger.Errorf(`WebSocket-Closed-Error: ConnectId=%s, ReCount=%d, SeverAddress=%s, errorMessage=%s`,
-						c.ConnectId, c.ReCount, c.ServerAddr, err.Error())
+						c.ConnectId, c.ReCount, c.ServerAddr, err2.Error())
 				}
 
 				break
@@ -120,7 +136,17 @@ func (c *Client) ListenMessage(messageHandler MessageHandler) {
 
 		} else {
 			if messageHandler != nil {
+
+				if opcode == 0x9 {
+					logger.Infof(`WebSocker-Receive-Ping: ConnectId=%s, opcode=%s, message=%s`, c.ConnectId, utils.ToString(opcode), msg)
+				} else if opcode == 0x8 {
+					logger.Infof(`WebSocker-Receive-Closed: ConnectId=%s, opcode=%s, message=%s`, c.ConnectId, utils.ToString(opcode), msg)
+				} else if opcode == 0xa {
+					logger.Infof(`WebSocker-Receive-Pong: ConnectId=%s, opcode=%s, message=%s`, c.ConnectId, utils.ToString(opcode), msg)
+				}
+
 				go messageHandler(c, utils.ToString(opcode), msg)
+
 			} else {
 				logger.Warnf(`WebSocker-Message-Received-Not-Processed: ConnectId=%s, message=%s`, c.ConnectId, msg)
 			}
