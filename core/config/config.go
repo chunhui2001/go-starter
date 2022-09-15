@@ -70,10 +70,13 @@ type Cookie struct {
 }
 
 type LogConf struct {
-	Output      string `mapstructure:"LOG_OUTPUT"`
-	FilePath    string `mapstructure:"LOG_FILE_PATH"`
-	KafkaServer string `mapstructure:"LOG_KAFKA_SERVER"`
-	KafkaTopic  string `mapstructure:"LOG_KAFKA_TOPIC"`
+	Output         string `mapstructure:"LOG_OUTPUT"`
+	FilePath       string `mapstructure:"LOG_FILE_PATH"`
+	FileMaxSize    int    `mapstructure:"LOG_FILE_MAX_SIZE"`
+	FileMaxBackups int    `mapstructure:"LOG_FILE_MAX_BACKUPS"`
+	FileMaxAge     int    `mapstructure:"LOG_FILE_MAX_AGE"`
+	KafkaServer    string `mapstructure:"LOG_KAFKA_SERVER"`
+	KafkaTopic     string `mapstructure:"LOG_KAFKA_TOPIC"`
 }
 
 type WebPageConf struct {
@@ -113,7 +116,10 @@ var SimpleGTaskConf = &SimpleGTask{
 }
 
 var LogSettings = &LogConf{
-	Output: "console",
+	Output:         "console",
+	FileMaxSize:    1, // 1MB
+	FileMaxBackups: 10,
+	FileMaxAge:     30,
 }
 
 var WebPageSettings = &WebPageConf{
@@ -155,9 +161,9 @@ func (l *LogConf) LogFile() string {
 func (l *LogConf) LumberjackLogger() *lumberjack.Logger {
 	return &lumberjack.Logger{
 		Filename:   l.LogFile(),
-		MaxSize:    1, // MB
-		MaxBackups: 10,
-		MaxAge:     30, // days
+		MaxSize:    l.FileMaxSize, // MB
+		MaxBackups: l.FileMaxBackups,
+		MaxAge:     l.FileMaxAge, // days
 		Compress:   true,
 	}
 }
@@ -392,7 +398,7 @@ func loadLoggerSettings(v1 *viper.Viper, filename string) {
 		os.Exit(3)
 		return
 	} else {
-		log.Println("LogSettings: Output=" + LogSettings.Output + ", logFile=" + LogSettings.LogFile())
+		log.Println("LogSettings: Output=" + LogSettings.Output + ", logFile=" + LogSettings.LogFile() + ", MaxSize=" + utils.ToString(LogSettings.FileMaxSize) + "mb")
 	}
 }
 
