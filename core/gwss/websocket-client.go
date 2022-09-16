@@ -51,27 +51,11 @@ func (c *Client) Connect(messageHandler MessageHandler) (net.Conn, error) {
 
 	go c.ListenMessage(messageHandler)
 
-	logger.Infof(`WebSockerClient-Upgrade-Success: ServerAddress=%s, ConnectId=%s`, c.ServerAddr, c.ConnectId)
+	logger.Infof(`WebSockerClient-Upgrade-Success: ConnectId=%s, ReCount=%d, ServerAddress=%s`, c.ConnectId, c.ReCount, c.ServerAddr)
 
 	if c.OnSuccessHandler != nil {
 		c.OnSuccessHandler(c)
 	}
-
-	return conn, nil
-
-}
-
-func (c *Client) ReConnect(messageHandler MessageHandler) (net.Conn, error) {
-
-	conn, _, _, err := ws.DefaultDialer.Dial(context.Background(), c.ServerAddr)
-
-	if err != nil {
-		return nil, err
-	}
-
-	c.Connection = conn
-
-	logger.Infof(`WebSockerClient-ReConnect-Success: ServerAddress=%s, ConnectId=%s, ReCount=%d`, c.ServerAddr, c.ConnectId, c.ReCount)
 
 	return conn, nil
 
