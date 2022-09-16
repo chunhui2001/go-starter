@@ -35,15 +35,13 @@ func InitProducer(sVersion string) {
 
 	logger.Info(fmt.Sprintf("Redis-Queue-CreateProducer-Completed: ServerVersion=%s, %s", serverVersion, serverInfo))
 
-	SendMessage(utils.MapOf("index", 9, "啊啊舒服的", "你好啊"))
-
 }
 
-func InitConsumer(sVersion string) {
+func CreateConsumer(queueName string, groupName string, process ConsumerFunc) {
 
 	c, err := NewConsumerWithOptions(&ConsumerOptions{
 		// Name:              "",
-		// GroupName:         "",
+		GroupName:         groupName,
 		VisibilityTimeout: 60 * time.Second,
 		BlockingTimeout:   5 * time.Second,
 		ReclaimInterval:   1 * time.Second,
@@ -57,13 +55,10 @@ func InitConsumer(sVersion string) {
 		return
 	}
 
-	consumer = c
-
-	RegisterConsumter("redisqueue:test", process)
+	c.Register(queueName, process)
 
 	go func() {
 		for err := range c.Errors {
-			// handle errors accordingly
 			logger.Errorf(fmt.Sprintf("Redis-Queue-Consumer-Handler-Message-Error: errorMessage=%+v", err))
 		}
 	}()
@@ -74,29 +69,18 @@ func InitConsumer(sVersion string) {
 
 }
 
-// 发送一条消息
-func SendMessage(msg map[string]interface{}) {
+func SendMessage(queueName string, msg map[string]interface{}) bool {
 
 	err := producer.Enqueue(&Message{
-		Stream: "redisqueue:test",
+		Stream: queueName,
 		Values: msg,
 	})
 
 	if err != nil {
 		logger.Error(fmt.Sprintf("Redis-Queue-SendMessage-Error: %s, ErrorMessage=%s", serverInfo, utils.ErrorToString(err)))
-		return
+		return false
 	}
 
-}
+	return true
 
-// 注册一个消费者
-func RegisterConsumter(queueName string, process ConsumerFunc) {
-
-	consumer.Register(queueName, process)
-
-}
-
-func process(msg *Message) error {
-	logger.Info(fmt.Sprintf("Redis-Queue-Consumer-Processing-Message: Message=%s", utils.ToJsonString(msg)))
-	return nil
 }

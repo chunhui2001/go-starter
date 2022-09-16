@@ -17,7 +17,6 @@ func init() {
 		AppendRouter("GET", []string{"/labs-ytld"}, actions.YtIdRouter)
 		AppendRouter("GET", []string{"/labs-pem"}, actions.PemRouter)
 		AppendRouter("GET", []string{"/labs-leftpad"}, actions.PadLeftRouter)
-		AppendRouter("POST", []string{"/labs-redis-pub"}, actions.RedisPubRouter)
 		AppendRouter("POST", []string{"/labs-upload-file"}, actions.UploadFileRouterOne)
 		AppendRouter("GET", []string{"/labs-update-struct-pointer"}, actions.UpdateStructPointer)
 
@@ -34,6 +33,9 @@ func init() {
 		AppendRouter("GET", []string{"/labs-redis-setnx"}, actions.RedisSetNxRouter)
 		AppendRouter("GET", []string{"/labs-redis-ttl"}, actions.RedisTtlRouter)
 		AppendRouter("GET", []string{"/labs-redis-exists"}, actions.RedisExistsRouter)
+		AppendRouter("POST", []string{"/labs-redis-pub"}, actions.RedisPubRouter)
+		AppendRouter("POST", []string{"/labs-redis-producer"}, actions.RedisQueueProducerRouter)
+		AppendRouter("GET", []string{"/labs-redis-consumer"}, actions.RedisQueueConsumerRouter)
 
 		// xslt
 		// AppendRouter("GET", []string{"/labs-xslt-demo"}, actions.XsltDemoRouter)

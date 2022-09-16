@@ -21,6 +21,7 @@ import (
 	"github.com/chunhui2001/go-starter/core/gwss"
 	"github.com/chunhui2001/go-starter/core/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 var (
@@ -74,6 +75,34 @@ func RedisPubRouter(c *gin.Context) {
 	}
 
 	gredis.Pub(channel, string(payload))
+
+	c.JSON(http.StatusOK, (&R{Data: true}).Success())
+
+}
+
+func RedisQueueProducerRouter(c *gin.Context) {
+
+	streamName := c.Query("streamName")
+	var data = new(map[string]interface{})
+
+	if err := c.ShouldBindWith(data, binding.JSON); err != nil {
+		c.JSON(200, (&R{Error: err}).Msg(err.Error()).IfErr(413))
+		return
+	}
+
+	c.JSON(http.StatusOK, (&R{Data: gredis.SendMessage(streamName, *data)}).Success())
+
+}
+
+func RedisQueueConsumerRouter(c *gin.Context) {
+
+	streamName := c.Query("streamName")
+	groupName := c.Query("groupName")
+
+	gredis.CreateConsumer(streamName, groupName, func(msg *gredis.Message) error {
+		logger.Info(fmt.Sprintf("Redis-Queue-Consumer-Processing-Message: groupName=%s, streamName=%s, Message=%s", groupName, streamName, utils.ToJsonString(msg)))
+		return nil
+	})
 
 	c.JSON(http.StatusOK, (&R{Data: true}).Success())
 

@@ -166,7 +166,6 @@ func Init(redisConf *GRedis, log *logrus.Entry) {
 
 	if connected {
 		InitProducer(serverVersion)
-		InitConsumer(serverVersion)
 	}
 
 }
