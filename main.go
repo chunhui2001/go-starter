@@ -26,7 +26,7 @@ func init() {
 					"content":    "Page not found",
 				})
 			} else {
-				c.JSON(http.StatusOK, R{}.Msg("Page-Not-Found").Fail(404))
+				c.JSON(http.StatusOK, (&R{}).Msg("Page-Not-Found").Fail(404))
 			}
 		},
 	}

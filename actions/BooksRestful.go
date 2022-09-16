@@ -18,11 +18,6 @@ func QueryBooksRouter(c *gin.Context) {
 
 	rows, err := gsql.SimpleQuery(ss)
 
-	if err != nil {
-		c.JSON(200, R{Error: err}.Fail(400))
-		return
-	}
-
-	c.JSON(200, R{Data: rows}.Success())
+	c.JSON(200, (&R{Data: rows, Error: err}).IfErr(400))
 
 }

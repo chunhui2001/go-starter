@@ -40,7 +40,7 @@ func MySqlTrxLocks1(c *gin.Context) {
 	tx, err = gsql.DbClient.BeginTx(ctx, nil)
 
 	if err != nil {
-		c.JSON(200, R{Error: fail("BeginTxError", err)}.Fail(500))
+		c.JSON(200, (&R{Error: fail("BeginTxError", err)}).Fail(500))
 		return
 	}
 
@@ -52,7 +52,7 @@ func MySqlTrxLocks1(c *gin.Context) {
 	time.Sleep(1000 * time.Second)
 
 	if err != nil {
-		c.JSON(200, R{Error: fail("QueryContextError", err)}.Fail(500))
+		c.JSON(200, (&R{Error: fail("QueryContextError", err)}).Fail(500))
 		return
 	}
 
@@ -61,14 +61,14 @@ func MySqlTrxLocks1(c *gin.Context) {
 	cols, err := rows.Columns()
 
 	if err != nil {
-		c.JSON(200, R{Error: fail("RowsColumnsError", err)}.Fail(500))
+		c.JSON(200, (&R{Error: fail("RowsColumnsError", err)}).Fail(500))
 		return
 	}
 
 	colTypes, err2 := rows.ColumnTypes()
 
 	if err2 != nil {
-		c.JSON(200, R{Error: fail("ColumnTypesError", err)}.Fail(500))
+		c.JSON(200, (&R{Error: fail("ColumnTypesError", err)}).Fail(500))
 		return
 	}
 
@@ -94,7 +94,7 @@ func MySqlTrxLocks1(c *gin.Context) {
 
 		// Scan the result into the column pointers...
 		if err := rows.Scan(values...); err != nil {
-			c.JSON(200, R{Error: fail("RowsScanError", err)}.Fail(500))
+			c.JSON(200, (&R{Error: fail("RowsScanError", err)}).Fail(500))
 			return
 		}
 
@@ -113,11 +113,11 @@ func MySqlTrxLocks1(c *gin.Context) {
 
 	// // Commit the transaction.
 	// if err = tx.Commit(); err != nil {
-	// 	c.JSON(200, R{Error: fail("CommitError", err)}.Fail(500))
+	// 	c.JSON(200, (&R{Error: fail("CommitError", err)}).Fail(500))
 	// 	return
 	// }
 
-	c.JSON(200, R{Data: result}.Success())
+	c.JSON(200, (&R{Data: result}).Success())
 
 }
 
@@ -162,5 +162,5 @@ func MySqlTrxLocks1(c *gin.Context) {
 // 事务A和事务B，事务A在操作数据库时，事务B只能排队等待 这种隔离级别很少使用，吞吐量太低，
 // 用户体验差 这种级别可以避免“幻像读”，每一次读取的都是数据库中真实存在数据，事务A与事务B串行，而不并发
 func MySqlTxnsRouter(c *gin.Context) {
-	c.JSON(200, R{Data: true}.Success())
+	c.JSON(200, (&R{Data: true}).Success())
 }

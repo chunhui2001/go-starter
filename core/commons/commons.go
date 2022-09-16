@@ -33,12 +33,12 @@ type R struct {
 	Error   error       `json:"-"`
 }
 
-func (r R) Msg(msg string) R {
+func (r *R) Msg(msg string) *R {
 	r.Message = msg
 	return r
 }
 
-func (r R) Get(failCode int) map[string]interface{} {
+func (r *R) IfErr(failCode int) map[string]interface{} {
 
 	if r.Error != nil {
 		r.Code = failCode
@@ -46,22 +46,20 @@ func (r R) Get(failCode int) map[string]interface{} {
 		r.Code = 200
 	}
 
-	r.Code = failCode
-
 	return Result(r)
 }
 
-func (r R) Success() map[string]interface{} {
+func (r *R) Success() map[string]interface{} {
 	r.Code = 200
 	return Result(r)
 }
 
-func (r R) Fail(code int) map[string]interface{} {
+func (r *R) Fail(code int) map[string]interface{} {
 	r.Code = code
 	return Result(r)
 }
 
-func Result(r R) map[string]interface{} {
+func Result(r *R) map[string]interface{} {
 
 	m := make(map[string]interface{})
 

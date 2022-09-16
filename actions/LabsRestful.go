@@ -29,17 +29,17 @@ var (
 
 func BigRouter(c *gin.Context) {
 	b := utils.BigIntRandom()
-	c.JSON(http.StatusOK, R{Data: gin.H{
+	c.JSON(http.StatusOK, (&R{Data: gin.H{
 		"a": b,
 		"b": utils.BigIntHexString(b),
 		"c": utils.BigIntFromHexString(utils.BigIntHexString(b)),
 		"d": b.String(),
 		"e": utils.BigIntFromString(b.String()),
-	}}.Success())
+	}}).Success())
 }
 
 func YtIdRouter(c *gin.Context) {
-	c.JSON(http.StatusOK, R{Data: utils.ShortId()}.Success())
+	c.JSON(http.StatusOK, (&R{Data: utils.ShortId()}).Success())
 }
 
 func PemRouter(c *gin.Context) {
@@ -61,7 +61,7 @@ func PemRouter(c *gin.Context) {
 }
 
 func PadLeftRouter(c *gin.Context) {
-	c.JSON(http.StatusOK, R{Data: utils.PadLeft("chui", "..", 3)}.Success())
+	c.JSON(http.StatusOK, (&R{Data: utils.PadLeft("chui", "..", 3)}).Success())
 }
 
 func RedisPubRouter(c *gin.Context) {
@@ -75,19 +75,19 @@ func RedisPubRouter(c *gin.Context) {
 
 	gredis.Pub(channel, string(payload))
 
-	c.JSON(http.StatusOK, R{Data: true}.Success())
+	c.JSON(http.StatusOK, (&R{Data: true}).Success())
 
 }
 
 func RedisDelRouter(c *gin.Context) {
 	key := c.Query("key")
 	gredis.Del(key)
-	c.JSON(http.StatusOK, R{Data: gredis.Llen(key)}.Success())
+	c.JSON(http.StatusOK, (&R{Data: gredis.Llen(key)}).Success())
 }
 
 func RedisGetRouter(c *gin.Context) {
 	key := c.Query("key")
-	c.JSON(http.StatusOK, R{Data: gredis.Get(key)}.Success())
+	c.JSON(http.StatusOK, (&R{Data: gredis.Get(key)}).Success())
 }
 
 func RedisSetRouter(c *gin.Context) {
@@ -95,20 +95,20 @@ func RedisSetRouter(c *gin.Context) {
 	val := c.Query("val")
 	expir := c.Query("expir")
 	gredis.Set(key, val, utils.StrToInt(expir))
-	c.JSON(http.StatusOK, R{Data: utils.StrToInt(expir)}.Success())
+	c.JSON(http.StatusOK, (&R{Data: utils.StrToInt(expir)}).Success())
 }
 
 func RedisLpushRouter(c *gin.Context) {
 	key := c.Query("key")
 	val := c.Query("val")
 	gredis.Lpush(key, val)
-	c.JSON(http.StatusOK, R{Data: gredis.Llen(key)}.Success())
+	c.JSON(http.StatusOK, (&R{Data: gredis.Llen(key)}).Success())
 }
 
 func RedisLrangeRouter(c *gin.Context) {
 	key := c.Query("key")
 	gredis.Lrange(key, 0, -1)
-	c.JSON(http.StatusOK, R{Data: gredis.Lrange(key, 0, -1)}.Success())
+	c.JSON(http.StatusOK, (&R{Data: gredis.Lrange(key, 0, -1)}).Success())
 }
 
 func RedisHsetRouter(c *gin.Context) {
@@ -120,46 +120,46 @@ func RedisHsetRouter(c *gin.Context) {
 		gredis.Hgetall(key),
 		gredis.Hget(key, f1),
 	}
-	c.JSON(http.StatusOK, R{Data: result}.Success())
+	c.JSON(http.StatusOK, (&R{Data: result}).Success())
 }
 
 func RedisIncrRouter(c *gin.Context) {
 	key := c.Query("key")
 	if result, err := gredis.Zincr(key); err == nil {
-		c.JSON(http.StatusOK, R{Data: result}.Success())
+		c.JSON(http.StatusOK, (&R{Data: result}).Success())
 		return
 	}
-	c.JSON(http.StatusOK, R{Data: false}.Success())
+	c.JSON(http.StatusOK, (&R{Data: false}).Success())
 }
 
 func RedisExpireRouter(c *gin.Context) {
 	key := c.Query("key")
 	gredis.Expire(key, 1)
-	c.JSON(http.StatusOK, R{Data: true}.Success())
+	c.JSON(http.StatusOK, (&R{Data: true}).Success())
 }
 
 func RedisSetNxRouter(c *gin.Context) {
 	key := c.Query("key")
-	c.JSON(http.StatusOK, R{Data: gredis.SetNX(key, "asdfasd", 5)}.Success())
+	c.JSON(http.StatusOK, (&R{Data: gredis.SetNX(key, "asdfasd", 5)}).Success())
 }
 
 func RedisTtlRouter(c *gin.Context) {
 	key := c.Query("key")
 	if ttl, err := gredis.Ttl(key); err != nil {
 		fmt.Println("1" + utils.ToString(ttl))
-		c.JSON(http.StatusOK, R{Error: err}.Fail(400))
+		c.JSON(http.StatusOK, (&R{Error: err}).Fail(400))
 	} else {
 		fmt.Println(ttl <= 0)
-		c.JSON(http.StatusOK, R{Data: ttl}.Success())
+		c.JSON(http.StatusOK, (&R{Data: ttl}).Success())
 	}
 }
 
 func RedisExistsRouter(c *gin.Context) {
 	key := c.Query("key")
 	if ok, err := gredis.Exists(key); err != nil {
-		c.JSON(http.StatusOK, R{Error: err}.Fail(400))
+		c.JSON(http.StatusOK, (&R{Error: err}).Fail(400))
 	} else {
-		c.JSON(http.StatusOK, R{Data: ok}.Success())
+		c.JSON(http.StatusOK, (&R{Data: ok}).Success())
 	}
 }
 
@@ -168,11 +168,11 @@ func HttpClientSimpleRouter(c *gin.Context) {
 	httpResult := ghttp.SendRequest(ghttp.GET("https://www.google.com?fff=gg").Query(utils.MapOf("a", "b", "v", "你好")))
 
 	if httpResult.Success() {
-		c.JSON(http.StatusOK, R{Data: string(httpResult.ResponseBody)}.Success())
+		c.JSON(http.StatusOK, (&R{Data: string(httpResult.ResponseBody)}).Success())
 		return
 	}
 
-	c.JSON(http.StatusOK, R{Error: httpResult.Error}.Fail(400))
+	c.JSON(http.StatusOK, (&R{Error: httpResult.Error}).Fail(400))
 
 }
 
@@ -189,11 +189,11 @@ func HttpClientTimeOutRouter(c *gin.Context) {
 	httpResult := ghttp.SendRequest(ghttp.GET("https://api.etherscan.io/api").Query(queryParams))
 
 	if httpResult.Success() {
-		c.JSON(http.StatusOK, R{Data: string(httpResult.ResponseBody)}.Success())
+		c.JSON(http.StatusOK, (&R{Data: string(httpResult.ResponseBody)}).Success())
 		return
 	}
 
-	c.JSON(http.StatusOK, R{Error: httpResult.Error}.Fail(400))
+	c.JSON(http.StatusOK, (&R{Error: httpResult.Error}).Fail(400))
 }
 
 func UploadFileRouterOne(c *gin.Context) {
@@ -203,7 +203,7 @@ func UploadFileRouterOne(c *gin.Context) {
 
 	if err != nil {
 		logger.Error("Upload-a-File-Error: errorMessage=" + err.Error())
-		c.JSON(http.StatusOK, R{Error: err, Message: "Upload one file failed."}.Fail(400))
+		c.JSON(http.StatusOK, (&R{Error: err, Message: "Upload one file failed."}).Fail(400))
 		return
 	}
 
@@ -211,7 +211,7 @@ func UploadFileRouterOne(c *gin.Context) {
 
 	if openerr != nil {
 		logger.Error("Upload-File-Open-Error: errorMessage=" + openerr.Error())
-		c.JSON(http.StatusOK, R{Error: openerr, Message: "Upload-File-Open-Error"}.Fail(400))
+		c.JSON(http.StatusOK, (&R{Error: openerr, Message: "Upload-File-Open-Error"}).Fail(400))
 		return
 	}
 
@@ -219,7 +219,7 @@ func UploadFileRouterOne(c *gin.Context) {
 
 	if readerr != nil {
 		logger.Error("Upload-File-Read-Error: errorMessage=" + readerr.Error())
-		c.JSON(http.StatusOK, R{Error: readerr, Message: "Upload-File-Read-Error."}.Fail(400))
+		c.JSON(http.StatusOK, (&R{Error: readerr, Message: "Upload-File-Read-Error."}).Fail(400))
 		return
 	}
 
@@ -231,7 +231,7 @@ func UploadFileRouterOne(c *gin.Context) {
 
 	if ziperr != nil {
 		logger.Error("Upload-File-Create-ZipWriter-Error: errorMessage=" + ziperr.Error())
-		c.JSON(http.StatusOK, R{Error: ziperr, Message: "Upload-File-Create-ZipWriter-Error."}.Fail(400))
+		c.JSON(http.StatusOK, (&R{Error: ziperr, Message: "Upload-File-Create-ZipWriter-Error."}).Fail(400))
 		return
 	}
 
@@ -239,7 +239,7 @@ func UploadFileRouterOne(c *gin.Context) {
 
 	if _, err := io.Copy(w1, fileReader); err != nil {
 		logger.Error("Upload-File-Copy-ZipStream-Error: errorMessage=" + err.Error())
-		c.JSON(http.StatusOK, R{Error: err, Message: "Upload-File-Copy-ZipStream-Error."}.Fail(400))
+		c.JSON(http.StatusOK, (&R{Error: err, Message: "Upload-File-Copy-ZipStream-Error."}).Fail(400))
 		return
 	}
 
@@ -247,7 +247,7 @@ func UploadFileRouterOne(c *gin.Context) {
 
 	if wrierr := os.WriteFile(zipfilename, fileBytes.Bytes(), 0644); wrierr != nil {
 		logger.Error("Upload-File-Write-ZipFile-Error: errorMessage=" + err.Error())
-		c.JSON(http.StatusOK, R{Error: wrierr, Message: "Upload-File-Write-ZipFile-Error."}.Fail(400))
+		c.JSON(http.StatusOK, (&R{Error: wrierr, Message: "Upload-File-Write-ZipFile-Error."}).Fail(400))
 		return
 	}
 
@@ -255,7 +255,7 @@ func UploadFileRouterOne(c *gin.Context) {
 
 	logger.Info("Upload-a-File: FileName=" + formFile.Filename + ", Size=" + utils.ToString(formFile.Size))
 
-	c.JSON(http.StatusOK, R{Data: zipfilename}.Success())
+	c.JSON(http.StatusOK, (&R{Data: zipfilename}).Success())
 
 }
 
@@ -268,7 +268,7 @@ func UploadFileRouterMany(c *gin.Context) {
 	// 	panic(err)
 	// }
 
-	c.JSON(http.StatusOK, R{Data: true}.Success())
+	c.JSON(http.StatusOK, (&R{Data: true}).Success())
 
 }
 
@@ -288,11 +288,11 @@ func WsClientSimple(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.JSON(http.StatusOK, R{Error: err}.Fail(400))
+		c.JSON(http.StatusOK, (&R{Error: err}).Fail(400))
 		return
 	}
 
-	c.JSON(http.StatusOK, R{Data: connectId}.Msg("Connect Websocket successful").Success())
+	c.JSON(http.StatusOK, (&R{Data: connectId}).Msg("Connect Websocket successful").Success())
 
 }
 
@@ -397,6 +397,6 @@ func UpdateStructPointer(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, R{Data: s}.Success())
+	c.JSON(http.StatusOK, (&R{Data: s}).Success())
 
 }

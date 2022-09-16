@@ -31,7 +31,7 @@ func AlbumCreateRouter(c *gin.Context) {
 	var albumBook = &AlbumBook{}
 
 	if err := c.ShouldBindJSON(&albumBook); err != nil {
-		c.JSON(200, R{Error: err}.Fail(400))
+		c.JSON(200, (&R{Error: err}).Fail(400))
 		return
 	}
 
@@ -44,7 +44,7 @@ func AlbumCreateRouter(c *gin.Context) {
 	}
 
 	bson.Unmarshal(bsonBytes, albumBook)
-	c.JSON(http.StatusAccepted, R{Data: albumBook}.Success())
+	c.JSON(http.StatusAccepted, (&R{Data: albumBook}).Success())
 
 }
 
@@ -53,7 +53,7 @@ func AlbumGetRouter(c *gin.Context) {
 	id := c.Query("id")
 	var data map[string]interface{}
 	gmongo.FindOne("c_albums", id, &data)
-	c.JSON(200, R{Data: data}.Success())
+	c.JSON(200, (&R{Data: data}).Success())
 }
 
 func BodyBindHandler(c *gin.Context) {
@@ -61,11 +61,11 @@ func BodyBindHandler(c *gin.Context) {
 	body := Body{}
 
 	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(500, R{Error: err}.Fail(400))
+		c.JSON(500, (&R{Error: err}).Fail(400))
 		return
 	}
 
-	c.JSON(http.StatusAccepted, R{Data: &body}.Success())
+	c.JSON(http.StatusAccepted, (&R{Data: &body}).Success())
 
 }
 
@@ -74,11 +74,11 @@ func ElsCatIndicesRouter(c *gin.Context) {
 	indices, err := ges.CatIndices()
 
 	if err != nil {
-		c.JSON(http.StatusOK, R{Error: err}.Fail(400))
+		c.JSON(http.StatusOK, (&R{Error: err}).Fail(400))
 		return
 	}
 
-	c.JSON(http.StatusOK, R{Data: indices}.Success())
+	c.JSON(http.StatusOK, (&R{Data: indices}).Success())
 
 }
 
@@ -90,11 +90,11 @@ func ElsSearcherRouter(c *gin.Context) {
 	reaults, total, err := ges.Search(indexName, string(payload))
 
 	if err != nil {
-		c.JSON(http.StatusOK, R{Error: err}.Fail(400))
+		c.JSON(http.StatusOK, (&R{Error: err}).Fail(400))
 		return
 	}
 
-	c.JSON(http.StatusOK, R{Data: reaults}.Msg("Total-Count: "+utils.ToString(total)).Success())
+	c.JSON(http.StatusOK, (&R{Data: reaults}).Msg("Total-Count: "+utils.ToString(total)).Success())
 
 }
 
@@ -106,11 +106,11 @@ func ElsSearcherAdvanceRouter(c *gin.Context) {
 	reaults, total, err := ges.Search(indexName, string(payload))
 
 	if err != nil {
-		c.JSON(http.StatusOK, R{Error: err}.Fail(400))
+		c.JSON(http.StatusOK, (&R{Error: err}).Fail(400))
 		return
 	}
 
-	c.JSON(http.StatusOK, R{Data: reaults}.Msg("Total-Count: "+utils.ToString(total)).Success())
+	c.JSON(http.StatusOK, (&R{Data: reaults}).Msg("Total-Count: "+utils.ToString(total)).Success())
 
 }
 
@@ -122,7 +122,7 @@ func ElsDslTemplateRouter(c *gin.Context) {
 	payload, _ := ioutil.ReadAll(c.Request.Body)
 
 	dslJsonString, _ := ges.DSLQuery(tplfile, tplname, utils.AsMap(payload))
-	c.JSON(http.StatusOK, R{Data: dslJsonString}.Success())
+	c.JSON(http.StatusOK, (&R{Data: dslJsonString}).Success())
 
 }
 
@@ -131,17 +131,17 @@ func ElsCreateOrUpdateRouter(c *gin.Context) {
 	var albumBook = &AlbumBook{}
 
 	if err := c.ShouldBindJSON(&albumBook); err != nil {
-		c.JSON(200, R{Error: err}.Fail(400))
+		c.JSON(200, (&R{Error: err}).Fail(400))
 		return
 	}
 
 	_id, err := ges.SaveOrUpdate("go-simple-index", albumBook.Id, utils.ToMap(albumBook))
 
 	if err != nil {
-		c.JSON(http.StatusOK, R{Error: err}.Fail(400))
+		c.JSON(http.StatusOK, (&R{Error: err}).Fail(400))
 		return
 	}
 
-	c.JSON(http.StatusOK, R{Data: _id}.Success())
+	c.JSON(http.StatusOK, (&R{Data: _id}).Success())
 
 }

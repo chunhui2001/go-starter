@@ -60,7 +60,7 @@ func errorHandler(c *gin.Context, info ratelimit.Info) {
 var defaultServer = &Server{
 	Store: store,
 	HandlerInfo: func(c *gin.Context) {
-		c.JSON(http.StatusOK, R{Data: fmt.Sprintf(`Yeah, your server %s is running.`, APP_SETTINGS.AppName)}.Success())
+		c.JSON(http.StatusOK, (&R{Data: fmt.Sprintf(`Yeah, your server %s is running.`, APP_SETTINGS.AppName)}).Success())
 	},
 	HandlerIndexPage: controller.IndexRouter,
 	Handler404: func(c *gin.Context) {
@@ -70,16 +70,16 @@ var defaultServer = &Server{
 				"content":    "Page not found",
 			})
 		} else {
-			c.JSON(http.StatusOK, R{}.Fail(404))
+			c.JSON(http.StatusOK, (&R{}).Fail(404))
 		}
 	},
 	Handler500: func(c *gin.Context, err interface{}) {
-		c.JSON(http.StatusInternalServerError, R{Error: errors.Wrap(err, 3)}.Fail(500))
+		c.JSON(http.StatusInternalServerError, (&R{Error: errors.Wrap(err, 3)}).Fail(500))
 	},
 	CustomeRoutes: []Route{
 		{Method: http.MethodGet, Path: "/info_cache", Handlers: []gin.HandlerFunc{
 			cache.CachePage(store, time.Minute, func(c *gin.Context) {
-				c.JSON(http.StatusOK, R{Data: "hello world, " + fmt.Sprint(time.Now().Unix())}.Success())
+				c.JSON(http.StatusOK, (&R{Data: "hello world, " + fmt.Sprint(time.Now().Unix())}).Success())
 			}),
 		}},
 	},
