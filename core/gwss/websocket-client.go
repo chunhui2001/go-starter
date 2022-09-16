@@ -106,7 +106,7 @@ func (c *Client) WriteMessage(message string) {
 func (c *Client) ListenMessage(messageHandler MessageHandler) {
 
 	numCPUs := runtime.NumCPU()
-	pool := pond.New(numCPUs, 1000)
+	pool := pond.New(numCPUs, 5000)
 
 	defer pool.StopAndWait()
 
@@ -120,43 +120,25 @@ func (c *Client) ListenMessage(messageHandler MessageHandler) {
 
 			if strings.Contains(err.Error(), "connection reset by peer") {
 
-				// 重建创建连接
-				logger.Errorf(`WebSocket-Connection-Has-Been-Closed: ConnectId=%s, opcode=%x, SeverAddress=%s, Msg=%s, errorMessage=%s`,
-					c.ConnectId, opcode, c.ServerAddr, msg, err.Error())
-
-				if err2 := c.Connection.Close(); err2 != nil {
-					logger.Errorf(`WebSocket-Closed-Error: ConnectId=%s, ReCount=%d, SeverAddress=%s, errorMessage=%s`,
-						c.ConnectId, c.ReCount, c.ServerAddr, err2.Error())
-				}
-
-				c.Connect(messageHandler)
-				break
-
-			}
-
-			for {
-
 				c.ReCount = c.ReCount + 1
 
-				logger.Errorf(`Read-WebSocket-Message-Error: ConnectId=%s, ReCount=%d, memo=%s, SeverAddress=%s, errorMessage=%s`,
-					c.ConnectId, c.ReCount, "Will-be-Reconnect-in-5-sec", c.ServerAddr, err.Error())
+				// 重建创建连接
+				logger.Errorf(`WebSocket-Connection-Has-Been-Closed: opcode=%x, ConnectId=%s, ReCount=%d, memo=%s, SeverAddress=%s, errorMessage=%s`,
+					opcode, c.ConnectId, c.ReCount, "Will-be-Reconnect-in-2-sec", c.ServerAddr, err.Error())
 
-				time.Sleep(5 * time.Second) // reconnect in 5 seconds
-				c.ReConnect(messageHandler)
+				c.Connection.Close()
+
+				time.Sleep(2 * time.Second) // reconnect in 2 seconds
+
+				c.Connect(messageHandler)
+
+				break
 
 			}
 
 		} else {
 
 			if messageHandler != nil {
-
-				if opcode == 0x9 {
-					logger.Infof(`WebSocker-Receive-Ping: ConnectId=%s, opcode=%s, message=%s`, c.ConnectId, utils.ToString(opcode), msg)
-				} else if opcode == 0x8 {
-					logger.Infof(`WebSocker-Receive-Closed: ConnectId=%s, opcode=%s, message=%s`, c.ConnectId, utils.ToString(opcode), msg)
-				} else if opcode == 0xa {
-					logger.Infof(`WebSocker-Receive-Pong: ConnectId=%s, opcode=%s, message=%s`, c.ConnectId, utils.ToString(opcode), msg)
-				}
 
 				pool.Submit(func() {
 					messageHandler(c, utils.ToString(opcode), msg)
