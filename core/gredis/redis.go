@@ -3,6 +3,7 @@ package gredis
 import (
 	"context"
 	"fmt"
+	"regexp"
 	_ "strconv"
 	"strings"
 	"time"
@@ -161,11 +162,16 @@ func Init(redisConf *GRedis, log *logrus.Entry) {
 		}
 	}
 
-	Ping()
+	serverVersion := Ping()
+
+	if connected {
+		InitProducer(serverVersion)
+		InitConsumer(serverVersion)
+	}
 
 }
 
-func Ping() {
+func Ping() string {
 
 	var serverInfo string = "N/a"
 
@@ -177,19 +183,36 @@ func Ping() {
 		serverInfo = fmt.Sprintf("Mode=%s, ServerAddrs=%s", conf.Mode.String(), conf.ServerAddrs())
 	}
 
+	info, _ := universalClient.Info(context.Background(), "server").Result()
+
+	var serverVersion string = "N/a"
+	var redisVersionRE = regexp.MustCompile(`redis_version:(.+)`)
+
+	match := redisVersionRE.FindAllStringSubmatch(info, -1)
+
+	if len(match) < 1 {
+		// could not extract redis version
+		// ..
+	} else {
+		version := strings.TrimSpace(match[0][1])
+		serverVersion = version
+	}
+
 	if _, err := universalClient.Ping(ctx).Result(); err != nil {
-		logger.Error(fmt.Sprintf("Redis-Client-Connect-Failed: %s, errorMessage=%s", serverInfo, utils.ErrorToString(err)))
+		logger.Error(fmt.Sprintf("Redis-Client-Connect-Failed: ServerVersion=%s, %s, errorMessage=%s", serverVersion, serverInfo, utils.ErrorToString(err)))
 		connected = false
-		return
+		return ""
 	}
 
 	if conf.SubChannels != "" {
-		logger.Info(fmt.Sprintf("Redis-Client-Connected-Successfully: %s", serverInfo))
+		logger.Info(fmt.Sprintf("Redis-Client-Connected-Successfully: ServerVersion=%s, %s", serverVersion, serverInfo))
 	} else {
-		logger.Info(fmt.Sprintf("Redis-Client-Connected-Successfully: %s", serverInfo) + ", SubChannels=" + conf.SubChannels)
+		logger.Info(fmt.Sprintf("Redis-Client-Connected-Successfully: ServerVersion=%s, %s", serverVersion, serverInfo) + ", SubChannels=" + conf.SubChannels)
 	}
 
 	connected = true
+
+	return serverVersion
 
 }
 
