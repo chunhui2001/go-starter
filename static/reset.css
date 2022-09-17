@@ -64,13 +64,6 @@ body {
     inline-size: 5rem
 }
 
-:where(input, button, textarea, select),
-:where(input[type="file"])::-webkit-file-upload-button {
-    color: inherit;
-    font: inherit;
-    font-size: inherit;
-    letter-spacing: inherit
-}
 
 :where(textarea) {
     resize: vertical

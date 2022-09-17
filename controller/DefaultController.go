@@ -24,9 +24,7 @@ func AboutRouter(c *gin.Context) {
 }
 
 func LoginHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "login", gin.H{
-		"content": "This is login page...",
-	})
+	c.HTML(http.StatusOK, "login", gin.H{})
 }
 
 func SignUpHandler(c *gin.Context) {
