@@ -140,6 +140,10 @@ func ShortId() string {
 
 func ToJsonString(v interface{}) string {
 
+	if v == nil {
+		return ""
+	}
+
 	if reflect.TypeOf(v).String() == "string" {
 		return v.(string)
 	}
@@ -206,7 +210,7 @@ func ErrorToString(err interface{}) string {
 func MapOf(kv ...any) map[string]interface{} {
 
 	if kv == nil {
-		return nil
+		return make(map[string]interface{})
 	}
 
 	if len(kv)%2 != 0 {
@@ -222,6 +226,29 @@ func MapOf(kv ...any) map[string]interface{} {
 	}
 
 	return m
+
+}
+
+func MapsOf(kv ...any) *map[string]interface{} {
+
+	m := make(map[string]interface{})
+
+	if kv == nil {
+
+		return &m
+	}
+
+	if len(kv)%2 != 0 {
+		panic(errors.New("Invalid map size: currentSize=" + ToString(len(kv))))
+	}
+
+	for i := 0; i < len(kv); i++ {
+		k := ToString(kv[i])
+		m[k] = kv[i+1]
+		i++
+	}
+
+	return &m
 
 }
 

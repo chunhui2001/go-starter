@@ -114,10 +114,8 @@ func (s *Server) Bootstrap(hooks ...func(*gin.Engine)) *Server {
 
 	s.R = Setup()
 
-	if hooks != nil {
-		for _, h := range hooks {
-			h(s.R)
-		}
+	for _, h := range hooks {
+		h(s.R)
 	}
 
 	return s
@@ -173,13 +171,6 @@ func Setup() *gin.Engine {
 		})
 	}
 
-	// cookie session
-	if APP_COOKIE.Enable {
-		cookieStore := cookie.NewStore([]byte(APP_COOKIE.Secret))
-		cookieStore.Options(sessions.Options{MaxAge: 60 * 1}) // expire in one minute
-		engine.Use(sessions.Sessions(APP_COOKIE.Name, cookieStore))
-	}
-
 	var rateLimitStore ratelimit.Store = ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
 		Rate:  time.Second,
 		Limit: 5,
@@ -201,6 +192,13 @@ func Setup() *gin.Engine {
 			KeyFunc:      rateLimitKeyFunc,
 		})
 
+	// cookie session
+	if APP_COOKIE.Enable {
+		store := cookie.NewStore([]byte(APP_COOKIE.Secret))
+		store.Options(sessions.Options{MaxAge: APP_COOKIE.MaxAge})
+		engine.Use(sessions.Sessions(APP_COOKIE.Name, store))
+	}
+
 	// apply middleware
 	engine.Use(middleware.Recovery(recoveryHandler)) // error nice handle
 
@@ -215,7 +213,7 @@ func Setup() *gin.Engine {
 	engine.Use(middleware.AccessLog())
 
 	// default info
-	engine.GET("/info", ratelimitMiddleWare, defaultServer.HandlerInfo) // info router
+	engine.GET("/info", defaultServer.HandlerInfo) // info router
 
 	if WEB_PAGE_CONF.Enable {
 
@@ -226,7 +224,7 @@ func Setup() *gin.Engine {
 
 		if WEB_PAGE_CONF.LoginUrl != "" {
 			AppendRouter(http.MethodGet, []string{WEB_PAGE_CONF.LoginUrl}, controller.LoginHandler)
-			AppendRouter(http.MethodPost, []string{WEB_PAGE_CONF.LoginUrl}, controller.LoginHandler)
+			AppendRouter(http.MethodPost, []string{WEB_PAGE_CONF.LoginUrl}, controller.PostLoginHandler)
 		}
 
 		if WEB_PAGE_CONF.SignUpUrl != "" {

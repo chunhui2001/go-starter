@@ -4,15 +4,27 @@ import (
 	"net/http"
 
 	"github.com/chunhui2001/go-starter/core/config"
-	"github.com/chunhui2001/go-starter/core/utils"
-	"github.com/chunhui2001/go-starter/mycache"
+	"github.com/chunhui2001/go-starter/core/gid"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
+var (
+	WEB_PAGE_CONF *config.WebPageConf = config.WebPageSettings
+)
+
 func IndexRouter(c *gin.Context) {
+
+	session := sessions.Default(c)
+
+	if session.Get("yourRoomId") == nil {
+		session.Set("yourRoomId", gid.ID())
+		session.Save()
+	}
+
 	c.HTML(http.StatusOK, "index", gin.H{
 		"wssEndpoint": config.WssSetting.Wss(),
-		"yourRoomId":  mycache.ShortIdPut(utils.ShortId()),
+		"yourRoomId":  session.Get("yourRoomId"),
 		"content":     "This is an Home page...",
 	})
 }
@@ -20,15 +32,5 @@ func IndexRouter(c *gin.Context) {
 func AboutRouter(c *gin.Context) {
 	c.HTML(http.StatusOK, "about", gin.H{
 		"content": "This is an about page...",
-	})
-}
-
-func LoginHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "login", gin.H{})
-}
-
-func SignUpHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "signup", gin.H{
-		"content": "This is signup page...",
 	})
 }
