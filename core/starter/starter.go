@@ -3,7 +3,9 @@ package starter
 import (
 	"fmt"
 	"html/template"
+	"net"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -47,6 +49,7 @@ type Server struct {
 	Handler404       gin.HandlerFunc
 	Handler500       func(c *gin.Context, err interface{})
 	CustomeRoutes    []Route
+	R                *gin.Engine
 }
 
 func rateLimitKeyFunc(c *gin.Context) string {
@@ -97,7 +100,7 @@ var (
 	logger                                      = config.Log
 )
 
-func Bootstrap(starterServer *Server) *gin.Engine {
+func (s *Server) Bootstrap(hooks ...func(*gin.Engine)) *Server {
 
 	if Redis_Conf.Mode != gredis.Disabled {
 		for _, channel := range strings.Split(Redis_Conf.SubChannels, ",") {
@@ -107,11 +110,38 @@ func Bootstrap(starterServer *Server) *gin.Engine {
 		}
 	}
 
-	if starterServer != nil {
-		copier.CopyWithOption(&defaultServer, &starterServer, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	copier.CopyWithOption(&defaultServer, &s, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+
+	s.R = Setup()
+
+	if hooks != nil {
+		for _, h := range hooks {
+			h(s.R)
+		}
 	}
 
-	return Setup()
+	return s
+
+}
+
+func (s *Server) Running() {
+
+	srv := &http.Server{
+		Addr:    APP_SETTINGS.AppPort,
+		Handler: s.R,
+	}
+
+	l, err := net.Listen("tcp", APP_SETTINGS.AppPort)
+
+	if err != nil {
+		config.Log.Info("Application Run Failed: ErrorMessage=" + err.Error())
+		os.Exit(1)
+		return
+	}
+
+	config.Log.Info("Congratulations! Your server startup successfully, Listening and serving HTTP on " + APP_SETTINGS.AppPort)
+
+	srv.Serve(l)
 
 }
 
@@ -196,6 +226,7 @@ func Setup() *gin.Engine {
 
 		if WEB_PAGE_CONF.LoginUrl != "" {
 			AppendRouter(http.MethodGet, []string{WEB_PAGE_CONF.LoginUrl}, controller.LoginHandler)
+			AppendRouter(http.MethodPost, []string{WEB_PAGE_CONF.LoginUrl}, controller.LoginHandler)
 		}
 
 		if WEB_PAGE_CONF.SignUpUrl != "" {
@@ -221,8 +252,6 @@ func Setup() *gin.Engine {
 			defaultServer.Handler404(c)
 		}
 	})
-
-	logger.Info("Congratulations! Your server startup successfully, Listening and serving HTTP on " + APP_PORT)
 
 	if WSS_Conf.Enable {
 		logger.Info("Startup a websocket server running on " + config.WssSetting.Wss())
