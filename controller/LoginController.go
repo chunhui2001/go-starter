@@ -18,6 +18,14 @@ var users = map[string]string{
 	"user2": "2222",
 }
 
+func LogoutHandler(c *gin.Context) {
+	session := sessions.Default(c)
+	session.Clear()
+	session.Save()
+	c.Header("Cache-Control", "no-cache")
+	c.Redirect(302, "/")
+}
+
 func LoginHandler(c *gin.Context) {
 	c.HTML(http.StatusOK, "login", gin.H{
 		"loginUrl": WEB_PAGE_CONF.LoginUrl,
@@ -49,7 +57,7 @@ func PostLoginHandler(c *gin.Context) {
 
 	session := sessions.Default(c)
 	session.Set("username", formData.Username)
-	session.Save()
+	defer session.Save()
 
 	c.Redirect(http.StatusFound, "/")
 

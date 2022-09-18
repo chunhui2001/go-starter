@@ -225,6 +225,7 @@ func Setup() *gin.Engine {
 		if WEB_PAGE_CONF.LoginUrl != "" {
 			AppendRouter(http.MethodGet, []string{WEB_PAGE_CONF.LoginUrl}, controller.LoginHandler)
 			AppendRouter(http.MethodPost, []string{WEB_PAGE_CONF.LoginUrl}, controller.PostLoginHandler)
+			AppendRouter(http.MethodGet, []string{"/logout"}, controller.LogoutHandler)
 		}
 
 		if WEB_PAGE_CONF.SignUpUrl != "" {

@@ -13,8 +13,12 @@
     <body>
         <div style="background-color:#24292f;color:white;padding:10px 0">
             <div class="container" style="text-align:right;font-weight:bold;">
-                <a href="/login" style="color:white;">Login</a>
-                <a href="/signup" style="color:white;">Signup</a>
+                {{ if not .username }}
+                    <a href="/login" style="color:white;">Login</a>
+                    <a href="/signup" style="color:white;">Signup</a>
+                {{ else }}
+                    <a href="/logout" style="color:white;">Logout</a> <span>{{.username}}</span>
+                {{ end }}
             </div>
         </div>
         <div class="container">

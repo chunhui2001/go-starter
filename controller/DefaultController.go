@@ -25,8 +25,9 @@ func IndexRouter(c *gin.Context) {
 	c.HTML(http.StatusOK, "index", gin.H{
 		"wssEndpoint": config.WssSetting.Wss(),
 		"yourRoomId":  session.Get("yourRoomId"),
-		"content":     "This is an Home page...",
+		"username":    session.Get("username"),
 	})
+
 }
 
 func AboutRouter(c *gin.Context) {
