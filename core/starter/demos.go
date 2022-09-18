@@ -38,7 +38,7 @@ func init() {
 		AppendRouter("GET", []string{"/labs-redis-consumer"}, actions.RedisQueueConsumerRouter)
 
 		// xslt
-		// AppendRouter("GET", []string{"/labs-xslt-demo"}, actions.XsltDemoRouter)
+		AppendRouter("GET", []string{"/labs-xslt-demo"}, actions.XsltDemoRouter)
 
 		// validator data binding simples
 		AppendRouter("POST", []string{"/demo/album-create"}, actions.AlbumCreateRouter)

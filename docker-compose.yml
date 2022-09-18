@@ -12,7 +12,7 @@ networks:
 services:
   go-starter:
     container_name: go-starter
-    image: go-starter:1.0
+    image: chunhui2001/ubuntu_20.04_dev:golang_1.19
     hostname: go-starter
     #mem_limit: 2048m
     ports:
@@ -25,6 +25,7 @@ services:
       - GIN_ENV=production
       - WSS_HOST=ws://192.168.0.101:4000
       - ES_SERVERS=http://host.docker.internal:9200
+      - APP_ROOT=/dist
     #entrypoint: ["/bin/sh", "-c", "while true; do echo 1 >/dev/null 2>/dev/null; sleep 1; done"]
     entrypoint: ["/dist/app"]
     volumes:
@@ -32,7 +33,7 @@ services:
       - ./static:/dist/static:ro
       - ./views:/dist/views:ro
       - ./.env:/dist/.env:ro
-      - ./Makefile:/dist/Makefile:ro
+      - ./dist/go-starter-linux-amd64:/dist/app:ro
     restart: always
     networks:
         br0:

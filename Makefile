@@ -2,18 +2,17 @@
 ### 当前 Makefile 文件物理路径
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
-e 		?=local
-c 		?=10000
-#zone 	?=Asia/Shanghai
-zone 	?=UTC
+APP_NAME 	?=go-starter
+e 			?=local
+c 			?=10000
+#zone 		?=Asia/Shanghai
+zone 		?=UTC
 WSS_HOST	?=ws://127.0.0.1:8080
 APP_PORT 	?=8080
 GIT_HASH 	?=$(shell git rev-parse HEAD)
 COMMITER 	?=$(shell git log --format="%H" -n 1 | grep Author| cut -d ' ' -f3- | sed 's/[\<\>]*//g')
+PWD 		?=$(shell pwd)
 TIME 		?=$(shell date +%s)
-#GOOS 		?=darwin
-#GOOS 		?=windows
-GOOS 		?=linux
 CGO_ENABLED ?=0
 
 ### 整理模块
@@ -39,7 +38,7 @@ get:
 ### 启动开发程序
 # make run e=development 
 run:
-	rm -rf gin-bin
+	rm -rf gin-bin >/dev/null 2>&1
 	GIN_ENV=$(e) go run .
 
 ### 启动调试程序, 当代码变化时自动重启
@@ -47,9 +46,16 @@ run:
 dev:
 	TZ=$(zone) GIN_ENV=$(e) WSS_HOST=$(WSS_HOST) gin -i --appPort 8080 --port 3000 run main.go
 
-### 构建程序镜像
-build: Built
-	docker rmi -f go-starter:1.0 && docker build . -t go-starter:1.0 -m 4g
+
+### 构建跨平台的可执行程序
+Built1:
+	env GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 go build -buildvcs -ldflags "-X main.Name=go-starter -X main.Author=$(COMMITER) -X main.Commit=$(GIT_HASH) -X main.Time=$(TIME)" -o ./dist/$(APP_NAME)-darwin-amd64 ./main.go
+
+Built2:
+	env GOOS=linux  GOARCH=amd64 CGO_ENABLED=1 go build -buildvcs -ldflags "-X main.Name=go-starter -X main.Author=$(COMMITER) -X main.Commit=$(GIT_HASH) -X main.Time=$(TIME)" -o ./dist/$(APP_NAME)-linux-amd64 ./main.go
+
+build:
+	docker run --rm -it -v $(PWD):/dist:rw --name build_$(APP_NAME) chunhui2001/ubuntu_20.04_dev:golang_1.19 /bin/bash -c 'cd /dist && make -f Makefile Built2' -m 4g
 
 ### 通过容器启动
 up: rm
@@ -61,11 +67,7 @@ logs:
 
 ### 删除程序容器
 rm:
-	docker rm -f go-starter
-
-### 构建跨平台的可执行程序
-Built:
-	env GOOS=$(GOOS) GOARCH=amd64 CGO_ENABLED=$(CGO_ENABLED) go build -buildvcs -ldflags "-X main.Name=go-starter -X main.Author=$(COMMITER) -X main.Commit=$(GIT_HASH) -X main.Time=$(TIME)" -o ./dist/go-starter-native-$(GOOS)-amd64 ./main.go
+	docker rm -f go-starter >/dev/null 2>&1
 
 privateKey:
 	@# Key considerations for algorithm "RSA" ≥ 2048-bit
