@@ -149,7 +149,7 @@ func (s *Server) ProcessMessage(client Client, messageType int, payload []byte) 
 	m := Message{}
 
 	if err := json.Unmarshal(payload, &m); err != nil {
-		s.Send(&client, []byte("Server: Invalid payload"))
+		s.Send(&client, []byte("Server-Invalid-Message: Message="+string(payload)+"ErrorMessage="+err.Error()))
 		return s
 	}
 
