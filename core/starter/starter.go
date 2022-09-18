@@ -155,6 +155,7 @@ func Setup() *gin.Engine {
 	engine := gin.New()
 
 	if WEB_PAGE_CONF.Enable {
+		// https://noknow.info/it/go/how_to_use_if_in_html_template?lang=ja
 		// init html template
 		engine.HTMLRender = ginview.New(goview.Config{
 			Root:      WEB_PAGE_CONF.Root,
