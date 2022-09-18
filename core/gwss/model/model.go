@@ -24,8 +24,7 @@ const (
 )
 
 const (
-	server_ping                 = "server_ping"
-	action_connected_successful = "connected_successful"
+	server_ping = "server_ping"
 )
 
 // a server type to store all subscriptions
@@ -135,7 +134,7 @@ func (s *Server) ReceiveClientPong(client *Client, message string) {
 
 func (s *Server) NewClient(client *Client) {
 	s.Subscribe(client, server_ping)
-	s.Send(client, NewMessage("sys", action_connected_successful, fmt.Sprintf(`Welcome! Your ID is: '%s'`, client.ID)).Bytes())
+	s.Send(client, NewMessage("sys", "connected_successful", fmt.Sprintf(`Welcome! Your ID is: '%s'`, client.ID)).Bytes())
 }
 
 func (s *Server) Send(client *Client, messageBytes []byte) {
