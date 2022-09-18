@@ -40,6 +40,9 @@ func init() {
 		// xslt
 		AppendRouter("GET", []string{"/labs-xslt-demo"}, actions.XsltDemoRouter)
 
+		// latex
+		AppendRouter("GET", []string{"/labs-latex-demo"}, actions.LatexDemoRouter)
+
 		// validator data binding simples
 		AppendRouter("POST", []string{"/demo/album-create"}, actions.AlbumCreateRouter)
 		AppendRouter("GET", []string{"/demo/album-get"}, actions.AlbumGetRouter)

@@ -22,6 +22,8 @@ import (
 	"github.com/chunhui2001/go-starter/core/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"github.com/go-latex/latex/drawtex/drawimg"
+	"github.com/go-latex/latex/mtex"
 	"github.com/wamuir/go-xslt"
 )
 
@@ -379,11 +381,34 @@ func XsltDemoRouter(c *gin.Context) {
 
 	c.Header("Content-Type", "application/xml")
 	// Browser download or preview
-	c.Header("Content-Disposition", "inline;filename=public.pem")
+	c.Header("Content-Disposition", "inline;filename=simple-xslt.xml")
 	c.Header("Content-Transfer-Encoding", "binary")
 	c.Header("Cache-Control", "no-cache")
 
 	c.Writer.Write(data)
+
+}
+
+// https://github.com/go-latex/latex
+func LatexDemoRouter(c *gin.Context) {
+
+	var outputBuffer bytes.Buffer
+
+	dst := drawimg.NewRenderer(&outputBuffer)
+
+	err := mtex.Render(dst, `$f(x) = \frac{\sqrt{x +20}}{2\pi} +\hbar \sum y\partial y$`, 12*3, 72*3, nil)
+
+	if err != nil {
+		panic(err)
+	}
+
+	c.Header("Content-Type", "image/png")
+	// Browser download or preview
+	c.Header("Content-Disposition", "inline;filename=simple-latex.png")
+	c.Header("Content-Transfer-Encoding", "binary")
+	c.Header("Cache-Control", "no-cache")
+
+	c.Writer.Write(outputBuffer.Bytes())
 
 }
 
