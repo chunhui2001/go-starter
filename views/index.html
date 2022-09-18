@@ -40,7 +40,7 @@
                     if (messageData.topic == 'server_ping') {
                         $("#_server_time").html(messageData.message);
                     } else {
-                        console.info(message)
+                        console.info(messageData)
                     }
                 } else {
                     console.info(e.data)

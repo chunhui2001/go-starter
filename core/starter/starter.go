@@ -194,7 +194,7 @@ func Setup() *gin.Engine {
 		// https://noknow.info/it/go/how_to_use_if_in_html_template?lang=ja
 		// init html template
 		engine.HTMLRender = ginview.New(goview.Config{
-			Root:      WEB_PAGE_CONF.Root,
+			Root:      filepath.Join(config.AppRoot(), WEB_PAGE_CONF.Root),
 			Extension: WEB_PAGE_CONF.Extension,
 			Master:    WEB_PAGE_CONF.Master,
 			//Partials:  []string{"partials/ad"},
@@ -239,13 +239,13 @@ func Setup() *gin.Engine {
 	// apply middleware
 	engine.Use(middleware.Recovery(recoveryHandler)) // error nice handle
 
-	if ok, _ := utils.FileExists(filepath.Join(utils.RootDir(), "static")); ok {
-		engine.Use(static.Serve("/static", static.LocalFile("./static", false)))
+	if ok, _ := utils.FileExists(filepath.Join(config.AppRoot(), "static")); ok {
+		engine.Use(static.Serve("/static", static.LocalFile(filepath.Join(config.AppRoot(), "./static"), false)))
 	} else {
 		logger.Warn("static folder not exists" + config.WssSetting.Wss())
 	}
 
-	engine.Use(core.Favicon("./static/favicon.ico")) // set favicon middleware
+	engine.Use(core.Favicon(filepath.Join(config.AppRoot(), "./static/favicon.ico"))) // set favicon middleware
 	engine.Use(middleware.CORS(middleware.CORSOptions{}))
 	engine.Use(middleware.AccessLog())
 

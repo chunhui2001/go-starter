@@ -204,7 +204,7 @@ var RabbitMQConf = &grabbit.GRabbitConf{
 var Log *logrus.Entry
 var filename string = ".env"
 
-func appRoot() string {
+func AppRoot() string {
 
 	var appRoot string = os.Getenv("APP_ROOT")
 
@@ -237,10 +237,10 @@ func init() {
 	var env string = os.Getenv("GIN_ENV")
 	var envfile = ".env/.env." + env
 
-	if exists, _ := utils.FileExists(filepath.Join(appRoot(), envfile)); exists == true {
+	if exists, _ := utils.FileExists(filepath.Join(AppRoot(), envfile)); exists == true {
 		filename = envfile
 	} else {
-		log.Println("Configuration loading " + filepath.Join(appRoot(), envfile) + " file error, use .env file.")
+		log.Println("Configuration loading " + filepath.Join(AppRoot(), envfile) + " file error, use .env file.")
 	}
 
 	v1 := readConfig(filename, map[string]interface{}{})
@@ -410,7 +410,7 @@ func loadAppSettings(v1 *viper.Viper, filename string) {
 			", GIN_ENV=" + AppSetting.Env +
 			", AppName=" + AppSetting.AppName +
 			", AppPort=" + AppSetting.AppPort +
-			", appRoot=" + appRoot())
+			", appRoot=" + AppRoot())
 	}
 
 }
@@ -556,7 +556,7 @@ func loadWebPageSettings(v1 *viper.Viper, filename string) {
 		return
 	} else {
 		if WebPageSettings.Enable {
-			configLoggerLines = append(configLoggerLines, []string{"WebPageSettings", "Enable=" + utils.ToString(WebPageSettings.Enable) + ", Root=" + filepath.Join(appRoot(), WebPageSettings.Root)})
+			configLoggerLines = append(configLoggerLines, []string{"WebPageSettings", "Enable=" + utils.ToString(WebPageSettings.Enable) + ", Root=" + filepath.Join(AppRoot(), WebPageSettings.Root)})
 		} else {
 			configLoggerLines = append(configLoggerLines, []string{"WebPageSettings", "Enable=" + utils.ToString(WebPageSettings.Enable)})
 		}
@@ -593,7 +593,7 @@ func readConfig(filename string, defaults map[string]interface{}) *viper.Viper {
 		v.SetDefault(key, value)
 	}
 
-	v.AddConfigPath(appRoot())
+	v.AddConfigPath(AppRoot())
 	v.SetConfigName(filename)
 	v.SetConfigType("env")
 	v.AutomaticEnv() // 将读取当前目录下的 .env 配置文件或"环境变量", .env 优先级最高
@@ -606,7 +606,7 @@ func readConfig(filename string, defaults map[string]interface{}) *viper.Viper {
 		return nil
 	}
 
-	log.Println("viper Configuration loaded " + filepath.Join(appRoot(), filename) + " successful.")
+	log.Println("viper Configuration loaded " + filepath.Join(AppRoot(), filename) + " successful.")
 	return v
 
 }
