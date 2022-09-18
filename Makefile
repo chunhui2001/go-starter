@@ -49,10 +49,10 @@ dev:
 
 ### 构建跨平台的可执行程序
 Built1:
-	env GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 go build -buildvcs -ldflags "-X main.Name=go-starter -X main.Author=$(COMMITER) -X main.Commit=$(GIT_HASH) -X main.Time=$(TIME)" -o ./dist/$(APP_NAME)-darwin-amd64 ./main.go
+	env GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 go build -buildvcs -ldflags "-X main.Name=$(APP_NAME) -X main.Author=$(COMMITER) -X main.Commit=$(GIT_HASH) -X main.Time=$(TIME)" -o ./dist/$(APP_NAME)-darwin-amd64 ./main.go
 
 Built2:
-	env GOOS=linux  GOARCH=amd64 CGO_ENABLED=1 go build -buildvcs -ldflags "-X main.Name=go-starter -X main.Author=$(COMMITER) -X main.Commit=$(GIT_HASH) -X main.Time=$(TIME)" -o ./dist/$(APP_NAME)-linux-amd64 ./main.go
+	env GOOS=linux  GOARCH=amd64 CGO_ENABLED=1 go build -buildvcs -ldflags "-X main.Name=$(APP_NAME) -X main.Author=$(COMMITER) -X main.Commit=$(GIT_HASH) -X main.Time=$(TIME)" -o ./dist/$(APP_NAME)-linux-amd64 ./main.go
 
 docker:
 	docker run --rm -it -v $(PWD):/dist:rw --name build_$(APP_NAME) chunhui2001/ubuntu_20.04_dev:golang_1.19 /bin/bash -c 'cd /dist && make -f Makefile Built2' -m 4g
@@ -63,11 +63,11 @@ up: rm
 
 ### 查看程序日志
 logs:
-	docker logs -f --tail 1000 go-starter
+	docker logs -f --tail 1000 $(APP_NAME)
 
 ### 删除程序容器
 rm:
-	docker rm -f go-starter >/dev/null 2>&1
+	docker rm -f $(APP_NAME) >/dev/null 2>&1
 
 privateKey:
 	@# Key considerations for algorithm "RSA" ≥ 2048-bit
@@ -87,7 +87,7 @@ tls:
 # clear modcache
 clear:
 	go clean --modcache
-	rm -rf `go env GOPATH`/bin/go-starter
+	rm -rf `go env GOPATH`/bin/$(APP_NAME)
 	@#rm -rf `go env GOPATH`/bin/*
 	rm -rf dist gin-bin
 	docker image prune -a -f
@@ -99,7 +99,7 @@ list:
 
 # make ngrok
 #ngrok:
-#	ngrok start --config ./ngrok.yml go-starter
+#	ngrok start --config ./ngrok.yml $(APP_NAME)
 
 ### 性能测试
 # make load n=10000 p=info
