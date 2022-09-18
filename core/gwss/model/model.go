@@ -74,7 +74,7 @@ func (m *Message) Bytes() []byte {
 }
 
 func (s *Server) ServerPing() {
-	s.Publish(server_ping, utils.DateTimeUTCString())
+	s.Publish(server_ping, "ping", utils.DateTimeUTCString())
 }
 
 func (s *Server) DetectedClientPong() {
@@ -98,7 +98,7 @@ func (s *Server) DetectedClientPong() {
 			s.Send(&client, NewMessage("sys", "connection_closed", `Your connection has been closed, Bye.`).Bytes())
 			s.RemoveClient(client)
 		} else if t >= d2 {
-			s.Send(&client, NewMessage("sys", "connection_alert", fmt.Sprintf(`Your connection will be closed, Please send Pong in '%s'`, d1-t)).Bytes())
+			s.Send(&client, NewMessage("sys", "connection_warnning", fmt.Sprintf(`Your connection will be closed, Please send Pong in '%s'`, d1-t)).Bytes())
 		}
 
 	}
@@ -155,7 +155,7 @@ func (s *Server) ProcessMessage(client Client, messageType int, payload []byte) 
 
 	switch m.Action {
 	case publish:
-		s.Publish(m.Topic, m.Message)
+		s.Publish(m.Topic, "publish", m.Message)
 		break
 	case subscribe:
 		s.Subscribe(&client, m.Topic)
@@ -174,7 +174,7 @@ func (s *Server) ProcessMessage(client Client, messageType int, payload []byte) 
 	return s
 }
 
-func (s *Server) Publish(topic string, message string) {
+func (s *Server) Publish(topic string, action string, message string) {
 
 	var clients []Client
 
@@ -188,7 +188,7 @@ func (s *Server) Publish(topic string, message string) {
 	if len(clients) != 0 {
 		// send to clients
 		for _, client := range clients {
-			m := utils.MapOf("topic", topic, "message", message)
+			m := utils.MapOf("topic", topic, "action", action, "message", message)
 			s.Send(&client, []byte(utils.ToJsonString(m)))
 			// logger.Log.Info(topic + ": " + message + ", clientId: " + client.ID)
 		}
