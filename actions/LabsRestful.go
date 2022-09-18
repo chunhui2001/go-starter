@@ -389,12 +389,14 @@ func XsltDemoRouter(c *gin.Context) {
 
 }
 
+// https://github.com/raphaelreyna/latte
 // https://github.com/go-latex/latex
 func LatexDemoRouter(c *gin.Context) {
 
 	var outputBuffer bytes.Buffer
 
 	dst := drawimg.NewRenderer(&outputBuffer)
+	// dst2 := drawpdf.NewRenderer(&outputBuffer)
 
 	err := mtex.Render(dst, `$f(x) = \frac{\sqrt{x +20}}{2\pi} +\hbar \sum y\partial y$`, 12*3, 72*3, nil)
 
