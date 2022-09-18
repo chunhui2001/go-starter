@@ -67,6 +67,20 @@ rm:
 Built:
 	env GOOS=$(GOOS) GOARCH=amd64 CGO_ENABLED=$(CGO_ENABLED) go build -buildvcs -ldflags "-X main.Name=go-starter -X main.Author=$(COMMITER) -X main.Commit=$(GIT_HASH) -X main.Time=$(TIME)" -o ./dist/go-starter-native-$(GOOS)-amd64 ./main.go
 
+privateKey:
+	@# Key considerations for algorithm "RSA" ≥ 2048-bit
+	openssl genrsa -out server.key 2048
+	@# Key considerations for algorithm "ECDSA" (X25519 || ≥ secp384r1)
+	@# https://safecurves.cr.yp.to/
+	@# List ECDSA the supported curves (openssl ecparam -list_curves)
+	@#openssl ecparam -genkey -name secp384r1 -out server.key
+
+publicKey:
+	openssl req -new -x509 -sha256 -key server.key -out server.crt -days 3650
+
+tls:
+	openssl s_client -connect 127.0.0.1:8443
+
 ### 删除所有缓存的依赖包
 # clear modcache
 clear:

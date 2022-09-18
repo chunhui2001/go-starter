@@ -1,6 +1,7 @@
 package starter
 
 import (
+	"crypto/tls"
 	"fmt"
 	"html/template"
 	"net"
@@ -140,6 +141,41 @@ func (s *Server) Running() {
 	config.Log.Info("Congratulations! Your server startup successfully, Listening and serving HTTP on " + APP_SETTINGS.AppPort)
 
 	srv.Serve(l)
+
+}
+
+func (s *Server) RunningTLS() {
+
+	cfg := &tls.Config{
+		MinVersion:               tls.VersionTLS12,
+		CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
+		PreferServerCipherSuites: true,
+		CipherSuites: []uint16{
+			tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+			tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+			tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+			tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+		},
+	}
+
+	srv := &http.Server{
+		Addr:         APP_SETTINGS.AppPort,
+		Handler:      s.R,
+		TLSConfig:    cfg,
+		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),
+	}
+
+	l, err := net.Listen("tcp", APP_SETTINGS.AppPort)
+
+	if err != nil {
+		config.Log.Info("Application Run Failed: ErrorMessage=" + err.Error())
+		os.Exit(1)
+		return
+	}
+
+	config.Log.Info("Congratulations! Your server startup successfully, Listening and serving HTTP on " + APP_SETTINGS.AppPort)
+
+	srv.ServeTLS(l, "server.crt", "server.key")
 
 }
 

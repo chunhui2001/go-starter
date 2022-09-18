@@ -122,6 +122,9 @@ https://go.dev/doc/database/execute-transactions
 ### Pointers
 // https://www.golang-book.com/books/intro/8
 
+### golang-tls
+https://gist.github.com/denji/12b3a568f092ab951456
+
 https://www.ardanlabs.com/blog/2013/11/using-xslt-with-go.html
 
 -----------------------------------------------------------------
