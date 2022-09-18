@@ -10,7 +10,7 @@ zone 		?=UTC
 WSS_HOST	?=ws://127.0.0.1:8080
 APP_PORT 	?=8080
 GIT_HASH 	?=$(shell git rev-parse HEAD)
-COMMITER 	?=$(shell git log --format="%H" -n 1 | grep Author| cut -d ' ' -f3- | sed 's/[\<\>]*//g')
+COMMITER 	?=$(shell git log -1 --pretty=format:'%ae')
 PWD 		?=$(shell pwd)
 TIME 		?=$(shell date +%s)
 CGO_ENABLED ?=0
