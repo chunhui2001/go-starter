@@ -25,7 +25,8 @@ import (
 	"github.com/chunhui2001/go-starter/core/gsql"
 	"github.com/chunhui2001/go-starter/core/utils"
 	_ "github.com/joho/godotenv"
-	"github.com/shirou/gopsutil/mem"
+	_ "github.com/shirou/gopsutil/v3/cpu"
+	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/spf13/viper"
 
 	"github.com/gin-gonic/gin"
