@@ -394,6 +394,26 @@ func HumanFileSize(size float64) string {
 
 }
 
+func HumanFileSizeUint(size uint64) string {
+
+	var suffixes [5]string
+
+	suffixes[0] = "B"
+	suffixes[1] = "KB"
+	suffixes[2] = "MB"
+	suffixes[3] = "GB"
+	suffixes[4] = "TB"
+
+	base := math.Log(float64(size)) / math.Log(1024)
+
+	getSize := Round(math.Pow(1024, base-math.Floor(base)), .5, 2)
+
+	getSuffix := suffixes[int(math.Floor(base))]
+
+	return strconv.FormatFloat(getSize, 'f', -1, 64) + "" + string(getSuffix)
+
+}
+
 func SortedKeysInt(maps ...map[int]interface{}) (map[int]interface{}, []int) {
 
 	var keys []int
