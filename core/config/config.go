@@ -25,7 +25,7 @@ import (
 	"github.com/chunhui2001/go-starter/core/gsql"
 	"github.com/chunhui2001/go-starter/core/utils"
 	_ "github.com/joho/godotenv"
-	_ "github.com/shirou/gopsutil/v3/cpu"
+	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/spf13/viper"
 
@@ -401,12 +401,22 @@ func loadAppSettings(v1 *viper.Viper, filename string) {
 
 		v, _ := mem.VirtualMemory()
 
+		infoStat, _ := cpu.Info()
+		cpuMode := infoStat[len(infoStat)-1].ModelName
+		physicalID := infoStat[len(infoStat)-1].PhysicalID
+		cores := infoStat[len(infoStat)-1].Cores
+
+		log.Println("InfoStat: NumCPUs=" + utils.ToString(runtime.NumCPU()) +
+			", Cores=" + utils.ToString(cores) +
+			", TotalMem=" + utils.HumanFileSizeUint(v.Total) +
+			", PhysicalID=" + physicalID +
+			", CPUMode=" + cpuMode)
+
 		AppSetting.AppVersion = built.INFO.Commit
 		AppSetting.OS = built.INFO.OS
+
 		log.Println("AppSetting: Version=" + AppSetting.AppVersion +
 			", OS=" + AppSetting.OS +
-			", NumCPUs=" + utils.ToString(runtime.NumCPU()) +
-			", TotalMem=" + utils.HumanFileSizeUint(v.Total) +
 			", TimeZone=" + AppSetting.TimeZone +
 			", GIN_ENV=" + AppSetting.Env +
 			", AppName=" + AppSetting.AppName +
