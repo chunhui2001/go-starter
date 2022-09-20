@@ -406,7 +406,7 @@ func loadAppSettings(v1 *viper.Viper, filename string) {
 		log.Println("AppSetting: Version=" + AppSetting.AppVersion +
 			", OS=" + AppSetting.OS +
 			", NumCPUs=" + utils.ToString(runtime.NumCPU()) +
-			", TotalMem=" + utils.ToString(v.Total) +
+			", TotalMem=" + utils.HumanFileSizeUint(v.Total) +
 			", TimeZone=" + AppSetting.TimeZone +
 			", GIN_ENV=" + AppSetting.Env +
 			", AppName=" + AppSetting.AppName +

@@ -108,23 +108,25 @@ func (c *Client) ListenMessage(messageHandler MessageHandler) {
 				logger.Errorf(`WebSocket-Connection-Has-Been-Closed: opcode=%x, ConnectId=%s, ReCount=%d, memo=%s, SeverAddress=%s, errorMessage=%s`,
 					opcode, c.ConnectId, c.ReCount, "Will-be-Reconnect-in-2-sec", c.ServerAddr, err.Error())
 
-				c.Connection.Close()
-				time.Sleep(2 * time.Second) // reconnect in 2 seconds
-
-				for {
-					if _, err := c.Connect(messageHandler); err == nil {
-						break
-					} else {
-						time.Sleep(2 * time.Second) // reconnect in 2 seconds
-					}
-				}
-
-				break
-
 			} else {
-				logger.Errorf(`WebSocket-Connection-Error: opcode=%x, ConnectId=%s, ReCount=%d, SeverAddress=%s, errorMessage=%s`,
-					opcode, c.ConnectId, c.ReCount, c.ServerAddr, err.Error())
+				logger.Errorf(`WebSocket-Connection-Error-Will-Be-Closed: opcode=%x, ConnectId=%s, ReCount=%d, memo=%s,, SeverAddress=%s, errorMessage=%s`,
+					opcode, c.ConnectId, c.ReCount, "Will-be-Reconnect-in-2-sec", c.ServerAddr, err.Error())
 			}
+
+			c.Connection.Close()
+			time.Sleep(2 * time.Second) // reconnect in 2 seconds
+
+			for {
+				if _, err := c.Connect(messageHandler); err == nil {
+					// 重连成功
+					break
+				} else {
+					// 链接失败再次重新创建链接
+					time.Sleep(2 * time.Second) // reconnect in 2 seconds
+				}
+			}
+
+			break
 
 		} else {
 			if messageHandler != nil {
