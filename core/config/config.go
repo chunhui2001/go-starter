@@ -35,6 +35,9 @@ import (
 	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
+
+	// rotatelogs "github.com/lestrrat-go/file-rotatelogs"
+	"github.com/rifflock/lfshook"
 )
 
 var timeStampFormat = "2006-01-02T15:04:05.000Z07:00"
@@ -297,17 +300,7 @@ func InitLog() {
 
 	myLog := logrus.New()
 
-	if LogSettings.File() && LogSettings.Console() {
-
-		lumberjackLogger := LogSettings.LumberjackLogger()
-
-		// assign it to the standard logger
-		myLog.SetOutput(io.MultiWriter(os.Stdout, lumberjackLogger))
-		// gin log config
-		gin.DisableConsoleColor() //  Disable Console Color
-		gin.DefaultWriter = io.MultiWriter(lumberjackLogger, os.Stdout)
-
-	} else if LogSettings.Console() {
+	if LogSettings.Console() {
 
 		// assign it to the standard logger
 		myLog.SetOutput(io.MultiWriter(os.Stdout))
@@ -316,38 +309,52 @@ func InitLog() {
 		gin.DisableConsoleColor() //  Disable Console Color
 		gin.DefaultWriter = io.MultiWriter(os.Stdout)
 
-	} else if LogSettings.File() {
+		myLog.SetLevel(logrus.DebugLevel)
+		myLog.SetReportCaller(true)
 
-		lumberjackLogger := LogSettings.LumberjackLogger()
-
-		// assign it to the standard logger
-		myLog.SetOutput(io.MultiWriter(lumberjackLogger))
-		// gin log config
-		gin.DisableConsoleColor() //  Disable Console Color
-		gin.DefaultWriter = io.MultiWriter(lumberjackLogger)
+		myLog.SetFormatter(&MyTxtFormatter{
+			TimestampFormat: timeStampFormat,
+			LogFormat:       "%time% [%lvl%] - %file% > %msg%\n",
+			CallerPrettyfier: func(frame *runtime.Frame) (function string, file string) {
+				lineMessage := fmt.Sprintf("%s() %s(%d):%d", frame.Function, path.Base(frame.File), utils.GoroutineId(), frame.Line)
+				lineLength := len(lineMessage)
+				lineMaxLength := 36
+				if lineLength > lineMaxLength {
+					lineMessage = "....." + string(lineMessage[lineLength-lineMaxLength+4:lineLength])
+				} else if lineLength < lineMaxLength {
+					lineMessage = utils.PadLeft(lineMessage, " ", lineMaxLength+1)
+				}
+				return "", "{" + lineMessage + "}"
+			},
+		})
 
 	} else {
 		myLog.Out = ioutil.Discard
 	}
 
-	myLog.SetLevel(logrus.DebugLevel)
-	myLog.SetReportCaller(true)
+	if LogSettings.File() {
 
-	myLog.SetFormatter(&MyTxtFormatter{
-		TimestampFormat: timeStampFormat,
-		LogFormat:       "%time% [%lvl%] - %file% > %msg%\n",
-		CallerPrettyfier: func(frame *runtime.Frame) (function string, file string) {
-			lineMessage := fmt.Sprintf("%s() %s(%d):%d", frame.Function, path.Base(frame.File), utils.GoroutineId(), frame.Line)
-			lineLength := len(lineMessage)
-			lineMaxLength := 36
-			if lineLength > lineMaxLength {
-				lineMessage = "....." + string(lineMessage[lineLength-lineMaxLength+4:lineLength])
-			} else if lineLength < lineMaxLength {
-				lineMessage = utils.PadLeft(lineMessage, " ", lineMaxLength+1)
-			}
-			return "", "{" + lineMessage + "}"
-		},
-	})
+		writer := LogSettings.LumberjackLogger()
+
+		myLog.Hooks.Add(lfshook.NewHook(
+			lfshook.WriterMap{
+				logrus.InfoLevel:  writer,
+				logrus.ErrorLevel: writer,
+			},
+			&MyJSONFormatter{
+				TimestampFormat: timeStampFormat,
+				PrettyPrint:     false,
+				AppName:         AppSetting.AppName,
+				Env:             AppSetting.Env,
+				CapationGen:     1,
+				FieldMap: FieldMap{
+					"time": "@timestamp",
+					"msg":  "@message",
+				},
+			},
+		))
+
+	}
 
 	if LogSettings.Kafka() {
 
