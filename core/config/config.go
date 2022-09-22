@@ -107,10 +107,10 @@ func (w *Wss) Wss() string {
 var AppSetting = &AppConf{
 	Env:        "production",
 	AppName:    "go-starter",
-	AppPort:    "8080",
+	AppPort:    "0.0.0.0:8080",
 	TimeZone:   map[bool]string{true: os.Getenv("TZ"), false: "UTC"}[os.Getenv("TZ") != ""],
 	ServerId:   1,
-	DemoEnable: true,
+	DemoEnable: false,
 }
 
 var SimpleGTaskConf = &SimpleGTask{
@@ -247,29 +247,34 @@ func init() {
 		log.Println("Configuration loading " + filepath.Join(AppRoot(), envfile) + " file error, use .env file.")
 	}
 
-	v1 := readConfig(filename, map[string]interface{}{})
+	if v1 := readConfig(filename, map[string]interface{}{}); v1 != nil {
 
-	loadAppSettings(v1, filename)
-	loadLoggerSettings(v1, filename)
+		loadAppSettings(v1, filename)
+		loadLoggerSettings(v1, filename)
 
-	// init log configuration
-	InitLog()
+		// init log configuration
+		InitLog()
 
-	loadWebPageSettings(v1, filename)
-	loadWssSettings(v1, filename)
-	loadRedisSettings(v1, filename)
-	loadMongoDBSettings(v1, filename)
-	loadCookieSettings(v1, filename)
-	loadMySqlSettings(v1, filename)
-	loadEsSettings(v1, filename)
-	loadSimpleGTaskSettings(v1, filename)
-	loadRabbitSettings(v1, filename)
+		loadWebPageSettings(v1, filename)
+		loadWssSettings(v1, filename)
+		loadRedisSettings(v1, filename)
+		loadMongoDBSettings(v1, filename)
+		loadCookieSettings(v1, filename)
+		loadMySqlSettings(v1, filename)
+		loadEsSettings(v1, filename)
+		loadSimpleGTaskSettings(v1, filename)
+		loadRabbitSettings(v1, filename)
 
-	printConfigLogLines()
+		printConfigLogLines()
 
-	ghttp.Init(Log)
-	grtask.Init(Log)
-	gid.Init(Log, AppSetting.ServerId)
+		ghttp.Init(Log)
+		grtask.Init(Log)
+
+		gid.Init(Log, AppSetting.ServerId)
+
+	} else {
+		Log = logrus.NewEntry(logrus.New())
+	}
 
 }
 
@@ -620,7 +625,6 @@ func readConfig(filename string, defaults map[string]interface{}) *viper.Viper {
 
 	if err != nil {
 		log.Println("viper loaded error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
-		os.Exit(3)
 		return nil
 	}
 
