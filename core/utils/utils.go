@@ -21,6 +21,7 @@ import (
 	"time"
 
 	gerror "github.com/go-errors/errors"
+	_ "github.com/kardianos/osext"
 	"github.com/ubiq/go-ubiq/common/hexutil"
 )
 
@@ -42,6 +43,8 @@ func OutboundIP() net.IP {
 func RootDir() string {
 	dir, _ := os.Getwd()
 	return dir
+	// folderPath, _ := osext.ExecutableFolder()
+	// return folderPath
 }
 
 func FileExists(name string) (bool, error) {
