@@ -62,6 +62,8 @@ func init() {
 		AppendRouter("GET", []string{"/demo/mysql-trans"}, actions.MySqlTxnsRouter)
 		AppendRouter("GET", []string{"/demo/mysql-trans-Lock1"}, actions.MySqlTrxLocks1)
 
+		AppendRouter("GET", []string{"/demo/ribbon-png"}, actions.RibbonDiagramsRouter)
+
 		// other simples
 		AppendRouter("POST", []string{"/websocket-client-simple"}, actions.WsClientSimple)
 

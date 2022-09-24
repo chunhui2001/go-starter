@@ -127,6 +127,11 @@ https://gist.github.com/denji/12b3a568f092ab951456
 
 https://www.ardanlabs.com/blog/2013/11/using-xslt-with-go.html
 
+### Go package to make lightweight ASCII line graph in command line apps with no other dependencies
+https://github.com/guptarohit/asciigraph
+https://golangexample.com/go-package-to-make-lightweight-ascii-line-graph-in-command-line-apps-with-no-other-dependencies/
+> ping -i.2 google.com | grep -oP '(?<=time=).*(?=ms)' --line-buffered | /asciigraph -r -h 10 -w 40 -c "realtime plot data (google ping in ms) from stdin"
+
 -----------------------------------------------------------------
 GOOS - Target Operating System		GOARCH - Target Platform
 -----------------------------------------------------------------
