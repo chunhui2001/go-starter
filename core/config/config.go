@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -652,8 +653,12 @@ func loadYamlConfiguraion() {
 
 }
 
-func ReadConfig(key string) interface{} {
-	return applicationConfig[key]
+func ReadConfig(key string, data any) error {
+	value := applicationConfig[key]
+	if err := json.Unmarshal(utils.ToJsonBytes(value), data); err != nil {
+		return err
+	}
+	return nil
 }
 
 // GetEnv returns an environment variable or a default value if not present
