@@ -93,11 +93,11 @@ var DefaultTransport http.RoundTripper = &http.Transport{
 // r.Any("/scan-api/*proxyPath", func(c *gin.Context) { Proxy("/scan-api", "http://localhost:4002,http://localhost:4004", c) })
 // r.Any("/a/scan-api/*proxyPath", func(c *gin.Context) { Proxy("/scan-api", "http://localhost:4002,http://localhost:4004", c) })
 // r.Any("/b/scan-api/*proxyPath", func(c *gin.Context) { Proxy("/scan-api", "http://localhost:4002,http://localhost:4004", c) })
-func Proxy(prefix string, remotes string, c *gin.Context) {
+func Proxy(c *gin.Context, prefix string, remotes ...string) {
 
 	rand.Seed(time.Now().UnixNano())
 
-	upstreams := strings.Split(remotes, ",")
+	upstreams := remotes
 	upstreamSize := len(upstreams)
 	currentRemote := upstreams[rand.Intn((upstreamSize-1)-0+1)+0]
 
@@ -127,4 +127,11 @@ func Proxy(prefix string, remotes string, c *gin.Context) {
 
 	proxy.ServeHTTP(c.Writer, c.Request)
 
+}
+
+// gproxy.Any(r, "/a/scan-api", "/scan-api", "http://172.16.197.233:8080", "http://172.16.197.134:8080")
+func Any(r *gin.Engine, from string, to string, remotes ...string) {
+	r.Any(from+"/*proxyPath", func(c *gin.Context) {
+		Proxy(c, to, remotes...)
+	})
 }
