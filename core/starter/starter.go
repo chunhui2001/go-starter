@@ -15,6 +15,7 @@ import (
 	"github.com/chunhui2001/go-starter/core"
 	. "github.com/chunhui2001/go-starter/core/commons"
 	"github.com/chunhui2001/go-starter/core/config"
+	"github.com/chunhui2001/go-starter/core/gproxy"
 	"github.com/chunhui2001/go-starter/core/gredis"
 	"github.com/chunhui2001/go-starter/core/grtask"
 	"github.com/chunhui2001/go-starter/core/gwss"
@@ -36,6 +37,12 @@ import (
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/jinzhu/copier"
 )
+
+type ReverseProxy struct {
+	From    string   `yaml:"from"`
+	To      string   `yaml:"to"`
+	Remotes []string `yaml:"remotes"`
+}
 
 type Route struct {
 	Method   string
@@ -90,15 +97,16 @@ var defaultServer = &Server{
 }
 
 var (
-	APP_SETTINGS     *config.AppConf            = config.AppSetting
-	APP_PORT         string                     = config.AppSetting.AppPort
-	WSS_Conf         *config.Wss                = config.WssSetting
-	APP_COOKIE       *config.Cookie             = config.CookieSetting
-	WEB_PAGE_CONF    *config.WebPageConf        = config.WebPageSettings
-	store            *persistence.InMemoryStore = persistence.NewInMemoryStore(time.Second)
-	Redis_Conf       *gredis.GRedis             = config.RedisConf
-	Simple_Task_Conf *config.SimpleGTask        = config.SimpleGTaskConf
-	logger                                      = config.Log
+	APP_SETTINGS      *config.AppConf            = config.AppSetting
+	APP_PORT          string                     = config.AppSetting.AppPort
+	WSS_Conf          *config.Wss                = config.WssSetting
+	APP_COOKIE        *config.Cookie             = config.CookieSetting
+	WEB_PAGE_CONF     *config.WebPageConf        = config.WebPageSettings
+	store             *persistence.InMemoryStore = persistence.NewInMemoryStore(time.Second)
+	Redis_Conf        *gredis.GRedis             = config.RedisConf
+	Simple_Task_Conf  *config.SimpleGTask        = config.SimpleGTaskConf
+	logger                                       = config.Log
+	reverseProxyArray []ReverseProxy
 )
 
 func (s *Server) Bootstrap(hooks ...func(*gin.Engine)) *Server {
@@ -300,6 +308,14 @@ func Setup() *gin.Engine {
 				config.Log.Infof("定时任务正在执行每秒1次,耗时3秒: num=%d, node=%s, taskId=%s", i+1, node, taskId)
 			}
 		})
+	}
+
+	if err := config.ReadConfig("Reverse-Proxy", &reverseProxyArray); err != nil {
+		logger.Errorf("Reverse-Proxy-Configuration-Error: Key=%s, ErrorMessage=%s", "Reverse-Proxy", err.Error())
+	}
+
+	for _, val := range reverseProxyArray {
+		gproxy.Any(engine, val.From, val.To, val.Remotes...)
 	}
 
 	return engine
