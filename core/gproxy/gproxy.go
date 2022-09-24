@@ -134,5 +134,5 @@ func Any(r *gin.Engine, from string, to string, remotes ...string) {
 	r.Any(from+"/*proxyPath", func(c *gin.Context) {
 		Proxy(c, to, remotes...)
 	})
-	logger.Infof(`Setup-Reverse: Method=%s, From=%s, To=%s, remotes=%s`, "Any", from, to, strings.Join(remotes, ","))
+	logger.Infof(`Proxy-Reverse-Handler: Method=%s, From=%s, To=%s, remotes=%s`, "Any", from, to, strings.Join(remotes, ","))
 }
