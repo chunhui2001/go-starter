@@ -209,15 +209,7 @@ var Log *logrus.Entry
 var filename string = ".env"
 
 func AppRoot() string {
-
-	var appRoot string = os.Getenv("APP_ROOT")
-
-	if appRoot == "" {
-		return utils.RootDir()
-	}
-
-	return appRoot
-
+	return utils.RootDir()
 }
 
 // LoadEnvVars will load a ".env[.development|.test]" file if it exists and set ENV vars.

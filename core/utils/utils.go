@@ -41,8 +41,16 @@ func OutboundIP() net.IP {
 }
 
 func RootDir() string {
+
+	var appRoot string = os.Getenv("APP_ROOT")
+
+	if appRoot != "" {
+		return appRoot
+	}
+
 	dir, _ := os.Getwd()
 	return dir
+
 	// folderPath, _ := osext.ExecutableFolder()
 	// return folderPath
 }
