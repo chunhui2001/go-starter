@@ -28,6 +28,7 @@ import (
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 
 	"github.com/gin-gonic/gin"
 
@@ -207,6 +208,7 @@ var RabbitMQConf = &grabbit.GRabbitConf{
 
 var Log *logrus.Entry
 var filename string = ".env"
+var applicationConfig map[string]interface{}
 
 func AppRoot() string {
 	return utils.RootDir()
@@ -263,6 +265,8 @@ func init() {
 		grtask.Init(Log)
 
 		gid.Init(Log, AppSetting.ServerId)
+
+		loadYamlConfiguraion()
 
 	} else {
 		Log = logrus.NewEntry(logrus.New())
@@ -623,6 +627,33 @@ func readConfig(filename string, defaults map[string]interface{}) *viper.Viper {
 	log.Println("viper Configuration loaded " + filepath.Join(AppRoot(), filename) + " successful.")
 	return v
 
+}
+
+func loadYamlConfiguraion() {
+
+	configFilePath := filepath.Join(utils.RootDir(), ".env", "application.yml")
+
+	if exists, _ := utils.FileExists(configFilePath); exists == true {
+
+		if reverseProxyConfig, err := utils.ReadFile(configFilePath); err != nil {
+			Log.Infof(`Read-Yaml-File-Error: FilePath=%s, ErrorMessage=%s`, configFilePath, err.Error())
+			return
+		} else {
+			var body interface{}
+			if err := yaml.Unmarshal([]byte(reverseProxyConfig), &body); err != nil {
+				Log.Infof(`Loading-Yaml-File-Error: FilePath=%s, ErrorMessage=%s`, configFilePath, err.Error())
+				return
+			}
+			applicationConfig = body.(map[string]interface{})
+			Log.Infof(`Loading-Yaml-Configuration: FilePath=%s`, configFilePath)
+		}
+
+	}
+
+}
+
+func ReadConfig(key string) interface{} {
+	return applicationConfig[key]
 }
 
 // GetEnv returns an environment variable or a default value if not present
