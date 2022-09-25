@@ -65,6 +65,7 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 	} else {
 		if e != nil {
 			logger.Errorf(`GRTask-Exists-Error: LockKey=%s, expr='%s', ErrorMessage=%s`, lockKey, expr, utils.ErrorToString(e))
+			return
 		}
 	}
 
