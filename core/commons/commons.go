@@ -71,12 +71,6 @@ func Result(r *R) map[string]interface{} {
 		m["message"] = r.Message
 	}
 
-	if r.Data != nil {
-		// Notice:
-		// make(map[string]interface{}) 		>>> will be == null
-		m["data"] = r.Data
-	}
-
 	if r.Error != nil {
 
 		var ve validator.ValidationErrors
@@ -100,6 +94,12 @@ func Result(r *R) map[string]interface{} {
 		if r.Message == "" {
 			m["message"] = "Ok"
 		}
+	}
+
+	if r.Data != nil {
+		// Notice:
+		// make(map[string]interface{}) 		>>> will be == null
+		m["data"] = r.Data
 	}
 
 	return m

@@ -34,12 +34,11 @@ import (
 	"github.com/gin-gonic/gin"
 
 	lkh "github.com/gfremex/logrus-kafka-hook"
+	"github.com/jinzhu/copier"
 	"github.com/olekukonko/tablewriter"
+	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
-
-	// rotatelogs "github.com/lestrrat-go/file-rotatelogs"
-	"github.com/rifflock/lfshook"
 )
 
 var timeStampFormat = "2006-01-02T15:04:05.000Z07:00"
@@ -632,24 +631,37 @@ func readConfig(filename string, defaults map[string]interface{}) *viper.Viper {
 
 func loadYamlConfiguraion() {
 
-	configFilePath := filepath.Join(utils.RootDir(), ".env", "application.yml")
+	var f = func(file string) map[string]interface{} {
 
-	if exists, _ := utils.FileExists(configFilePath); exists == true {
+		yamlFilePath := filepath.Join(utils.RootDir(), ".env", file)
 
-		if reverseProxyConfig, err := utils.ReadFile(configFilePath); err != nil {
-			Log.Infof(`Read-Yaml-File-Error: FilePath=%s, ErrorMessage=%s`, configFilePath, err.Error())
-			return
-		} else {
-			var body interface{}
-			if err := yaml.Unmarshal([]byte(reverseProxyConfig), &body); err != nil {
-				Log.Infof(`Loading-Yaml-File-Error: FilePath=%s, ErrorMessage=%s`, configFilePath, err.Error())
-				return
+		if exists, _ := utils.FileExists(yamlFilePath); exists == true {
+
+			if yamlContent, err := utils.ReadFile(yamlFilePath); err != nil {
+				Log.Errorf(`Read-Yaml-File-Error: FilePath=%s, ErrorMessage=%s`, yamlFilePath, err.Error())
+			} else {
+				var body map[string]interface{}
+				if err := yaml.Unmarshal([]byte(yamlContent), &body); err != nil {
+					Log.Errorf(`Loading-Yaml-File-Error: FilePath=%s, ErrorMessage=%s`, yamlFilePath, err.Error())
+				} else {
+					Log.Infof(`LoadedYaml-Configuration: FilePath=%s`, yamlFilePath)
+					return body
+				}
 			}
-			applicationConfig = body.(map[string]interface{})
-			Log.Infof(`Loading-Yaml-Configuration: FilePath=%s`, configFilePath)
+
 		}
 
+		return nil
+
 	}
+
+	var env string = os.Getenv("GIN_ENV")
+
+	var body1 map[string]interface{} = f("application.yml")
+	var body2 map[string]interface{} = f("application-" + env + ".yml")
+
+	copier.CopyWithOption(&applicationConfig, &body1, copier.Option{IgnoreEmpty: true, DeepCopy: false})
+	copier.CopyWithOption(&applicationConfig, &body2, copier.Option{IgnoreEmpty: true, DeepCopy: false})
 
 }
 

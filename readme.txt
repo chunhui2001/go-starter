@@ -132,6 +132,16 @@ https://github.com/guptarohit/asciigraph
 https://golangexample.com/go-package-to-make-lightweight-ascii-line-graph-in-command-line-apps-with-no-other-dependencies/
 > ping -i.2 google.com | grep -oP '(?<=time=).*(?=ms)' --line-buffered | /asciigraph -r -h 10 -w 40 -c "realtime plot data (google ping in ms) from stdin"
 
+### Profile-specific application properties (application-{profile}.properties and YAML variants).
+### Properties are considered in the following order:
+> 1. Command line arguments.
+> 2. OS environment variables.
+> 3. RandomValuePropertySource that has properties only in random.*.
+> 4. Profile-specific application properties (application-{profile}.properties and YAML variants).
+> 5. Application properties (application.properties and YAML variants).
+> 6. Default properties
+https://github.com/furkilic/go-boot-config
+
 -----------------------------------------------------------------
 GOOS - Target Operating System		GOARCH - Target Platform
 -----------------------------------------------------------------
