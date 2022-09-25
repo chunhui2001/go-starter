@@ -439,7 +439,7 @@ func loadLoggerSettings(v1 *viper.Viper, filename string) {
 		os.Exit(3)
 		return
 	} else {
-		log.Println("LogSettings: Output=" + LogSettings.Output + ", logFile=" + LogSettings.LogFile() + ", MaxSize=" + utils.ToString(LogSettings.FileMaxSize) + "mb")
+		log.Println("LogSettings: Output=" + LogSettings.Output + ", Formatter=" + LogSettings.FileFormatter + ", LogFile=" + LogSettings.LogFile() + ", MaxSize=" + utils.ToString(LogSettings.FileMaxSize) + "mb")
 	}
 }
 
