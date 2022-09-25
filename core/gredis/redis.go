@@ -284,7 +284,7 @@ func Get(key string) string {
 
 }
 
-// expir 0 代表无过期时间
+// expir 0 代表无过期时间, 过期时间单位是秒
 func Set(key string, value string, expir int) {
 	if err := Client().Set(ctx, key, value, time.Duration(expir)*time.Second).Err(); err != nil {
 		panic(err)
@@ -301,6 +301,27 @@ func SetNX(key string, value string, expir int) bool {
 		}
 	}
 	return false
+}
+
+// 将给定 key 的值设为 value ，并返回 key 的旧值(old value)。
+// 当 key 存在但不是字符串类型时，返回一个错误。
+// 当 key 没有旧值时，也即是，key 不存在时，返回 null 的同时将当前key设置为新值
+func GetSet(key string, value string) string {
+
+	val, err := Client().GetSet(ctx, key, value).Result()
+
+	switch {
+	case err == redis.Nil:
+		return ""
+	case err != nil:
+		logger.Errorf(`Redis-GetSet-Key-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
+		panic(err)
+	case val == "":
+		return ""
+	}
+
+	return val
+
 }
 
 // 查询列表元素索引,没找到返回-1

@@ -23,6 +23,7 @@ func init() {
 		// redis simples
 		AppendRouter("GET", []string{"/labs-redis-get"}, actions.RedisGetRouter)
 		AppendRouter("GET", []string{"/labs-redis-set"}, actions.RedisSetRouter)
+		AppendRouter("GET", []string{"/labs-redis-getset"}, actions.RedisGetSetRouter)
 		AppendRouter("GET", []string{"/labs-redis-lpush"}, actions.RedisLpushRouter)
 		AppendRouter("GET", []string{"/labs-redis-lrange"}, actions.RedisLrangeRouter)
 		AppendRouter("GET", []string{"/labs-redis-del"}, actions.RedisDelRouter)

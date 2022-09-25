@@ -52,6 +52,7 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 	currentNode := utils.ToString(nodeid)
 
 	if ok, e := gredis.Exists(lockKey); ok {
+
 		if ttl, err := gredis.Ttl(lockKey); err == nil {
 
 			if ttl <= 0 {
@@ -67,6 +68,7 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 			logger.Errorf(`GRTask-Ttl-Error: LockKey=%s, expr='%s', ErrorMessage=%s`, lockKey, expr, utils.ErrorToString(err))
 			return
 		}
+
 	} else {
 		if e != nil {
 			logger.Errorf(`GRTask-Exists-Error: LockKey=%s, expr='%s', ErrorMessage=%s`, lockKey, expr, utils.ErrorToString(e))
@@ -74,6 +76,7 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 		}
 	}
 
+	// 当指定的key不存在时才会设置成功
 	if gredis.SetNX(lockKey, currentNode, 5) {
 		runTask(lockKey, currentNode, task)
 	} else {
@@ -99,7 +102,14 @@ func runTask(lockKey string, currentNode string, task func(node string, lockKey 
 		for {
 			time.Sleep(100 * time.Millisecond)
 			if ok, _ := gredis.Exists(lockKey); ok {
-				gredis.Set(lockKey, currentNode, 5) // 安保线程, 里边的人没出来外边的人进不去
+				// 安保线程, 里边的人没出来外边的人进不去
+				if currentVal := gredis.GetSet(lockKey, currentNode+"_update"); currentVal == currentNode {
+					// 说明key还没有删, 延长当前key的过期时间
+					gredis.Set(lockKey, currentNode, 5)
+				} else {
+					// 不等于原来的值，删除当前key
+					gredis.Del(lockKey)
+				}
 			} else {
 				break
 			}

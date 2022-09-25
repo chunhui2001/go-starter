@@ -146,6 +146,12 @@ func RedisSetRouter(c *gin.Context) {
 	c.JSON(http.StatusOK, (&R{Data: utils.StrToInt(expir)}).Success())
 }
 
+func RedisGetSetRouter(c *gin.Context) {
+	key := c.Query("key")
+	val := c.Query("val")
+	c.JSON(http.StatusOK, (&R{Data: gredis.GetSet(key, val)}).Success())
+}
+
 func RedisLpushRouter(c *gin.Context) {
 	key := c.Query("key")
 	val := c.Query("val")
@@ -194,10 +200,8 @@ func RedisSetNxRouter(c *gin.Context) {
 func RedisTtlRouter(c *gin.Context) {
 	key := c.Query("key")
 	if ttl, err := gredis.Ttl(key); err != nil {
-		fmt.Println("1" + utils.ToString(ttl))
 		c.JSON(http.StatusOK, (&R{Error: err}).Fail(400))
 	} else {
-		fmt.Println(ttl <= 0)
 		c.JSON(http.StatusOK, (&R{Data: ttl}).Success())
 	}
 }
