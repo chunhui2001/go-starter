@@ -55,7 +55,7 @@ Built1:
 Built2:
 	env GOOS=linux  GOARCH=amd64 CGO_ENABLED=1 go build -buildvcs -ldflags "-X main.Name=$(APP_NAME) -X main.Author=$(COMMITER) -X main.Commit=$(GIT_HASH) -X main.Time=$(TIME)" -o ./dist/$(APP_NAME)-linux-amd64 ./main.go
 
-docker:
+Build:
 	docker run --rm -it -v $(PWD):/dist:rw --name build_$(APP_NAME) chunhui2001/ubuntu_20.04_dev:golang_1.19 /bin/bash -c 'cd /dist && make -f Makefile Built2' -m 4g
 
 ### 通过容器启动

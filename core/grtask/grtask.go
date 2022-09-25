@@ -104,7 +104,7 @@ func runTask(lockKey string, currentNode string, task func(node string, lockKey 
 			if ok, _ := gredis.Exists(lockKey); ok {
 				// 安保线程, 里边的人没出来外边的人进不去
 				if currentVal := gredis.GetSet(lockKey, currentNode+"_update"); currentVal == currentNode {
-					// 说明key还没有删, 延长当前key的过期时间
+					// 说明key还没有删, 安全的延长当前key的过期时间
 					gredis.Set(lockKey, currentNode, 5)
 				} else {
 					// 不等于原来的值，删除当前key

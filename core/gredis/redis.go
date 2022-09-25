@@ -326,7 +326,7 @@ func GetSet(key string, value string) string {
 
 // 查询列表元素索引,没找到返回-1
 func LindexOf(key string, value string) int64 {
-	val, err := Client().LPos(ctx, key, value, redis.LPosArgs{Rank: 1, MaxLen: 1}).Result()
+	val, err := Client().LPos(ctx, key, value, redis.LPosArgs{Rank: 0, MaxLen: 1}).Result()
 	switch {
 	case err == redis.Nil:
 		return -1
