@@ -9,6 +9,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type GRTaskItem struct {
+	Id   string
+	Memo string
+	Expr string
+}
+
 var (
 	logger *logrus.Entry
 	c      = cron.New()
