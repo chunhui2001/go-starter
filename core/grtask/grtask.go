@@ -76,6 +76,8 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 
 	if gredis.SetNX(lockKey, currentNode, 5) {
 
+		start := time.Now()
+
 		logger.Infof(`GRTask-Started: currentNode=%s, OutboundIP=%s, LockKey=%s`, currentNode, utils.OutboundIP().String(), lockKey)
 
 		// 避免定时任务执行时间过长给当前锁续命，避免重复启动
@@ -94,6 +96,8 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 		task(currentNode, lockKey)
 
 		time.Sleep(175 * time.Millisecond) // 暂停175毫秒, 避免定时任务执行的太快, 同时拿到锁
+
+		logger.Infof(`GRTask-Completed: currentNode=%s, 耗时=%s, LockKey=%s`, currentNode, time.Since(start), lockKey)
 
 		gredis.Del(lockKey)
 
