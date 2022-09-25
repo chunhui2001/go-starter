@@ -52,7 +52,7 @@ func (writer logWriter) Write(bytes []byte) (int, error) {
 }
 
 type AppConf struct {
-	ServerId   int64  `mapstructure:"SERVER_ID"`
+	NodeId     int64  `mapstructure:"NODE_ID"`
 	Env        string `mapstructure:"GIN_ENV"`
 	AppName    string `mapstructure:"APP_NAME"`
 	AppPort    string `mapstructure:"APP_PORT"`
@@ -111,7 +111,7 @@ var AppSetting = &AppConf{
 	AppName:    "go-starter",
 	AppPort:    "0.0.0.0:8080",
 	TimeZone:   map[bool]string{true: os.Getenv("TZ"), false: "UTC"}[os.Getenv("TZ") != ""],
-	ServerId:   1,
+	NodeId:     1,
 	DemoEnable: false,
 }
 
@@ -292,9 +292,9 @@ func init() {
 		printConfigLogLines()
 
 		ghttp.Init(Log)
-		grtask.Init(Log)
+		grtask.Init(Log, AppSetting.NodeId)
 
-		gid.Init(Log, AppSetting.ServerId)
+		gid.Init(Log, AppSetting.NodeId)
 
 		loadYamlConfiguraion()
 
@@ -412,22 +412,28 @@ func loadAppSettings(v1 *viper.Viper, filename string) {
 		physicalID := infoStat[len(infoStat)-1].PhysicalID
 		cores := infoStat[len(infoStat)-1].Cores
 
-		log.Println("InfoStat: NumCPUs=" + utils.ToString(runtime.NumCPU()) +
+		log.Println("InfoStat:" +
+			" Hostname=" + utils.Hostname() +
+			", OutboundIP=" + utils.OutboundIP().String() +
+			", NumCPUs=" + utils.ToString(runtime.NumCPU()) +
 			", Cores=" + utils.ToString(cores) +
 			", TotalMem=" + utils.HumanFileSizeUint(v.Total) +
 			", PhysicalID=" + physicalID +
-			", CPUMode=" + cpuMode)
+			", CPUMode=" + cpuMode,
+		)
 
 		AppSetting.AppVersion = built.INFO.Commit
 		AppSetting.OS = built.INFO.OS
 
-		log.Println("AppSetting: Version=" + AppSetting.AppVersion +
-			", OS=" + AppSetting.OS +
-			", TimeZone=" + AppSetting.TimeZone +
+		log.Println("AppSetting:" +
+			" TimeZone=" + AppSetting.TimeZone +
 			", GIN_ENV=" + AppSetting.Env +
+			", NODE_ID=" + utils.ToString(AppSetting.NodeId) +
 			", AppName=" + AppSetting.AppName +
 			", AppPort=" + AppSetting.AppPort +
-			", appRoot=" + AppRoot())
+			", Version=" + AppSetting.AppVersion +
+			", OS=" + AppSetting.OS +
+			", AppRoot=" + AppRoot())
 	}
 
 }

@@ -14,6 +14,7 @@ COMMITER 	?=$(shell git log -1 --pretty=format:'%ae')
 PWD 		?=$(shell pwd)
 TIME 		?=$(shell date +%s)
 CGO_ENABLED ?=0
+NODE_ID 	?=1
 
 ### 整理模块
 # 确保go.mod与模块中的源代码一致。
@@ -39,12 +40,12 @@ get:
 # make run e=development 
 run:
 	rm -rf gin-bin >/dev/null 2>&1
-	GIN_ENV=$(e) go run .
+	TZ=$(zone) GIN_ENV=$(e) NODE_ID=$(NODE_ID) WSS_HOST=$(WSS_HOST) go run .
 
 ### 启动调试程序, 当代码变化时自动重启
 # make dev
 dev:
-	TZ=$(zone) GIN_ENV=$(e) WSS_HOST=$(WSS_HOST) gin -i --appPort 8080 --port 3000 run main.go
+	TZ=$(zone) GIN_ENV=$(e) NODE_ID=$(NODE_ID) WSS_HOST=$(WSS_HOST) gin -i --appPort 8080 --port 3000 run main.go
 
 
 ### 构建跨平台的可执行程序

@@ -13,10 +13,12 @@ import (
 var (
 	logger *logrus.Entry
 	c      = cron.New()
+	nodeid int64
 )
 
-func Init(log *logrus.Entry) {
+func Init(log *logrus.Entry, node int64) {
 	logger = log
+	nodeid = node
 	c.Start()
 }
 
@@ -48,7 +50,7 @@ func AddTask(appName string, taskId string, memo string, expr string, task func(
 
 func Lock(lockKey string, taskId string, memo string, expr string, task func(node string, taskId string)) {
 
-	currentNode := utils.Hostname() + "/" + utils.OutboundIP().String()
+	currentNode := utils.ToString(nodeid)
 
 	if ok, e := gredis.Exists(lockKey); ok {
 		if ttl, err := gredis.Ttl(lockKey); err == nil {
@@ -65,11 +67,9 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 		}
 	}
 
-	lockVal := gid.YtID()
+	if gredis.SetNX(lockKey, currentNode, 5) {
 
-	if gredis.SetNX(lockKey, lockVal, 5) {
-
-		logger.Infof(`GRTask-Started: LockKey=%s, expr='%s', currentNode=%s`, lockKey, expr, currentNode)
+		logger.Infof(`GRTask-Started: currentNode=%s, OutboundIP=%s, LockKey=%s`, currentNode, utils.OutboundIP().String(), lockKey)
 
 		// 避免定时任务执行时间过长给当前锁续命，避免重复启动
 		go func() {
@@ -93,7 +93,7 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 		return
 
 	} else {
-		logger.Infof(`GRTask-Locked-Discard: LockKey=%s, expr='%s', currentNode=%s, lockVal=%s`, lockKey, expr, currentNode, lockVal)
+		logger.Infof(`GRTask-Locked-Discard: LockKey=%s, expr='%s', currentNode=%s, lockVal=%s`, lockKey, expr, currentNode, currentNode)
 	}
 
 }
