@@ -83,6 +83,7 @@ type LogConf struct {
 	FileMaxAge     int    `mapstructure:"LOG_FILE_MAX_AGE"`
 	KafkaServer    string `mapstructure:"LOG_KAFKA_SERVER"`
 	KafkaTopic     string `mapstructure:"LOG_KAFKA_TOPIC"`
+	FileFormatter  string `mapstructure:"LOG_FILE_FORMATTER"` // json OR txt
 }
 
 type WebPageConf struct {
@@ -126,6 +127,7 @@ var LogSettings = &LogConf{
 	FileMaxSize:    1, // 1MB
 	FileMaxBackups: 10,
 	FileMaxAge:     30,
+	FileFormatter:  "txt", // json OR txt
 }
 
 var WebPageSettings = &WebPageConf{
@@ -146,6 +148,34 @@ var MongoDBSettings = &gmongo.MongoDBConf{
 var EsSettings = &ges.ESConf{
 	Enable:  false,
 	Servers: "http://localhost:9200",
+}
+
+var jsonFormatter = &MyJSONFormatter{
+	TimestampFormat: timeStampFormat,
+	PrettyPrint:     false,
+	AppName:         AppSetting.AppName,
+	Env:             AppSetting.Env,
+	CapationGen:     1,
+	FieldMap: FieldMap{
+		"time": "@timestamp",
+		"msg":  "@message",
+	},
+}
+
+var txtFormatter = &MyTxtFormatter{
+	TimestampFormat: timeStampFormat,
+	LogFormat:       "%time% [%lvl%] - %file% > %msg%\n",
+	CallerPrettyfier: func(frame *runtime.Frame) (function string, file string) {
+		lineMessage := fmt.Sprintf("%s() %s(%d):%d", frame.Function, path.Base(frame.File), utils.GoroutineId(), frame.Line)
+		lineLength := len(lineMessage)
+		lineMaxLength := 36
+		if lineLength > lineMaxLength {
+			lineMessage = "....." + string(lineMessage[lineLength-lineMaxLength+4:lineLength])
+		} else if lineLength < lineMaxLength {
+			lineMessage = utils.PadLeft(lineMessage, " ", lineMaxLength+1)
+		}
+		return "", "{" + lineMessage + "}"
+	},
 }
 
 func (l *LogConf) Console() bool {
@@ -312,22 +342,7 @@ func InitLog() {
 
 		myLog.SetLevel(logrus.DebugLevel)
 		myLog.SetReportCaller(true)
-
-		myLog.SetFormatter(&MyTxtFormatter{
-			TimestampFormat: timeStampFormat,
-			LogFormat:       "%time% [%lvl%] - %file% > %msg%\n",
-			CallerPrettyfier: func(frame *runtime.Frame) (function string, file string) {
-				lineMessage := fmt.Sprintf("%s() %s(%d):%d", frame.Function, path.Base(frame.File), utils.GoroutineId(), frame.Line)
-				lineLength := len(lineMessage)
-				lineMaxLength := 36
-				if lineLength > lineMaxLength {
-					lineMessage = "....." + string(lineMessage[lineLength-lineMaxLength+4:lineLength])
-				} else if lineLength < lineMaxLength {
-					lineMessage = utils.PadLeft(lineMessage, " ", lineMaxLength+1)
-				}
-				return "", "{" + lineMessage + "}"
-			},
-		})
+		myLog.SetFormatter(txtFormatter)
 
 	} else {
 		myLog.Out = ioutil.Discard
@@ -337,23 +352,17 @@ func InitLog() {
 
 		writer := LogSettings.LumberjackLogger()
 
-		myLog.Hooks.Add(lfshook.NewHook(
-			lfshook.WriterMap{
-				logrus.InfoLevel:  writer,
-				logrus.ErrorLevel: writer,
-			},
-			&MyJSONFormatter{
-				TimestampFormat: timeStampFormat,
-				PrettyPrint:     false,
-				AppName:         AppSetting.AppName,
-				Env:             AppSetting.Env,
-				CapationGen:     1,
-				FieldMap: FieldMap{
-					"time": "@timestamp",
-					"msg":  "@message",
-				},
-			},
-		))
+		if LogSettings.FileFormatter == "json" {
+			myLog.Hooks.Add(lfshook.NewHook(
+				lfshook.WriterMap{logrus.InfoLevel: writer, logrus.ErrorLevel: writer},
+				jsonFormatter,
+			))
+		} else {
+			myLog.Hooks.Add(lfshook.NewHook(
+				lfshook.WriterMap{logrus.InfoLevel: writer, logrus.ErrorLevel: writer},
+				txtFormatter,
+			))
+		}
 
 	}
 
@@ -365,18 +374,7 @@ func InitLog() {
 		hook, err := lkh.NewKafkaHook(
 			"kh",
 			[]logrus.Level{logrus.InfoLevel, logrus.WarnLevel, logrus.ErrorLevel},
-			// &logrus.JSONFormatter{},
-			&MyJSONFormatter{
-				TimestampFormat: timeStampFormat,
-				PrettyPrint:     false,
-				AppName:         AppSetting.AppName,
-				Env:             AppSetting.Env,
-				CapationGen:     1,
-				FieldMap: FieldMap{
-					"time": "@timestamp",
-					"msg":  "@message",
-				},
-			},
+			jsonFormatter, // &logrus.JSONFormatter{},
 			strings.Split(kafkaServerAddr, ","),
 		)
 

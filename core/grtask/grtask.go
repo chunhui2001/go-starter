@@ -88,6 +88,8 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 		// 拿到了
 		task(currentNode, lockKey)
 
+		logger.Infof(`GRTask-Completed: LockKey=%s, expr='%s', currentNode=%s`, lockKey, expr, currentNode)
+
 		gredis.Del(lockKey)
 
 		return
