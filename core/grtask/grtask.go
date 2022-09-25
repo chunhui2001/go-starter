@@ -56,6 +56,8 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 			if ttl <= 0 {
 				gredis.Del(lockKey)
 			}
+			// in progress, 正在执行
+			return
 		} else {
 			logger.Errorf(`GRTask-Ttl-Error: LockKey=%s, expr='%s', ErrorMessage=%s`, lockKey, expr, utils.ErrorToString(err))
 			return
