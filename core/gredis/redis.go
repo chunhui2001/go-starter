@@ -303,6 +303,19 @@ func SetNX(key string, value string, expir int) bool {
 	return false
 }
 
+// 查询列表元素索引,没找到返回-1
+func LindexOf(key string, value string) int64 {
+	val, err := Client().LPos(ctx, key, value, redis.LPosArgs{Rank: 1, MaxLen: 1}).Result()
+	switch {
+	case err == redis.Nil:
+		return -1
+	case err != nil:
+		logger.Errorf(`Redis-LindexOf-Error: Key=%s, ErrorMessage=%s`, key, err.Error())
+		panic(err)
+	}
+	return val
+}
+
 // 列表操作
 func Lpush(key string, values ...interface{}) {
 	if err := Client().LPush(ctx, key, values...).Err(); err != nil {
