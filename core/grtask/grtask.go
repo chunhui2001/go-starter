@@ -47,7 +47,7 @@ func AddTask(appName string, taskId string, memo string, expr string, task func(
 	})
 }
 
-func Lock(lockKey string, taskId string, memo string, expr string, task func(node string, taskId string)) {
+func Lock(lockKey string, taskId string, memo string, expr string, task func(node string, lockKey string)) {
 
 	currentNode := utils.ToString(nodeid)
 
@@ -100,7 +100,7 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 		return
 
 	} else {
-		logger.Infof(`GRTask-Discard: currentNode=%s, OutboundIP=%s, LockKey=%s`, currentNode, utils.OutboundIP().String(), lockKey)
+		logger.Infof(`GRTask-Discard: currentNode=%s, LockedNode=%s, LockKey=%s`, currentNode, gredis.Get(lockKey), lockKey)
 	}
 
 }
