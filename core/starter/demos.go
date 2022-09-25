@@ -68,6 +68,7 @@ func init() {
 		// other simples
 		AppendRouter("POST", []string{"/websocket-client-simple"}, actions.WsClientSimple)
 		AppendRouter("GET", []string{"/demo/ribbon-png"}, actions.RibbonDiagramsRouter)
+		AppendRouter("GET", []string{"/demo/defer-func"}, actions.DeferRouter)
 
 	}
 

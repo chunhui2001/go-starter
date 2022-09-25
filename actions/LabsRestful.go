@@ -31,6 +31,22 @@ var (
 	logger = config.Log
 )
 
+func DeferRouter(c *gin.Context) {
+
+	defer func() {
+		fmt.Println("THIS IS DEFER FUNC")
+	}()
+
+	var f = func() string {
+		if 1 == 1 {
+			panic("asdf")
+		}
+		return utils.PadLeft("chui", ".....", 300)
+	}
+
+	c.JSON(http.StatusOK, (&R{Data: f()}).Success())
+}
+
 func BigRouter(c *gin.Context) {
 	b := utils.BigIntRandom()
 	c.JSON(http.StatusOK, (&R{Data: gin.H{

@@ -75,36 +75,38 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 	}
 
 	if gredis.SetNX(lockKey, currentNode, 5) {
-
-		start := time.Now()
-
-		logger.Infof(`GRTask-Started: currentNode=%s, OutboundIP=%s, LockKey=%s`, currentNode, utils.OutboundIP().String(), lockKey)
-
-		// 避免定时任务执行时间过长给当前锁续命，避免重复启动
-		go func() {
-			for {
-				time.Sleep(100 * time.Millisecond)
-				if ok, _ := gredis.Exists(lockKey); ok {
-					gredis.Set(lockKey, currentNode, 5) // 安保线程, 里边的人没出来外边的人进不去
-				} else {
-					break
-				}
-			}
-		}()
-
-		// 拿到了
-		task(currentNode, lockKey)
-
-		time.Sleep(75 * time.Millisecond) // 暂停75毫秒, 避免定时任务执行的太快, 同时拿到锁
-
-		gredis.Del(lockKey)
-
-		logger.Infof(`GRTask-Completed: currentNode=%s, 耗时=%s, LockKey=%s`, currentNode, time.Since(start)-75*time.Millisecond, lockKey)
-
-		return
-
+		runTask(lockKey, currentNode, task)
 	} else {
 		logger.Infof(`GRTask-Discard: currentNode=%s, LockedNode=%s, LockKey=%s`, currentNode, gredis.Get(lockKey), lockKey)
 	}
+
+}
+
+func runTask(lockKey string, currentNode string, task func(node string, lockKey string)) {
+
+	start := time.Now()
+
+	defer func() {
+		time.Sleep(75 * time.Millisecond) // 暂停75毫秒, 避免定时任务执行的太快, 同时拿到锁
+		gredis.Del(lockKey)
+		logger.Infof(`GRTask-Completed: currentNode=%s, 耗时=%s, LockKey=%s`, currentNode, time.Since(start)-75*time.Millisecond, lockKey)
+	}()
+
+	logger.Infof(`GRTask-Started: currentNode=%s, OutboundIP=%s, LockKey=%s`, currentNode, utils.OutboundIP().String(), lockKey)
+
+	// 避免定时任务执行时间过长给当前锁续命，避免重复启动
+	go func() {
+		for {
+			time.Sleep(100 * time.Millisecond)
+			if ok, _ := gredis.Exists(lockKey); ok {
+				gredis.Set(lockKey, currentNode, 5) // 安保线程, 里边的人没出来外边的人进不去
+			} else {
+				break
+			}
+		}
+	}()
+
+	// 拿到了
+	task(currentNode, lockKey)
 
 }
