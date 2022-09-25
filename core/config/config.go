@@ -660,8 +660,13 @@ func loadYamlConfiguraion() {
 	var body1 map[string]interface{} = f("application.yml")
 	var body2 map[string]interface{} = f("application-" + env + ".yml")
 
-	copier.CopyWithOption(&applicationConfig, &body1, copier.Option{IgnoreEmpty: true, DeepCopy: false})
-	copier.CopyWithOption(&applicationConfig, &body2, copier.Option{IgnoreEmpty: true, DeepCopy: false})
+	if body1 != nil {
+		copier.CopyWithOption(&applicationConfig, &body1, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	}
+
+	if body2 != nil {
+		copier.CopyWithOption(&applicationConfig, &body2, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	}
 
 }
 
