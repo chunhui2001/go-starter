@@ -236,6 +236,14 @@ var RabbitMQConf = &grabbit.GRabbitConf{
 	Enable: false,
 }
 
+var HttpClientConf = &ghttp.HttpConf{
+	Timeout:             150, // * time.Second
+	IdleConnTimeout:     90,
+	MaxIdleConns:        100,
+	MaxIdleConnsPerHost: 100,
+	MaxConnsPerHost:     100,
+}
+
 var Log *logrus.Entry
 var filename string = ".env"
 var applicationConfig map[string]interface{}
@@ -288,10 +296,10 @@ func init() {
 		loadEsSettings(v1, filename)
 		loadSimpleGTaskSettings(v1, filename)
 		loadRabbitSettings(v1, filename)
+		loadHttpClientSettings(v1, filename)
 
 		printConfigLogLines()
 
-		ghttp.Init(Log)
 		grtask.Init(Log, AppSetting.NodeId)
 
 		gid.Init(Log, AppSetting.NodeId)
@@ -530,6 +538,19 @@ func loadRabbitSettings(v1 *viper.Viper, filename string) {
 			grabbit.Init(RabbitMQConf, Log)
 		}
 
+	}
+
+}
+
+func loadHttpClientSettings(v1 *viper.Viper, filename string) {
+
+	err := v1.Unmarshal(&HttpClientConf)
+
+	if err != nil {
+		Log.Info("viper parse HttpClientConf error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		return
+	} else {
+		ghttp.Init(HttpClientConf, Log)
 	}
 
 }

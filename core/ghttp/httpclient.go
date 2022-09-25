@@ -22,16 +22,12 @@ const (
 	JSONBody ContentType = "application/json"
 )
 
-var DefaultTransport http.RoundTripper = &http.Transport{
-	Dial: (&net.Dialer{
-		Timeout: time.Duration(defaultTimeOut) * time.Second,
-	}).Dial,
-	TLSHandshakeTimeout: time.Duration(defaultTimeOut) * time.Second,
-	MaxIdleConns:        maxIdleConns,
-	IdleConnTimeout:     time.Duration(idleConnTimeout) * time.Second,
-	DisableCompression:  true,
-	MaxIdleConnsPerHost: maxIdleConnsPerHost,
-	MaxConnsPerHost:     maxConnsPerHost,
+type HttpConf struct {
+	Timeout             int `mapstructure:"HTTP_CLIENT_TIMEOUT"`
+	IdleConnTimeout     int `mapstructure:"HTTP_CLIENT_IDLE_CONN_TIMEOUT"`
+	MaxIdleConns        int `mapstructure:"HTTP_CLIENT_MAX_IDLE_CONNS"`
+	MaxIdleConnsPerHost int `mapstructure:"HTTP_CLIENT_MAX_IDLE_CONNS_PERHOST"`
+	MaxConnsPerHost     int `mapstructure:"HTTP_CLIENT_MAX_CONNS_PERHOST"`
 }
 
 type HttpClient struct {
@@ -60,34 +56,44 @@ func (r *HttpResult) Success() bool {
 	return true
 }
 
+func defaultTransport(conf *HttpConf) http.RoundTripper {
+	return &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout: time.Duration(conf.Timeout) * time.Second,
+		}).Dial,
+		TLSHandshakeTimeout: time.Duration(conf.Timeout) * time.Second,
+		MaxIdleConns:        conf.MaxIdleConns,
+		IdleConnTimeout:     time.Duration(conf.IdleConnTimeout) * time.Second,
+		DisableCompression:  true,
+		MaxIdleConnsPerHost: conf.MaxIdleConnsPerHost,
+		MaxConnsPerHost:     conf.MaxConnsPerHost,
+	}
+}
+
 var (
-	logger              *logrus.Entry
-	myHttpClient        *http.Client
-	defaultTimeOut      int = 150 // * time.Second
-	maxIdleConns        int = 100
-	idleConnTimeout     int = 90
-	maxIdleConnsPerHost int = 100
-	maxConnsPerHost     int = 100
+	logger         *logrus.Entry
+	myHttpClient   *http.Client
+	defaultTimeOut int = 150
 )
 
-func Init(log *logrus.Entry) {
+func Init(conf *HttpConf, log *logrus.Entry) {
 
 	logger = log
 
 	myHttpClient = &http.Client{
-		Transport: DefaultTransport,
-		Timeout:   time.Duration(defaultTimeOut) * time.Second,
+		Transport: defaultTransport(conf),
+		Timeout:   time.Duration(conf.Timeout) * time.Second,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
 	}
 
 	logger.Info("Initialization-a-HttpClient: " +
-		"TimeOut=" + utils.ToString(defaultTimeOut) + "s, " +
-		"maxIdleConns=" + utils.ToString(maxIdleConns) + ", " +
-		"idleConnTimeout=" + utils.ToString(idleConnTimeout) + "s, " +
-		"maxIdleConnsPerHost=" + utils.ToString(maxIdleConnsPerHost) + ", " +
-		"maxConnsPerHost=" + utils.ToString(maxConnsPerHost))
+		"TimeOut=" + utils.ToString(conf.Timeout) + "s, " +
+		"maxIdleConns=" + utils.ToString(conf.MaxIdleConns) + ", " +
+		"idleConnTimeout=" + utils.ToString(conf.IdleConnTimeout) + "s, " +
+		"maxIdleConnsPerHost=" + utils.ToString(conf.MaxIdleConnsPerHost) + ", " +
+		"maxConnsPerHost=" + utils.ToString(conf.MaxConnsPerHost))
 
 }
 
