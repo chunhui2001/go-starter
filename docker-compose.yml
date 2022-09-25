@@ -23,7 +23,7 @@ services:
       #- TZ=Asia/Shanghai
       - TZ=UTC
       - GIN_ENV=production
-      - NODE_ID=66
+      - NODE_ID=1
       - WSS_HOST=ws://192.168.0.101:4000
       - ES_SERVERS=http://host.docker.internal:9200
       - APP_ROOT=/dist

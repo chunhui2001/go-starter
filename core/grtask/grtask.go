@@ -3,7 +3,6 @@ package grtask
 import (
 	"time"
 
-	"github.com/chunhui2001/go-starter/core/gid"
 	"github.com/chunhui2001/go-starter/core/gredis"
 	"github.com/chunhui2001/go-starter/core/utils"
 	"github.com/robfig/cron"
