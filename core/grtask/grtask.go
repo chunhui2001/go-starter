@@ -94,7 +94,7 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 		return
 
 	} else {
-		logger.Infof(`GRTask-Locked-Discard: LockKey=%s, expr='%s', currentNode=%s, lockVal=%s`, lockKey, expr, currentNode, currentNode)
+		logger.Infof(`GRTask-Discard: currentNode=%s, OutboundIP=%s, LockKey=%s`, currentNode, utils.OutboundIP().String(), lockKey)
 	}
 
 }
