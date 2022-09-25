@@ -95,9 +95,8 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 		// 拿到了
 		task(currentNode, lockKey)
 
-		time.Sleep(175 * time.Millisecond) // 暂停175毫秒, 避免定时任务执行的太快, 同时拿到锁
-
 		logger.Infof(`GRTask-Completed: currentNode=%s, 耗时=%s, LockKey=%s`, currentNode, time.Since(start), lockKey)
+		time.Sleep(175 * time.Millisecond) // 暂停175毫秒, 避免定时任务执行的太快, 同时拿到锁
 
 		gredis.Del(lockKey)
 
