@@ -326,6 +326,7 @@ func GetSet(key string, value string) string {
 
 // 查询列表元素索引,没找到返回-1
 // The command returns the index of matching elements inside a Redis list.
+// maxLen: 最多找几个
 func LindexOf(key string, value string, maxLen int64) int64 {
 	val, err := Client().LPos(ctx, key, value, redis.LPosArgs{Rank: 0, MaxLen: maxLen}).Result()
 	switch {
