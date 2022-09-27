@@ -214,11 +214,11 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 		if res != nil {
 			logger.Error(
 				fmt.Sprintf(
-					"Send-HttpRequest-Failed: Curl=%s, ErrorMessage=%s", command, err))
+					"Send-HttpRequest-Failed: StatusCode=%d, Curl=%s, ErrorMessage=%s", res.StatusCode, command, err))
 		} else {
 			logger.Error(
 				fmt.Sprintf(
-					"Send-HttpRequest-Failed: StatusCode=%d, Curl=%s, ErrorMessage=%s", res.StatusCode, command, err))
+					"Send-HttpRequest-Failed: Curl=%s, ErrorMessage=%s", command, err))
 		}
 		return &HttpResult{
 			Error: err,
