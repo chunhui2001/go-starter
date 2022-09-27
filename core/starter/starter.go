@@ -244,7 +244,8 @@ func Setup() *gin.Engine {
 		engine.Use(sessions.Sessions(APP_COOKIE.Name, store))
 	}
 
-	// apply middleware
+	// apply middlewares
+	engine.Use(middleware.Urlwriter())               // urlwriter
 	engine.Use(middleware.Recovery(recoveryHandler)) // error nice handle
 
 	if ok, _ := utils.FileExists(filepath.Join(config.AppRoot(), "static")); ok {
