@@ -1,0 +1,38 @@
+{{define "head"}}
+<title>Transactions</title>
+{{end}}
+{{define "content"}}
+<div>
+    <h1 id="_server_time" style="text-align: left;font-family: monospace;">Transactions</h1>
+    <table class="pure-table pure-table-bordered" style="width: 100%;font-size: 0.825em;font-family: monospace, monospace;">
+        <thead>
+            <tr>
+                <th>区块高度</th>
+                <th>交易哈希</th>
+                <th>从</th>
+                <th>到</th>
+                <th>值</th>
+                <th>手续费</th>
+                <th>时间</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range $i, $v := .transactionList}}
+            <tr>
+                <td>{{$v.blockNumber}}</td>
+                <td>{{$v.hash}}</td>
+                <td>{{$v.from}}</td>
+                <td>{{$v.to}}</td>
+                <td>{{$v.value}}</td>
+                <td>{{$v.gas}}</td>
+                <td>{{$v.timestamp}}</td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+{{end}}
+{{define "scripts"}}
+<script type="text/javascript">
+</script>
+{{end}}

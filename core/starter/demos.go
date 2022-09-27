@@ -2,6 +2,7 @@ package starter
 
 import (
 	"github.com/chunhui2001/go-starter/actions"
+	"github.com/chunhui2001/go-starter/controller"
 )
 
 func init() {
@@ -70,6 +71,8 @@ func init() {
 		AppendRouter("POST", []string{"/websocket-client-simple"}, actions.WsClientSimple)
 		AppendRouter("GET", []string{"/demo/ribbon-png"}, actions.RibbonDiagramsRouter)
 		AppendRouter("GET", []string{"/demo/defer-func"}, actions.DeferRouter)
+
+		AppendRouter("GET", []string{"/demo/transactions"}, controller.TransactionRouter)
 
 	}
 

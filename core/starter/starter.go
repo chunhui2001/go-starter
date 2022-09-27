@@ -22,6 +22,7 @@ import (
 	"github.com/chunhui2001/go-starter/core/utils"
 	"github.com/foolin/goview"
 	"github.com/foolin/goview/supports/ginview"
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-contrib/static"
 	"github.com/go-errors/errors"
 
@@ -173,6 +174,8 @@ func (s *Server) RunningTLS() {
 		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),
 	}
 
+	srv.SetKeepAlivesEnabled(true)
+
 	l, err := net.Listen("tcp", APP_SETTINGS.AppPort)
 
 	if err != nil {
@@ -199,6 +202,7 @@ func Setup() *gin.Engine {
 	engine := gin.New()
 
 	if WEB_PAGE_CONF.Enable {
+		// https://curatedgo.com/r/goview-is-a-foolingoview/index.html
 		// https://noknow.info/it/go/how_to_use_if_in_html_template?lang=ja
 		// init html template
 		engine.HTMLRender = ginview.New(goview.Config{
@@ -247,6 +251,7 @@ func Setup() *gin.Engine {
 	// apply middlewares
 	engine.Use(middleware.Urlwriter())               // urlwriter
 	engine.Use(middleware.Recovery(recoveryHandler)) // error nice handle
+	engine.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithExcludedExtensions([]string{".pdf", ".mp4", ".ico"})))
 
 	if ok, _ := utils.FileExists(filepath.Join(config.AppRoot(), "static")); ok {
 		engine.Use(static.Serve("/static", static.LocalFile(filepath.Join(config.AppRoot(), "./static"), false)))

@@ -3,8 +3,11 @@ package controller
 import (
 	"net/http"
 
+	"encoding/json"
 	"github.com/chunhui2001/go-starter/core/config"
+	"github.com/chunhui2001/go-starter/core/ghttp"
 	"github.com/chunhui2001/go-starter/core/gid"
+	"github.com/chunhui2001/go-starter/core/utils"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
@@ -34,4 +37,33 @@ func AboutRouter(c *gin.Context) {
 	c.HTML(http.StatusOK, "about", gin.H{
 		"content": "This is an about page...",
 	})
+}
+
+type RestResult struct {
+	Data []map[string]interface{}
+}
+
+func TransactionRouter(c *gin.Context) {
+
+	httpResult := ghttp.SendRequest(
+		ghttp.GET("http://localhost:4002/scan-api/transaction/txns-list").Query(
+			utils.MapOf("address", "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D", "chainId", "1"),
+		),
+	)
+
+	var transactionList []map[string]interface{}
+
+	if httpResult.Success() {
+		var m RestResult
+		if err := json.Unmarshal(httpResult.ResponseBody, &m); err != nil {
+			panic(err)
+		} else {
+			transactionList = m.Data
+		}
+	}
+
+	c.HTML(http.StatusOK, "transactions/txns_index", gin.H{
+		"transactionList": transactionList,
+	})
+
 }
