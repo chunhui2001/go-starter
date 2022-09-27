@@ -7,8 +7,8 @@
       <to>http://www.google.com/</to>
    </rule>
    <rule>
-      <from>^(/+)(\s?)$</from>
-      <to>/index/</to>
+      <from>^/(index|home)(/{0,})(\s{0,})$</from>
+      <to>/</to>
    </rule>
    <rule>
       <from>^/manifest.json$</from>
