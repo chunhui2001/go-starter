@@ -57,20 +57,17 @@ func Urlwriter() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 
-		toberedirect := false
-
 		currentPath := c.Request.URL.Path
 		redirectTo := ""
 
 		for _, rule := range UrlRewriter.Rules {
 			if rule.From == currentPath {
 				redirectTo = rule.To
-				toberedirect = true
 				break
 			}
 		}
 
-		if toberedirect {
+		if redirectTo != "" {
 			logger.Infof(`Urlwriter: Path=%s, RedirectTo=%s`, currentPath, redirectTo)
 			c.Redirect(http.StatusMovedPermanently, redirectTo)
 			c.AbortWithStatus(301)
