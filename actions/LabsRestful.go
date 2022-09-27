@@ -217,7 +217,11 @@ func RedisExistsRouter(c *gin.Context) {
 
 func HttpClientSimpleRouter(c *gin.Context) {
 
-	httpResult := ghttp.SendRequest(ghttp.GET("https://www.google.com?fff=gg").Query(utils.MapOf("a", "b", "v", "你好")))
+	httpResult := ghttp.SendRequest(
+		ghttp.GET("http://localhost:4002/scan-api/transaction/txns-list").Query(
+			utils.MapOf("address", "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D", "chainId", "1"),
+		),
+	)
 
 	if httpResult.Success() {
 		c.JSON(http.StatusOK, (&R{Data: string(httpResult.ResponseBody)}).Success())
