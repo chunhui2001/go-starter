@@ -50,7 +50,7 @@ func init() {
 			return
 		}
 
-		logger.Infof(`Go-Rewrite-Xml-Loaded: FilePath=%s, Content=%s`, rewirteXmlFilePath, utils.ToJsonString(UrlRewriter))
+		logger.Infof(`Go-Rewrite-Xml-Loaded: FilePath=%s`, rewirteXmlFilePath)
 
 	}
 
