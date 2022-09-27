@@ -4,6 +4,9 @@ import (
 	"encoding/xml"
 	"net/http"
 	"path/filepath"
+	"regexp"
+	"strconv"
+	"strings"
 
 	"github.com/chunhui2001/go-starter/core/config"
 	"github.com/chunhui2001/go-starter/core/utils"
@@ -53,24 +56,63 @@ func init() {
 
 }
 
+// ### Go by Example: Regular Expressions
+// https://gobyexample.com/regular-expressions
+// https://go.dev/play/
 func Urlwriter() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 
 		currentPath := c.Request.URL.Path
+		raw := c.Request.URL.RawQuery
 		redirectTo := ""
+		fromRegex := ""
 
 		for _, rule := range UrlRewriter.Rules {
-			if rule.From == currentPath {
+
+			fromRegex = rule.From
+			r, _ := regexp.Compile(rule.From)
+			match2 := r.MatchString(currentPath)
+
+			if match2 {
+
+				// ^/col/list/(\w+)/(\w+)\.html
+				// /col/list/article/1.html
+				// [[/col/list/article/1.html article 1]]
+				allMatchs := r.FindAllStringSubmatch(currentPath, -1)[0]
 				redirectTo = rule.To
+
+				for i := range allMatchs {
+
+					if i == 0 {
+						continue
+					}
+
+					var replacer = strings.NewReplacer(
+						"$"+strconv.Itoa(i), allMatchs[i],
+					)
+
+					redirectTo = replacer.Replace(redirectTo)
+
+				}
+
 				break
+
 			}
+
 		}
 
 		if redirectTo != "" {
-			logger.Infof(`Urlwriter: Path=%s, RedirectTo=%s`, currentPath, redirectTo)
+
+			if raw != "" {
+				currentPath = currentPath + "?" + raw
+				redirectTo = redirectTo + "?" + raw
+			}
+
+			logger.Infof(`Urlwriter: Regexp=%s, Path=%s, RedirectTo=%s`, fromRegex, currentPath, redirectTo)
 			c.Redirect(http.StatusMovedPermanently, redirectTo)
 			c.AbortWithStatus(301)
+
 		}
 
 	}
