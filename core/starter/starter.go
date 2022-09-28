@@ -209,7 +209,7 @@ func Setup() *gin.Engine {
 			Root:      filepath.Join(config.AppRoot(), WEB_PAGE_CONF.Root),
 			Extension: WEB_PAGE_CONF.Extension,
 			Master:    WEB_PAGE_CONF.Master,
-			//Partials:  []string{"partials/ad"},
+			Partials:  []string{"partials/ad"},
 			Funcs: template.FuncMap{
 				"string": func(b any) string {
 					return utils.ToString(b)
