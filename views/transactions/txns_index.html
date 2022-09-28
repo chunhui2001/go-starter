@@ -19,12 +19,12 @@
         {{range $i, $v := .transactionList}}
         <tr>
             <td>{{plainstring $v.blockNumber}}</td>
-            <td><a href="#" style="max-width:171px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none;vertical-align:bottom;color:#3498db;">{{$v.hash}}</a></td>
-            <td><a href="#" style="max-width:171px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none;vertical-align:bottom;color:#3498db;">{{$v.from}}</a></td>
-            <td><a href="#" style="max-width:171px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none;vertical-align:bottom;color:#3498db;">{{$v.to}}</a></td>
+            <td><a href="#" style="max-width:150px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none;vertical-align:bottom;color:#3498db;">{{$v.hash}}</a></td>
+            <td><a href="#" style="max-width:150px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none;vertical-align:bottom;color:#3498db;">{{$v.from}}</a></td>
+            <td><a href="#" style="max-width:150px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none;vertical-align:bottom;color:#3498db;">{{$v.to}}</a></td>
             <td>{{plainstring $v.value}}</td>
             <td>{{plainstring $v.gas}}</td>
-            <td>{{plainstring $v.timestamp}}</td>
+            <td>{{timestring $v.timestamp}}</td>
         </tr>
         {{end}}
     </tbody>

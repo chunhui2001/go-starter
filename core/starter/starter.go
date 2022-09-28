@@ -211,14 +211,14 @@ func Setup() *gin.Engine {
 			Master:    WEB_PAGE_CONF.Master,
 			//Partials:  []string{"partials/ad"},
 			Funcs: template.FuncMap{
-				"sub": func(a, b int) int {
-					return a - b
-				},
 				"string": func(b any) string {
 					return utils.ToString(b)
 				},
 				"plainstring": func(b any) string {
 					return fmt.Sprintf("%.0f", b)
+				},
+				"timestring": func(b float64) string {
+					return time.Unix(int64(b), 0).Format("2006-01-02T15:04:05Z07:00")
 				},
 				// more funcs
 			},
