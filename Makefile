@@ -29,12 +29,13 @@ tidy:
 install:
 	go get github.com/codegangsta/gin
 	go install github.com/codegangsta/gin
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go get $(mod)
 	go install $(mod)
 
 ### generator code
 gen:
-    protoc --proto_path=proto proto/*.proto --go_out=plugins=grpc:pb
+	protoc ./proto/*.proto --go_out=.
 
 ### 下载模块
 get:
