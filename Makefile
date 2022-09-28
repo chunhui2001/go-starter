@@ -32,6 +32,10 @@ install:
 	go get $(mod)
 	go install $(mod)
 
+### generator code
+gen:
+    protoc --proto_path=proto proto/*.proto --go_out=plugins=grpc:pb
+
 ### 下载模块
 get:
 	go get

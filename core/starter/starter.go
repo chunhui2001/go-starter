@@ -214,6 +214,12 @@ func Setup() *gin.Engine {
 				"sub": func(a, b int) int {
 					return a - b
 				},
+				"string": func(b any) string {
+					return utils.ToString(b)
+				},
+				"plainstring": func(b any) string {
+					return fmt.Sprintf("%.0f", b)
+				},
 				// more funcs
 			},
 			DisableCache: true,
