@@ -3,8 +3,8 @@ syntax="proto3";
 option go_package = "proto/pb";
 
 message SocialFollowers {
-  int32 youtube = 1;
-  int32 twitter = 2;
+      int32 youtube = 1;
+      int32 twitter = 2;
 }
 
 message Person {
