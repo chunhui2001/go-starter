@@ -8,6 +8,7 @@ import (
 	"github.com/chunhui2001/go-starter/core/ghttp"
 	"github.com/chunhui2001/go-starter/core/gid"
 	"github.com/chunhui2001/go-starter/core/utils"
+	"github.com/chunhui2001/go-starter/pb/wallet"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
@@ -40,7 +41,7 @@ func AboutRouter(c *gin.Context) {
 }
 
 type RestResult struct {
-	Data []map[string]interface{}
+	Data []wallet.Transactions
 }
 
 func TransactionRouter(c *gin.Context) {
@@ -51,7 +52,7 @@ func TransactionRouter(c *gin.Context) {
 		),
 	)
 
-	var transactionList []map[string]interface{}
+	var transactionList []wallet.Transactions
 
 	if httpResult.Success() {
 		var m RestResult

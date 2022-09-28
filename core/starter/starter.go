@@ -218,7 +218,7 @@ func Setup() *gin.Engine {
 				"plainstring": func(b any) string {
 					return fmt.Sprintf("%.0f", b)
 				},
-				"timestring": func(b float64) string {
+				"timestring": func(b uint32) string {
 					return time.Unix(int64(b), 0).Format("2006-01-02T15:04:05Z07:00")
 				},
 				// more funcs
