@@ -64,9 +64,10 @@ func defaultTransport(conf *HttpConf) http.RoundTripper {
 		TLSHandshakeTimeout: time.Duration(conf.Timeout) * time.Second,
 		MaxIdleConns:        conf.MaxIdleConns,
 		IdleConnTimeout:     time.Duration(conf.IdleConnTimeout) * time.Second,
-		DisableCompression:  true,
 		MaxIdleConnsPerHost: conf.MaxIdleConnsPerHost,
 		MaxConnsPerHost:     conf.MaxConnsPerHost,
+		DisableCompression:  true,
+		DisableKeepAlives:   false, // 默认选项
 	}
 }
 

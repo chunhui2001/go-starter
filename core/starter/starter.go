@@ -170,11 +170,12 @@ func (s *Server) RunningTLS() {
 	srv := &http.Server{
 		Addr:         APP_SETTINGS.AppPort,
 		Handler:      s.R,
+		IdleTimeout:  5 * time.Second,
 		TLSConfig:    cfg,
 		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),
 	}
 
-	srv.SetKeepAlivesEnabled(true)
+	// srv.SetKeepAlivesEnabled(true) // 默认是true
 
 	l, err := net.Listen("tcp", APP_SETTINGS.AppPort)
 
