@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.28.1
 // 	protoc        v3.7.1
-// source: proto/transactions.proto
+// source: proto/txns.proto
 
 package wallet
 
@@ -20,7 +20,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type Transactions struct {
+type Txns struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -43,23 +43,23 @@ type Transactions struct {
 	MaxPriorityFeePerGas uint64 `protobuf:"varint,16,opt,name=maxPriorityFeePerGas,proto3" json:"maxPriorityFeePerGas,omitempty"`
 }
 
-func (x *Transactions) Reset() {
-	*x = Transactions{}
+func (x *Txns) Reset() {
+	*x = Txns{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_transactions_proto_msgTypes[0]
+		mi := &file_proto_txns_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
 }
 
-func (x *Transactions) String() string {
+func (x *Txns) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Transactions) ProtoMessage() {}
+func (*Txns) ProtoMessage() {}
 
-func (x *Transactions) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_transactions_proto_msgTypes[0]
+func (x *Txns) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_txns_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -70,129 +70,191 @@ func (x *Transactions) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Transactions.ProtoReflect.Descriptor instead.
-func (*Transactions) Descriptor() ([]byte, []int) {
-	return file_proto_transactions_proto_rawDescGZIP(), []int{0}
+// Deprecated: Use Txns.ProtoReflect.Descriptor instead.
+func (*Txns) Descriptor() ([]byte, []int) {
+	return file_proto_txns_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Transactions) GetChainId() string {
+func (x *Txns) GetChainId() string {
 	if x != nil {
 		return x.ChainId
 	}
 	return ""
 }
 
-func (x *Transactions) GetBlockHash() string {
+func (x *Txns) GetBlockHash() string {
 	if x != nil {
 		return x.BlockHash
 	}
 	return ""
 }
 
-func (x *Transactions) GetBlockNumber() uint32 {
+func (x *Txns) GetBlockNumber() uint32 {
 	if x != nil {
 		return x.BlockNumber
 	}
 	return 0
 }
 
-func (x *Transactions) GetFrom() string {
+func (x *Txns) GetFrom() string {
 	if x != nil {
 		return x.From
 	}
 	return ""
 }
 
-func (x *Transactions) GetGas() uint64 {
+func (x *Txns) GetGas() uint64 {
 	if x != nil {
 		return x.Gas
 	}
 	return 0
 }
 
-func (x *Transactions) GetGasPrice() uint64 {
+func (x *Txns) GetGasPrice() uint64 {
 	if x != nil {
 		return x.GasPrice
 	}
 	return 0
 }
 
-func (x *Transactions) GetHash() string {
+func (x *Txns) GetHash() string {
 	if x != nil {
 		return x.Hash
 	}
 	return ""
 }
 
-func (x *Transactions) GetMethodId() string {
+func (x *Txns) GetMethodId() string {
 	if x != nil {
 		return x.MethodId
 	}
 	return ""
 }
 
-func (x *Transactions) GetInput() string {
+func (x *Txns) GetInput() string {
 	if x != nil {
 		return x.Input
 	}
 	return ""
 }
 
-func (x *Transactions) GetNonce() uint32 {
+func (x *Txns) GetNonce() uint32 {
 	if x != nil {
 		return x.Nonce
 	}
 	return 0
 }
 
-func (x *Transactions) GetTo() string {
+func (x *Txns) GetTo() string {
 	if x != nil {
 		return x.To
 	}
 	return ""
 }
 
-func (x *Transactions) GetTransactionIndex() uint32 {
+func (x *Txns) GetTransactionIndex() uint32 {
 	if x != nil {
 		return x.TransactionIndex
 	}
 	return 0
 }
 
-func (x *Transactions) GetValue() uint64 {
+func (x *Txns) GetValue() uint64 {
 	if x != nil {
 		return x.Value
 	}
 	return 0
 }
 
-func (x *Transactions) GetTimestamp() uint32 {
+func (x *Txns) GetTimestamp() uint32 {
 	if x != nil {
 		return x.Timestamp
 	}
 	return 0
 }
 
-func (x *Transactions) GetMaxFeePerGas() uint64 {
+func (x *Txns) GetMaxFeePerGas() uint64 {
 	if x != nil {
 		return x.MaxFeePerGas
 	}
 	return 0
 }
 
-func (x *Transactions) GetMaxPriorityFeePerGas() uint64 {
+func (x *Txns) GetMaxPriorityFeePerGas() uint64 {
 	if x != nil {
 		return x.MaxPriorityFeePerGas
 	}
 	return 0
 }
 
-var File_proto_transactions_proto protoreflect.FileDescriptor
+type TxnsResult struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 
-var file_proto_transactions_proto_rawDesc = []byte{
-	0x0a, 0x18, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x74, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74,
-	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xce, 0x03, 0x0a, 0x0c, 0x54,
-	0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x63,
+	Code    int32   `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+	Data    []*Txns `protobuf:"bytes,2,rep,name=data,proto3" json:"data,omitempty"`
+	Message string  `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
+}
+
+func (x *TxnsResult) Reset() {
+	*x = TxnsResult{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_txns_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *TxnsResult) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TxnsResult) ProtoMessage() {}
+
+func (x *TxnsResult) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_txns_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TxnsResult.ProtoReflect.Descriptor instead.
+func (*TxnsResult) Descriptor() ([]byte, []int) {
+	return file_proto_txns_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *TxnsResult) GetCode() int32 {
+	if x != nil {
+		return x.Code
+	}
+	return 0
+}
+
+func (x *TxnsResult) GetData() []*Txns {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+func (x *TxnsResult) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+var File_proto_txns_proto protoreflect.FileDescriptor
+
+var file_proto_txns_proto_rawDesc = []byte{
+	0x0a, 0x10, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x74, 0x78, 0x6e, 0x73, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x22, 0xc6, 0x03, 0x0a, 0x04, 0x54, 0x78, 0x6e, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x63,
 	0x68, 0x61, 0x69, 0x6e, 0x49, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x68,
 	0x61, 0x69, 0x6e, 0x49, 0x64, 0x12, 0x1c, 0x0a, 0x09, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x61,
 	0x73, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48,
@@ -220,43 +282,62 @@ var file_proto_transactions_proto_rawDesc = []byte{
 	0x65, 0x50, 0x65, 0x72, 0x47, 0x61, 0x73, 0x12, 0x32, 0x0a, 0x14, 0x6d, 0x61, 0x78, 0x50, 0x72,
 	0x69, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x46, 0x65, 0x65, 0x50, 0x65, 0x72, 0x47, 0x61, 0x73, 0x18,
 	0x10, 0x20, 0x01, 0x28, 0x04, 0x52, 0x14, 0x6d, 0x61, 0x78, 0x50, 0x72, 0x69, 0x6f, 0x72, 0x69,
-	0x74, 0x79, 0x46, 0x65, 0x65, 0x50, 0x65, 0x72, 0x47, 0x61, 0x73, 0x42, 0x10, 0x5a, 0x0e, 0x70,
-	0x62, 0x2f, 0x64, 0x65, 0x6d, 0x6f, 0x2f, 0x77, 0x61, 0x6c, 0x6c, 0x65, 0x74, 0x62, 0x06, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x74, 0x79, 0x46, 0x65, 0x65, 0x50, 0x65, 0x72, 0x47, 0x61, 0x73, 0x22, 0x55, 0x0a, 0x0a, 0x54,
+	0x78, 0x6e, 0x73, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x63, 0x6f, 0x64,
+	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x63, 0x6f, 0x64, 0x65, 0x12, 0x19, 0x0a,
+	0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x05, 0x2e, 0x54, 0x78,
+	0x6e, 0x73, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73,
+	0x61, 0x67, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61,
+	0x67, 0x65, 0x42, 0x10, 0x5a, 0x0e, 0x70, 0x62, 0x2f, 0x64, 0x65, 0x6d, 0x6f, 0x2f, 0x77, 0x61,
+	0x6c, 0x6c, 0x65, 0x74, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
-	file_proto_transactions_proto_rawDescOnce sync.Once
-	file_proto_transactions_proto_rawDescData = file_proto_transactions_proto_rawDesc
+	file_proto_txns_proto_rawDescOnce sync.Once
+	file_proto_txns_proto_rawDescData = file_proto_txns_proto_rawDesc
 )
 
-func file_proto_transactions_proto_rawDescGZIP() []byte {
-	file_proto_transactions_proto_rawDescOnce.Do(func() {
-		file_proto_transactions_proto_rawDescData = protoimpl.X.CompressGZIP(file_proto_transactions_proto_rawDescData)
+func file_proto_txns_proto_rawDescGZIP() []byte {
+	file_proto_txns_proto_rawDescOnce.Do(func() {
+		file_proto_txns_proto_rawDescData = protoimpl.X.CompressGZIP(file_proto_txns_proto_rawDescData)
 	})
-	return file_proto_transactions_proto_rawDescData
+	return file_proto_txns_proto_rawDescData
 }
 
-var file_proto_transactions_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
-var file_proto_transactions_proto_goTypes = []interface{}{
-	(*Transactions)(nil), // 0: Transactions
+var file_proto_txns_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_proto_txns_proto_goTypes = []interface{}{
+	(*Txns)(nil),       // 0: Txns
+	(*TxnsResult)(nil), // 1: TxnsResult
 }
-var file_proto_transactions_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+var file_proto_txns_proto_depIdxs = []int32{
+	0, // 0: TxnsResult.data:type_name -> Txns
+	1, // [1:1] is the sub-list for method output_type
+	1, // [1:1] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
-func init() { file_proto_transactions_proto_init() }
-func file_proto_transactions_proto_init() {
-	if File_proto_transactions_proto != nil {
+func init() { file_proto_txns_proto_init() }
+func file_proto_txns_proto_init() {
+	if File_proto_txns_proto != nil {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_proto_transactions_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Transactions); i {
+		file_proto_txns_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Txns); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_proto_txns_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*TxnsResult); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -272,18 +353,18 @@ func file_proto_transactions_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_proto_transactions_proto_rawDesc,
+			RawDescriptor: file_proto_txns_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_proto_transactions_proto_goTypes,
-		DependencyIndexes: file_proto_transactions_proto_depIdxs,
-		MessageInfos:      file_proto_transactions_proto_msgTypes,
+		GoTypes:           file_proto_txns_proto_goTypes,
+		DependencyIndexes: file_proto_txns_proto_depIdxs,
+		MessageInfos:      file_proto_txns_proto_msgTypes,
 	}.Build()
-	File_proto_transactions_proto = out.File
-	file_proto_transactions_proto_rawDesc = nil
-	file_proto_transactions_proto_goTypes = nil
-	file_proto_transactions_proto_depIdxs = nil
+	File_proto_txns_proto = out.File
+	file_proto_txns_proto_rawDesc = nil
+	file_proto_txns_proto_goTypes = nil
+	file_proto_txns_proto_depIdxs = nil
 }

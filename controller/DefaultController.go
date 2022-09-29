@@ -41,7 +41,7 @@ func AboutRouter(c *gin.Context) {
 }
 
 type RestResult struct {
-	Data []wallet.Transactions
+	Data []wallet.Txns
 }
 
 func TransactionRouter(c *gin.Context) {
@@ -52,10 +52,10 @@ func TransactionRouter(c *gin.Context) {
 		),
 	)
 
-	var transactionList []wallet.Transactions
+	var transactionList []*wallet.Txns
 
 	if httpResult.Success() {
-		var m RestResult
+		var m wallet.TxnsResult
 		if err := json.Unmarshal(httpResult.ResponseBody, &m); err != nil {
 			panic(err)
 		} else {

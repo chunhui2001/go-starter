@@ -2,7 +2,7 @@ syntax="proto3";
 
 option go_package = "pb/demo/wallet";
 
-message Transactions {
+message Txns {
       string   chainId                = 1;
       string   blockHash              = 2;
       uint32    blockNumber            = 3;
@@ -19,5 +19,11 @@ message Transactions {
       uint32    timestamp              = 14;
       uint64    maxFeePerGas           = 15;
       uint64    maxPriorityFeePerGas   = 16;
+}
+
+message TxnsResult {
+      int32 code  = 1;
+      repeated Txns data = 2;
+      string message = 3;
 }
 
