@@ -211,7 +211,11 @@ func (s *Server) RunningTLS() {
 		return
 	}
 
-	config.Log.Info("Congratulations! Your server startup successfully, Listening and serving HTTP on " + APP_SETTINGS.AppPort)
+	if graphServerConf.Enable {
+
+	}
+
+	config.Log.Infof(`Congratulations! Your server startup successfully, Listening and serving HTTP on %s`, APP_SETTINGS.AppPort)
 
 	srv.ServeTLS(l, "server.crt", "server.key")
 

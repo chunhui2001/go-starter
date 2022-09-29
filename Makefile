@@ -38,6 +38,9 @@ install:
 gen:
 	protoc ./proto/*.proto --go_out=.
 
+gqlgen:
+	gqlgen generate
+
 ### 下载模块
 get:
 	go get
