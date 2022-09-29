@@ -155,6 +155,9 @@ https://golangexample.com/go-package-to-make-lightweight-ascii-line-graph-in-com
 > 6. Default properties
 https://github.com/furkilic/go-boot-config
 
+### 通过实例理解Go标准库http包是如何处理keep-alive连接的
+https://tonybai.com/2021/01/08/understand-how-http-package-deal-with-keep-alive-connection/
+
 -----------------------------------------------------------------
 GOOS - Target Operating System		GOARCH - Target Platform
 -----------------------------------------------------------------
