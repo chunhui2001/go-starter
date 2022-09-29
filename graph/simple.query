@@ -1,0 +1,16 @@
+
+query abi {
+  abi(
+    chainId: 128, 
+    addr: "0xFAd7161C74c809C213D88DAc021600D74F6c961c"
+  ) {
+    name
+    type
+    func1
+    func2
+    methodId
+    inputs {
+      name type
+    }
+  }
+}

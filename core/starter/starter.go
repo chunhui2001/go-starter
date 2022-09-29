@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/chunhui2001/go-starter/controller"
 	"github.com/chunhui2001/go-starter/core"
 	. "github.com/chunhui2001/go-starter/core/commons"
@@ -20,6 +22,8 @@ import (
 	"github.com/chunhui2001/go-starter/core/grtask"
 	"github.com/chunhui2001/go-starter/core/gwss"
 	"github.com/chunhui2001/go-starter/core/utils"
+	"github.com/chunhui2001/go-starter/graph"
+	"github.com/chunhui2001/go-starter/graph/generated"
 	"github.com/foolin/goview"
 	"github.com/foolin/goview/supports/ginview"
 	"github.com/gin-contrib/gzip"
@@ -69,6 +73,27 @@ func errorHandler(c *gin.Context, info ratelimit.Info) {
 	c.String(429, "Too many requests. Try again in "+time.Until(info.ResetTime).String())
 }
 
+// Defining the Graphql handler
+func graphqlHandler() gin.HandlerFunc {
+
+	// NewExecutableSchema and Config are in the generated.go file
+	// Resolver is in the resolver.go file
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
+
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
+}
+
+// Defining the Playground handler
+func playgroundHandler() gin.HandlerFunc {
+	h := playground.Handler("GraphQL", graphServerConf.ServerURi)
+
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
+}
+
 var defaultServer = &Server{
 	Store: store,
 	HandlerInfo: func(c *gin.Context) {
@@ -107,6 +132,7 @@ var (
 	Redis_Conf        *gredis.GRedis             = config.RedisConf
 	Simple_Task_Conf  *config.SimpleGTask        = config.SimpleGTaskConf
 	logger                                       = config.Log
+	graphServerConf                              = config.GraphServerSetting
 	reverseProxyArray []ReverseProxy
 )
 
@@ -329,6 +355,11 @@ func Setup() *gin.Engine {
 
 	for _, val := range reverseProxyArray {
 		gproxy.Any(engine, val.From, val.To, val.Remotes...)
+	}
+
+	if graphServerConf.Enable {
+		engine.POST(graphServerConf.ServerURi, graphqlHandler())
+		engine.GET(graphServerConf.PlayGroundURi, playgroundHandler())
 	}
 
 	return engine

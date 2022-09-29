@@ -102,6 +102,12 @@ type SimpleGTask struct {
 	Expr   string `mapstructure:"SIMPLE_GTASK_EXPR"`
 }
 
+type GraphServerConf struct {
+	Enable        bool   `mapstructure:"GRAPHQL_ENABLE"`
+	ServerURi     string `mapstructure:"GRAPHQL_SERVER_URI"`
+	PlayGroundURi string `mapstructure:"GRAPHQL_PLAYGROUND_URI"`
+}
+
 func (w *Wss) Wss() string {
 	return w.Host + w.Prefix
 }
@@ -113,6 +119,10 @@ var AppSetting = &AppConf{
 	TimeZone:   map[bool]string{true: os.Getenv("TZ"), false: "UTC"}[os.Getenv("TZ") != ""],
 	NodeId:     1,
 	DemoEnable: false,
+}
+
+var GraphServerSetting = &GraphServerConf{
+	Enable: false,
 }
 
 var SimpleGTaskConf = &SimpleGTask{
@@ -297,6 +307,7 @@ func init() {
 		loadSimpleGTaskSettings(v1, filename)
 		loadRabbitSettings(v1, filename)
 		loadHttpClientSettings(v1, filename)
+		loadGraphServerSettings(v1, filename)
 
 		printConfigLogLines()
 
@@ -538,6 +549,20 @@ func loadRabbitSettings(v1 *viper.Viper, filename string) {
 			grabbit.Init(RabbitMQConf, Log)
 		}
 
+	}
+
+}
+
+func loadGraphServerSettings(v1 *viper.Viper, filename string) {
+
+	err := v1.Unmarshal(&GraphServerSetting)
+
+	if err != nil {
+		Log.Info("viper parse GraphServerSetting error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		os.Exit(3)
+		return
+	} else {
+		configLoggerLines = append(configLoggerLines, []string{"GraphServer", "Enabled=" + utils.ToString(GraphServerSetting.Enable)})
 	}
 
 }

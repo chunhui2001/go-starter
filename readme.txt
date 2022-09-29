@@ -158,6 +158,12 @@ https://github.com/furkilic/go-boot-config
 ### 通过实例理解Go标准库http包是如何处理keep-alive连接的
 https://tonybai.com/2021/01/08/understand-how-http-package-deal-with-keep-alive-connection/
 
+### GraphQL api server using golang Gin framework
+https://www.agiliq.com/blog/2020/04/graphql-api-server-using-golang-gin-framework/
+
+### gqlgen
+https://gqlgen.com/config/
+
 -----------------------------------------------------------------
 GOOS - Target Operating System		GOARCH - Target Platform
 -----------------------------------------------------------------
