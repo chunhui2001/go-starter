@@ -8,7 +8,7 @@ import (
 	"github.com/chunhui2001/go-starter/core/ghttp"
 	"github.com/chunhui2001/go-starter/core/gid"
 	"github.com/chunhui2001/go-starter/core/utils"
-	"github.com/chunhui2001/go-starter/pb/wallet"
+	"github.com/chunhui2001/go-starter/pb/demo/wallet"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )

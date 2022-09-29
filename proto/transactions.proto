@@ -1,6 +1,6 @@
 syntax="proto3";
 
-option go_package = "pb/wallet";
+option go_package = "pb/demo/wallet";
 
 message Transactions {
       string   chainId                = 1;
