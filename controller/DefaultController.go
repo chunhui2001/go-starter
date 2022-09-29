@@ -40,10 +40,6 @@ func AboutRouter(c *gin.Context) {
 	})
 }
 
-type RestResult struct {
-	Data []wallet.Txns
-}
-
 func TransactionRouter(c *gin.Context) {
 
 	httpResult := ghttp.SendRequest(
