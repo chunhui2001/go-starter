@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
+	"github.com/chunhui2001/go-starter/core/ges"
 	"github.com/chunhui2001/go-starter/core/utils"
 	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/opensearch-project/opensearch-go"
@@ -60,6 +61,8 @@ func Init(conf *OpenESConf, log *logrus.Entry) {
 
 	esClient = Ping(es) // print server info
 
+	ges.InitDSL(conf.DslFolder, log)
+
 }
 
 func Ping(es *opensearch.Client) *opensearch.Client {
@@ -78,6 +81,7 @@ func Ping(es *opensearch.Client) *opensearch.Client {
 	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
 		logger.Error("OpenSearch-Error-Parsing-the-Response-Body: errorMessage={}", utils.ErrorToString(err))
 	} else {
+
 		clusterName := r["cluster_name"].(string)
 		serverInfo := r["version"].(map[string]interface{})
 		serverVersion := serverInfo["number"]

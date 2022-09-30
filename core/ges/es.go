@@ -66,7 +66,7 @@ func Init(conf *ESConf, log *logrus.Entry) {
 
 	esClient = Ping(es) // print server info
 
-	InitDSL()
+	InitDSL(conf.DslFolder, log)
 
 }
 

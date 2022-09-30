@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/chunhui2001/go-starter/core/utils"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
 
@@ -19,18 +20,20 @@ type YamlFileItem struct {
 
 var (
 	YamlMapBlocks map[string]*YamlFileItem = make(map[string]*YamlFileItem)
+	mylog         *logrus.Entry
 )
 
-func InitDSL() {
+func InitDSL(folder string, log *logrus.Entry) {
 
-	dslFolder := filepath.Join(utils.RootDir(), esConf.DslFolder)
+	mylog = log
+	dslFolder := filepath.Join(utils.RootDir(), folder)
 
 	if ok, _ := utils.FileExists(dslFolder); ok {
 
 		files, err := ioutil.ReadDir(dslFolder)
 
 		if err != nil {
-			logger.Errorf("Els-InitDSL-Folder-Not-Exists: DslFolder=%s", dslFolder)
+			mylog.Errorf("Els-InitDSL-Folder-Not-Exists: DslFolder=%s", dslFolder)
 		} else {
 
 			for _, file := range files {
@@ -46,14 +49,14 @@ func InitDSL() {
 				b, err := utils.ReadFile(filepath.Join(dslFolder, file.Name())) // just pass the file name
 
 				if err != nil {
-					logger.Errorf("Els-InitDSL-File-Read-Error: Name=%s", file.Name())
+					mylog.Errorf("Els-InitDSL-File-Read-Error: Name=%s", file.Name())
 					continue
 				}
 
 				templateMapEntry := make(map[string]interface{})
 
 				if err := yaml.Unmarshal(b, &templateMapEntry); err != nil {
-					logger.Errorf("Els-InitDSL-File-Read-Error: Name=%s", file.Name())
+					mylog.Errorf("Els-InitDSL-File-Read-Error: Name=%s", file.Name())
 					continue
 				}
 
@@ -64,20 +67,20 @@ func InitDSL() {
 					Templates: templateMapEntry,
 				}
 
-				logger.Infof("Els-InitDSL-File-Loaded: Path=%s/%s, Size=%s", dslFolder, file.Name(), utils.HumanFileSize(float64(file.Size())))
+				mylog.Infof("Els-InitDSL-File-Loaded: Path=%s/%s, Size=%s", dslFolder, file.Name(), utils.HumanFileSize(float64(file.Size())))
 
 				YamlMapBlocks[item.Name] = item
 
 			}
 
 			if len(YamlMapBlocks) == 0 {
-				logger.Warnf("Els-InitDSL-Folder-Empty: DslFolder=%s/*.yaml", dslFolder)
+				mylog.Warnf("Els-InitDSL-Folder-Empty: DslFolder=%s/*.yaml", dslFolder)
 			}
 
 		}
 
 	} else {
-		logger.Errorf("Els-InitDSL-Folder-Not-Exists: DslFolder=%s", dslFolder)
+		mylog.Errorf("Els-InitDSL-Folder-Not-Exists: DslFolder=%s", dslFolder)
 	}
 
 }
@@ -85,12 +88,12 @@ func InitDSL() {
 func DSLQuery(filename string, tplname string, templateData map[string]interface{}) (string, error) {
 
 	if YamlMapBlocks[filename] == nil {
-		logger.Errorf("Els-InitDSL-Template-File-Not-Exists: filename=%s, tplname=%s", filename, tplname)
+		mylog.Errorf("Els-InitDSL-Template-File-Not-Exists: filename=%s, tplname=%s", filename, tplname)
 		return "", nil
 	}
 
 	if len(YamlMapBlocks[filename].Templates) == 0 || YamlMapBlocks[filename].Templates[tplname] == nil {
-		logger.Errorf("Els-InitDSL-Template-Blocks-Entry-Not-Found: filename=%s, tplname=%s", filename, tplname)
+		mylog.Errorf("Els-InitDSL-Template-Blocks-Entry-Not-Found: filename=%s, tplname=%s", filename, tplname)
 		return "", nil
 	}
 
@@ -98,7 +101,7 @@ func DSLQuery(filename string, tplname string, templateData map[string]interface
 	t, err := template.New(filename).Parse(tmpl)
 
 	if err != nil {
-		logger.Errorf(`Els-Parse-DslHtml-Template-Error: tmpl=%s, ErrorMessage=%s`, tmpl, err.Error())
+		mylog.Errorf(`Els-Parse-DslHtml-Template-Error: tmpl=%s, ErrorMessage=%s`, tmpl, err.Error())
 		return "", err
 	}
 
@@ -107,7 +110,7 @@ func DSLQuery(filename string, tplname string, templateData map[string]interface
 	var tpl bytes.Buffer
 
 	if err := t.Execute(&tpl, templateData); err != nil {
-		logger.Errorf(`Els-Exccute-Parse-Template-Error: Tmpl=%s, Data=%s, ErrorMessage=%s`, tmpl, utils.ToJsonString(tplname), err.Error())
+		mylog.Errorf(`Els-Exccute-Parse-Template-Error: Tmpl=%s, Data=%s, ErrorMessage=%s`, tmpl, utils.ToJsonString(tplname), err.Error())
 		return "", err
 	}
 
