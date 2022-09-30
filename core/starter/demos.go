@@ -74,6 +74,10 @@ func init() {
 
 		AppendRouter("GET", []string{"/demo/transactions"}, controller.TransactionRouter)
 
+		// opensearch
+		AppendRouter("GET", []string{"/demo/es/indices"}, actions.OpenSearchIndicesRouter)
+		AppendRouter("GET", []string{"/demo/es"}, actions.OpenSearchRouter)
+
 	}
 
 }

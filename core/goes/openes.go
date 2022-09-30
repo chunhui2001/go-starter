@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -98,9 +99,9 @@ func Ping(es *opensearch.Client) *opensearch.Client {
 }
 
 // 查询所有索引
-func CatIndices() ([]map[string]interface{}, error) {
+func CatIndices(indexNamePattern ...string) ([]map[string]interface{}, error) {
 
-	res, err := esapi.CatIndicesRequest{Format: "json"}.Do(context.Background(), esClient)
+	res, err := esapi.CatIndicesRequest{Format: "json", FilterPath: indexNamePattern}.Do(context.Background(), esClient)
 
 	if err != nil {
 		logger.Errorf("OpenSearch-CatIndices-Error-1: ErrorMessage=%s", err.Error())
@@ -110,8 +111,10 @@ func CatIndices() ([]map[string]interface{}, error) {
 	defer res.Body.Close()
 	var resMap []map[string]interface{}
 
-	if err := json.NewDecoder(res.Body).Decode(&resMap); err != nil {
-		logger.Errorf("OpenSearch-CatIndices-Error-2: ErrorMessage=%s", err.Error())
+	body, err := ioutil.ReadAll(res.Body)
+
+	if err := json.Unmarshal(body, &resMap); err != nil {
+		logger.Errorf("OpenSearch-CatIndices-Error-2: ErrorMessage=%s, Indices=%s", err.Error(), string(body))
 		return nil, err
 	}
 
