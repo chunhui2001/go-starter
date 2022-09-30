@@ -173,6 +173,9 @@ https://www.agiliq.com/blog/2020/04/graphql-api-server-using-golang-gin-framewor
 ### gqlgen
 https://gqlgen.com/config/
 
+### A helper to merge structs and maps in Golang. Useful for configuration default values, avoiding messy if-statements.
+https://github.com/imdario/mergo
+
 -----------------------------------------------------------------
 GOOS - Target Operating System		GOARCH - Target Platform
 -----------------------------------------------------------------
