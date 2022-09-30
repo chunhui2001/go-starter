@@ -176,6 +176,9 @@ https://gqlgen.com/config/
 ### A helper to merge structs and maps in Golang. Useful for configuration default values, avoiding messy if-statements.
 https://github.com/imdario/mergo
 
+### A Complete Guide to JSON in Golang (With Examples)
+https://www.sohamkamani.com/golang/json/
+
 -----------------------------------------------------------------
 GOOS - Target Operating System		GOARCH - Target Platform
 -----------------------------------------------------------------

@@ -2,10 +2,12 @@ package ges
 
 import (
 	"bytes"
+	"encoding/json"
 	"html"
 	"html/template"
 	"io/ioutil"
 	"path/filepath"
+	"regexp"
 
 	"github.com/chunhui2001/go-starter/core/utils"
 	"github.com/sirupsen/logrus"
@@ -124,6 +126,17 @@ func DSLQuery(filename string, tplname string, templateData map[string]interface
 		return "", err
 	}
 
-	return html.UnescapeString(tpl.String()), nil
+	return prettyprint(filename, tplname, ([]byte)(html.UnescapeString(tpl.String())))
 
+}
+
+func prettyprint(filename string, tplname string, b []byte) (string, error) {
+	var out bytes.Buffer
+	err := json.Indent(&out, b, "", "")
+	if err != nil {
+		return "", err
+	}
+	prettyjson := regexp.MustCompile(`\r?\n`).ReplaceAllString(string(out.Bytes()), " ")
+	mylog.Infof(`DSLQuery: filename=%s, tplname=%s, prettyjson=%s`, filename, tplname, prettyjson)
+	return prettyjson, nil
 }
