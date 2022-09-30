@@ -54,3 +54,4 @@ app-darwin-*
 app-linux-*
 *.debug
 *.ignore
+.env.temp
