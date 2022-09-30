@@ -47,7 +47,11 @@ func init() {
 			if pair[1] == "" {
 				INFO.Commit = "Unknown"
 			} else {
-				INFO.Commit = strings.Trim(pair[1], " ")[0:10]
+				if len(pair[1]) >= 10 {
+					INFO.Commit = strings.Trim(pair[1], " ")[0:10]
+				} else {
+					INFO.Commit = pair[1]
+				}
 			}
 		} else if strings.Trim(pair[0], " ") == "main.Name" {
 			INFO.Name = strings.Trim(pair[1], " ")
