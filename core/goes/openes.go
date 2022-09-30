@@ -249,6 +249,75 @@ func Search(indexName string, queryJsonString string) ([]map[string]interface{},
 
 }
 
+func Collapse(indexName string, queryJsonString string) ([]map[string]interface{}, int64, error) {
+
+	// Check for JSON errors
+	isValid := json.Valid([]byte(queryJsonString)) // returns bool
+
+	// Default query is "{}" if JSON is invalid
+	if !isValid {
+		logger.Errorf("OpenSearch-Collapse-Failed: ErrorMessage=%s, queryJsonString=%s", "Not a valid json query string", queryJsonString)
+		return nil, 0, errors.New("Not a valid json query string")
+	}
+
+	// Pass the JSON query to the Golang client's Search() method
+	res, err := esClient.Search(
+		esClient.Search.WithContext(context.Background()),
+		esClient.Search.WithIndex(indexName),
+		esClient.Search.WithBody(strings.NewReader(queryJsonString)),
+		esClient.Search.WithTrackTotalHits(true),
+	)
+
+	if err != nil {
+		logger.Errorf("OpenSearch-Collapse-Error-1: queryJsonString=%s, ErrorMessage=%s", queryJsonString, err.Error())
+		return nil, 0, err
+	}
+
+	defer res.Body.Close()
+
+	// Deserialize the response into a map.
+	var resMap map[string]interface{}
+
+	if err := json.NewDecoder(res.Body).Decode(&resMap); err != nil {
+		logger.Errorf("OpenSearch-Collapse-Error-2: ErrorMessage=%s", err.Error())
+		return nil, 0, err
+	}
+
+	if resMap["error"] != nil {
+		if resMap["error"].(map[string]interface{})["type"].(string) == "index_not_found_exception" {
+			return nil, 0, nil
+		}
+		logger.Errorf("OpenSearch-Collapse-Error-3: ErrorMessage=%s", utils.ToJsonString(resMap["error"]))
+		return nil, 0, errors.New(resMap["error"].(map[string]interface{})["reason"].(string))
+	}
+
+	if resMap["hits"] == nil {
+		return nil, 0, nil
+	}
+
+	hitsMap := resMap["hits"].(map[string]interface{})
+
+	if hitsMap["hits"] == nil {
+		return nil, 0, nil
+	}
+
+	var dataMap []interface{} = hitsMap["hits"].([]interface{})
+	total := hitsMap["total"].(map[string]interface{})["value"].(float64)
+
+	var interfaceSlice []map[string]interface{}
+
+	if total > 0 {
+		for _, item := range dataMap {
+			_map := item.(map[string]interface{})
+			object := _map["fields"].(map[string]interface{})
+			interfaceSlice = append(interfaceSlice, object)
+		}
+	}
+
+	return interfaceSlice, int64(total), nil
+
+}
+
 func ConstructQuery(q string, size int) *strings.Reader {
 
 	var queryJsonString = fmt.Sprintf(`{"query": { %s }, "size": %d}`, q, size)
