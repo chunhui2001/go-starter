@@ -20,6 +20,7 @@ import (
 	"github.com/chunhui2001/go-starter/core/ghttp"
 	"github.com/chunhui2001/go-starter/core/gid"
 	"github.com/chunhui2001/go-starter/core/gmongo"
+	"github.com/chunhui2001/go-starter/core/goes"
 	"github.com/chunhui2001/go-starter/core/grabbit"
 	"github.com/chunhui2001/go-starter/core/gredis"
 	"github.com/chunhui2001/go-starter/core/grtask"
@@ -156,6 +157,11 @@ var MongoDBSettings = &gmongo.MongoDBConf{
 }
 
 var EsSettings = &ges.ESConf{
+	Enable:  false,
+	Servers: "http://localhost:9200",
+}
+
+var OpenEsSettings = &goes.OpenESConf{
 	Enable:  false,
 	Servers: "http://localhost:9200",
 }
@@ -304,6 +310,7 @@ func init() {
 		loadCookieSettings(v1, filename)
 		loadMySqlSettings(v1, filename)
 		loadEsSettings(v1, filename)
+		loadOpenEsSettings(v1, filename)
 		loadSimpleGTaskSettings(v1, filename)
 		loadRabbitSettings(v1, filename)
 		loadHttpClientSettings(v1, filename)
@@ -514,6 +521,23 @@ func loadEsSettings(v1 *viper.Viper, filename string) {
 		configLoggerLines = append(configLoggerLines, []string{"EsSettings", "Enabled=" + utils.ToString(EsSettings.Enable)})
 		if EsSettings.Enable {
 			ges.Init(EsSettings, Log)
+		}
+	}
+
+}
+
+func loadOpenEsSettings(v1 *viper.Viper, filename string) {
+
+	err := v1.Unmarshal(&OpenEsSettings)
+
+	if err != nil {
+		Log.Info("viper parse OpenEsSettings error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		os.Exit(3)
+		return
+	} else {
+		configLoggerLines = append(configLoggerLines, []string{"OpenEsSettings", "Enabled=" + utils.ToString(OpenEsSettings.Enable)})
+		if OpenEsSettings.Enable {
+			goes.Init(OpenEsSettings, Log)
 		}
 	}
 
