@@ -15,6 +15,7 @@ import (
 
 	. "github.com/chunhui2001/go-starter/core/commons"
 	"github.com/chunhui2001/go-starter/core/config"
+	"github.com/chunhui2001/go-starter/core/ges"
 	"github.com/chunhui2001/go-starter/core/ghttp"
 	"github.com/chunhui2001/go-starter/core/gras"
 	"github.com/chunhui2001/go-starter/core/gredis"
@@ -439,6 +440,21 @@ func LatexDemoRouter(c *gin.Context) {
 	c.Header("Cache-Control", "no-cache")
 
 	c.Writer.Write(outputBuffer.Bytes())
+
+}
+
+func FuncMapsRouter(c *gin.Context) {
+
+	ges.InitDSL("./resources/es_dsl", config.Log)
+
+	// var val string
+	// var nullVal *string = &val
+	var nullVal *string
+
+	result, err := ges.DSLQuery("dsl1.yaml", "b", utils.MapOf("name", 1, "nullVal", nullVal))
+	fmt.Println(result)
+
+	c.JSON(http.StatusOK, (&R{Data: result, Error: err}).IfErr(400))
 
 }
 

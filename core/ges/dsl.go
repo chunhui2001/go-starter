@@ -2,6 +2,7 @@ package ges
 
 import (
 	"bytes"
+	"html"
 	"html/template"
 	"io/ioutil"
 	"path/filepath"
@@ -10,6 +11,14 @@ import (
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
+
+// {{$x := join ", " "hello" "world"}}
+func funcMaps() template.FuncMap {
+	return template.FuncMap{
+		"join":   utils.Join,   // {{- join "\",\"" .name .name  }} , ["{{- join "\",\"" .name .name  }}"]
+		"ifnull": utils.IfNull, // {{- ifnull .nullVal 99 }}
+	}
+}
 
 type YamlFileItem struct {
 	Name      string
@@ -21,6 +30,7 @@ type YamlFileItem struct {
 var (
 	YamlMapBlocks map[string]*YamlFileItem = make(map[string]*YamlFileItem)
 	mylog         *logrus.Entry
+	FuncMaps      = funcMaps()
 )
 
 func InitDSL(folder string, log *logrus.Entry) {
@@ -98,7 +108,7 @@ func DSLQuery(filename string, tplname string, templateData map[string]interface
 	}
 
 	tmpl := utils.ToJsonString(YamlMapBlocks[filename].Templates[tplname])
-	t, err := template.New(filename).Parse(tmpl)
+	t, err := template.New(filename).Funcs(FuncMaps).Parse(tmpl)
 
 	if err != nil {
 		mylog.Errorf(`Els-Parse-DslHtml-Template-Error: tmpl=%s, ErrorMessage=%s`, tmpl, err.Error())
@@ -114,6 +124,6 @@ func DSLQuery(filename string, tplname string, templateData map[string]interface
 		return "", err
 	}
 
-	return tpl.String(), nil
+	return html.UnescapeString(tpl.String()), nil
 
 }

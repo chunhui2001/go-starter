@@ -45,6 +45,9 @@ func init() {
 		// latex
 		AppendRouter("GET", []string{"/labs-latex-demo"}, actions.LatexDemoRouter)
 
+		// funcMaps
+		AppendRouter("GET", []string{"/labs-funcMaps"}, actions.FuncMapsRouter)
+
 		// validator data binding simples
 		AppendRouter("POST", []string{"/demo/album-create"}, actions.AlbumCreateRouter)
 		AppendRouter("GET", []string{"/demo/album-get"}, actions.AlbumGetRouter)

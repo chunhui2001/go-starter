@@ -2,5 +2,10 @@ a: >
   Easy! {{.name}}\n
   Easy! {{.name}}
 b: >
-  c: 2
-  d: [3, 4]
+  {
+    c: 2
+    d: [3, 4]
+    e: ["{{- join "\",\"" .name .name  }}"]
+    f: [{{- join "," .name .name  }}]
+    g: {{- ifnull .nullVal 99 }}
+  }

@@ -290,6 +290,10 @@ func Lower(s string) string {
 	return strings.ToLower(s)
 }
 
+func Join(delim string, s ...any) string {
+	return strings.Trim(strings.Replace(fmt.Sprint(s...), " ", delim, -1), "[]")
+}
+
 func Matches(s string, regx string) [][]string {
 	re := regexp.MustCompile(regx)
 	return re.FindAllStringSubmatch(s, -1)
@@ -318,6 +322,12 @@ func MatchesGroup(regEx, str string) (paramsMap map[string]string) {
 
 func IfNull(obj any, defaultValue interface{}) interface{} {
 	if obj == nil {
+		return defaultValue
+	}
+	if obj == (*any)(nil) {
+		return defaultValue
+	}
+	if obj == (*string)(nil) {
 		return defaultValue
 	}
 	return obj
