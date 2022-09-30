@@ -1,4 +1,7 @@
 
+### 设置国内代理
+$ go env -w GO111MODULE=on
+$ go env -w GOPROXY=https://goproxy.cn,direct
 
 ### 查看文件size
 stat -f%z README.md 
@@ -134,6 +137,12 @@ https://www.ardanlabs.com/blog/2013/11/using-xslt-with-go.html
 
 ### Installing protoc
 http://google.github.io/proto-lens/installing-protoc.html
+
+>>>> $ PROTOC_ZIP=protoc-3.14.0-osx-x86_64.zip
+>>>> $ curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.14.0/$PROTOC_ZIP
+>>>> $ sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
+>>>> $ sudo unzip -o $PROTOC_ZIP -d /usr/local 'include/*'
+>>>> $ rm -f $PROTOC_ZIP
 
 $ go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 

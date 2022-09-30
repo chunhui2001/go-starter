@@ -30,7 +30,7 @@ install:
 	go get github.com/codegangsta/gin
 	go install github.com/codegangsta/gin
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-	go install github.com/99designs/gqlgen
+	#go install github.com/99designs/gqlgen
 	go get $(mod)
 	go install $(mod)
 
