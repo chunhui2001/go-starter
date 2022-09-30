@@ -239,7 +239,6 @@ func Search(indexName string, queryJsonString string) ([]map[string]interface{},
 			_map := item.(map[string]interface{})
 			id := _map["_id"].(string)
 			object := _map["_source"].(map[string]interface{})
-			logger.Infof(`Id=%s, len=%d`, id, len(object))
 			object["id"] = id
 
 			interfaceSlice = append(interfaceSlice, object)
