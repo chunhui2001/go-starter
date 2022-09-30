@@ -3,6 +3,8 @@ package ges
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"html"
 	"html/template"
 	"io/ioutil"
@@ -100,13 +102,14 @@ func InitDSL(folder string, log *logrus.Entry) {
 func DSLQuery(filename string, tplname string, templateData map[string]interface{}) (string, error) {
 
 	if YamlMapBlocks[filename] == nil {
-		mylog.Errorf("Els-InitDSL-Template-File-Not-Exists: filename=%s, tplname=%s", filename, tplname)
+		mylog.Errorf("Els-Template-File-Not-Exists: filename=%s, tplname=%s", filename, tplname)
 		return "", nil
 	}
 
 	if len(YamlMapBlocks[filename].Templates) == 0 || YamlMapBlocks[filename].Templates[tplname] == nil {
-		mylog.Errorf("Els-InitDSL-Template-Blocks-Entry-Not-Found: filename=%s, tplname=%s", filename, tplname)
-		return "", nil
+		errorMessage := fmt.Sprintf(`Els-Template-Blocks-Entry-Not-Found: filename=%s, tplname=%s`, filename, tplname)
+		mylog.Errorf(errorMessage)
+		return "", errors.New(errorMessage)
 	}
 
 	tmpl := utils.ToJsonString(YamlMapBlocks[filename].Templates[tplname])
@@ -136,7 +139,7 @@ func prettyprint(filename string, tplname string, b []byte) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	prettyjson := regexp.MustCompile(`\r?\n`).ReplaceAllString(string(out.Bytes()), " ")
+	prettyjson := regexp.MustCompile(`\r?\n`).ReplaceAllString(string(out.Bytes()), "")
 	mylog.Infof(`DSLQuery: filename=%s, tplname=%s, prettyjson=%s`, filename, tplname, prettyjson)
 	return prettyjson, nil
 }
