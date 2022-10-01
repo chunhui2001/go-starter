@@ -49,40 +49,6 @@ func OpenSearchLastSnapshotDateRouter(c *gin.Context) {
 
 }
 
-func OpenSearchQueryDataByDateRouter(c *gin.Context) {
-
-	indexName := c.Query("indexName")
-	querySize := c.Query("size")
-	snapshotDate := c.Query("createDate")
-
-	var data = new(map[string]interface{})
-
-	if err := c.ShouldBindWith(data, binding.JSON); err != nil {
-		c.JSON(200, (&R{Error: err}).Msg(err.Error()).IfErr(413))
-		return
-	}
-
-	params := utils.MapOf(
-		"size", utils.StrToInt(querySize),
-		"createDate", utils.StrToInt(snapshotDate),
-		"bdUsers", (*data)["bdUsers"],
-		"labels", (*data)["labels"],
-		"flags", (*data)["flags"],
-	)
-
-	dslJsonString, err := ges.DSLQuery(DSL_FILE_NAME, "QUERY_DATA_BY_DATE", params)
-
-	reault, _, err := goes.Search(indexName, dslJsonString)
-
-	if err != nil {
-		c.JSON(200, (&R{Error: err}).Fail(400))
-		return
-	}
-
-	c.JSON(200, (&R{Data: reault}).Success())
-
-}
-
 func OpenSearchDynamicQueryRouter(c *gin.Context) {
 
 	indexName := c.Query("indexName")
@@ -175,50 +141,6 @@ func OpenSearchDistinctQueryRouter(c *gin.Context) {
 	}
 
 	c.JSON(200, (&R{Data: returnResult}).Success())
-
-}
-
-func OpenSearchAggsSumQueryRouter(c *gin.Context) {
-
-	indexName := c.Query("indexName")
-	// querySize := c.Query("size") 0
-	snapshotDate := c.Query("createDate")
-	byFieldName := c.Query("byFieldName")
-	sumFieldName := c.Query("sumFieldName")
-	tplname := "AGGS_SUM"
-
-	var dynamicParams = new(map[string]interface{})
-
-	if err := c.ShouldBindWith(dynamicParams, binding.JSON); err != nil {
-		c.JSON(200, (&R{Error: err}).Msg(err.Error()).IfErr(413))
-		return
-	}
-
-	var params map[string]interface{} = utils.MapOf(
-		"createDate", utils.StrToInt(snapshotDate),
-		"byFieldName", byFieldName,
-		"sumFieldName", sumFieldName,
-	)
-
-	for key, val := range *dynamicParams {
-		params[key] = val
-	}
-
-	dslJsonString, err := ges.DSLQuery(DSL_FILE_NAME, tplname, params)
-
-	if err != nil {
-		c.JSON(200, (&R{Error: err}).Fail(400))
-		return
-	}
-
-	result, _, err := goes.AggsSum(indexName, "by_"+byFieldName, dslJsonString)
-
-	if err != nil {
-		c.JSON(200, (&R{Error: err}).Fail(400))
-		return
-	}
-
-	c.JSON(200, (&R{Data: result}).Success())
 
 }
 
