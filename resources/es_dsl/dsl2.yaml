@@ -50,6 +50,48 @@ MULTIPLE_AGGS: >
               "createDate": {{.createDate}}
             }
           }
+        ],
+        "filter": [
+          {
+            "exists": {
+              "field": "_id"
+            }
+          }
+          {{- if .where.groups }}
+          , {
+            "terms": {
+              "groupName": ["{{ join "\",\"" .where.groups }}"]
+            }
+          }
+          {{- end}}
+          {{- if .where.bdUsers }}
+          , {
+            "terms": {
+              "bdUserId": [{{ join "," .where.bdUsers }}]
+            }
+          }
+          {{- end}}
+          {{- if .where.labels }}
+          , {
+            "terms": {
+              "identityLabel1Name": ["{{ join "\",\"" .where.labels }}"]
+            }
+          }
+          {{- end}}
+          {{- if .where.flags }}
+          , {
+            "terms": {
+              "newRegFlag": [{{ join "," .where.flags }}]
+            }
+          }
+          {{- end}}
+          {{- if .where.logDates }}
+          , {
+            "terms": {
+              "logDate": [{{ join "," .where.logDates }}]
+            }
+          }
+          {{- end}}
         ]
       }
     },
@@ -91,7 +133,7 @@ QUERY_DATA_BY_DATE: >
               "field": "_id"
             }
           }
-          {{- if .bdUserId}}
+          {{- if .bdUsers}}
           , {
             "terms": {
               "bdUserId": [{{ join "," .bdUsers }}]

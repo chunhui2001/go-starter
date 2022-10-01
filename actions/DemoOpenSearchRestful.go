@@ -196,7 +196,7 @@ func OpenSearchMultipleAggsQueryRouter(c *gin.Context) {
 		return
 	}
 
-	// result, _, err := goes.AggsSum(indexName, "group_by_"+groupByFieldName, dslJsonString)
+	// result, _, err := goes.AggsQuery(indexName, "group_by_"+groupByFieldName, dslJsonString)
 
 	// if err != nil {
 	// 	c.JSON(200, (&R{Error: err}).Fail(400))

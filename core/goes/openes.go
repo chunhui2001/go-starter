@@ -345,14 +345,14 @@ func Collapse(indexName string, queryJsonString string) ([]map[string]interface{
 
 }
 
-func AggsSum(indexName string, aggsName string, queryJsonString string) ([]map[string]interface{}, int64, error) {
+func AggsQuery(indexName string, aggsName string, queryJsonString string) ([]map[string]interface{}, int64, error) {
 
 	// Check for JSON errors
 	isValid := json.Valid([]byte(queryJsonString)) // returns bool
 
 	// Default query is "{}" if JSON is invalid
 	if !isValid {
-		logger.Errorf("OpenSearch-AggsSum-Failed: ErrorMessage=%s, queryJsonString=%s", "Not a valid json query string", queryJsonString)
+		logger.Errorf("OpenSearch-AggsQuery-Failed: ErrorMessage=%s, queryJsonString=%s", "Not a valid json query string", queryJsonString)
 		return nil, 0, errors.New("Not a valid json query string")
 	}
 
@@ -365,7 +365,7 @@ func AggsSum(indexName string, aggsName string, queryJsonString string) ([]map[s
 	)
 
 	if err != nil {
-		logger.Errorf("OpenSearch-AggsSum-Error-1: queryJsonString=%s, ErrorMessage=%s", queryJsonString, err.Error())
+		logger.Errorf("OpenSearch-AggsQuery-Error-1: queryJsonString=%s, ErrorMessage=%s", queryJsonString, err.Error())
 		return nil, 0, err
 	}
 
@@ -375,7 +375,7 @@ func AggsSum(indexName string, aggsName string, queryJsonString string) ([]map[s
 	var resMap map[string]interface{}
 
 	if err := json.NewDecoder(res.Body).Decode(&resMap); err != nil {
-		logger.Errorf("OpenSearch-AggsSum-Error-2: ErrorMessage=%s", err.Error())
+		logger.Errorf("OpenSearch-AggsQuery-Error-2: ErrorMessage=%s", err.Error())
 		return nil, 0, err
 	}
 
@@ -383,7 +383,7 @@ func AggsSum(indexName string, aggsName string, queryJsonString string) ([]map[s
 		if resMap["error"].(map[string]interface{})["type"].(string) == "index_not_found_exception" {
 			return nil, 0, nil
 		}
-		logger.Errorf("OpenSearch-AggsSum-Error-3: ErrorMessage=%s", utils.ToJsonString(resMap["error"]))
+		logger.Errorf("OpenSearch-AggsQuery-Error-3: ErrorMessage=%s", utils.ToJsonString(resMap["error"]))
 		return nil, 0, errors.New(resMap["error"].(map[string]interface{})["reason"].(string))
 	}
 
