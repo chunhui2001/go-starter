@@ -221,3 +221,43 @@ func OpenSearchAggsSumQueryRouter(c *gin.Context) {
 	c.JSON(200, (&R{Data: result}).Success())
 
 }
+
+func OpenSearchMultipleAggsQueryRouter(c *gin.Context) {
+
+	// indexName := c.Query("indexName")
+	// querySize := c.Query("size") // default: 10000
+	snapshotDate := c.Query("createDate")
+	tplname := c.Query("tplname")
+
+	var dynamicParams = new(map[string]interface{})
+
+	if err := c.ShouldBindWith(dynamicParams, binding.JSON); err != nil {
+		c.JSON(200, (&R{Error: err}).Msg(err.Error()).IfErr(413))
+		return
+	}
+
+	var params map[string]interface{} = utils.MapOf(
+		"createDate", utils.StrToInt(snapshotDate),
+	)
+
+	for key, val := range *dynamicParams {
+		params[key] = val
+	}
+
+	dslJsonString, err := ges.DSLQuery(DSL_FILE_NAME, tplname, params)
+
+	if err != nil {
+		c.JSON(200, (&R{Data: dslJsonString, Error: err}).Fail(400))
+		return
+	}
+
+	// result, _, err := goes.AggsSum(indexName, "group_by_"+groupByFieldName, dslJsonString)
+
+	// if err != nil {
+	// 	c.JSON(200, (&R{Error: err}).Fail(400))
+	// 	return
+	// }
+
+	c.JSON(200, (&R{Data: dslJsonString}).Success())
+
+}

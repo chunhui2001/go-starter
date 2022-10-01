@@ -537,7 +537,7 @@ func loadOpenEsSettings(v1 *viper.Viper, filename string) {
 		os.Exit(3)
 		return
 	} else {
-		configLoggerLines = append(configLoggerLines, []string{"OpenEsSettings", "Enabled=" + utils.ToString(OpenEsSettings.Enable)})
+		configLoggerLines = append(configLoggerLines, []string{"OpenEsSettings", "Enabled=" + utils.ToString(OpenEsSettings.Enable) + ", PrettyPrint=" + utils.ToString(OpenEsSettings.PrettyPrint)})
 		if OpenEsSettings.Enable {
 			goes.Init(OpenEsSettings, Log)
 		}

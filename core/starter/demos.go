@@ -84,6 +84,7 @@ func init() {
 		AppendRouter("POST", []string{"/go-board/queryDataByDate"}, actions.OpenSearchQueryDataByDateRouter)
 		AppendRouter("POST", []string{"/go-board/distinctQuery"}, actions.OpenSearchDistinctQueryRouter)
 		AppendRouter("POST", []string{"/go-board/aggsSumQuery"}, actions.OpenSearchAggsSumQueryRouter)
+		AppendRouter("POST", []string{"/go-board/aggsMultipleQuery"}, actions.OpenSearchMultipleAggsQueryRouter)
 
 	}
 

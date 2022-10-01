@@ -98,6 +98,39 @@ SUM_OF_GROUP_BY: >
     }
   }
 
+MULTIPLE_AGGS: >
+  {
+    "size": 0,
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "term": {
+              "createDate": {{.createDate}}
+            }
+          }
+        ]
+      }
+    },
+    "aggs": {
+      "group_by_{{.groupByFieldName}}": {
+        "terms": {
+          "field": "{{.groupByFieldName}}",
+          "size": 10000
+        },
+        "aggs": {
+          {{ range $i, $v := .aggs }}
+          {{- if ne $i 0 }},{{- end}} "{{ $v.alias }}": {
+              "{{ $v.inst }}": {
+                "field": "{{ $v.aggsFieldName }}"
+              }
+          }
+          {{end}}
+        }
+      }
+    }
+  }
+
 QUERY_DATA_BY_DATE: >
   {
     "size": {{.size}},
