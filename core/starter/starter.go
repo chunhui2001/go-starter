@@ -63,6 +63,7 @@ type Server struct {
 	Handler500       func(c *gin.Context, err interface{})
 	CustomeRoutes    []Route
 	R                *gin.Engine
+	GraphqlHandler   gin.HandlerFunc
 }
 
 func rateLimitKeyFunc(c *gin.Context) string {
@@ -120,6 +121,7 @@ var defaultServer = &Server{
 			}),
 		}},
 	},
+	GraphqlHandler: graphqlHandler(),
 }
 
 var (
@@ -362,7 +364,7 @@ func Setup() *gin.Engine {
 	}
 
 	if graphServerConf.Enable {
-		engine.POST(graphServerConf.ServerURi, graphqlHandler())
+		engine.POST(graphServerConf.ServerURi, defaultServer.GraphqlHandler)
 		engine.GET(graphServerConf.PlayGroundURi, playgroundHandler())
 	}
 
