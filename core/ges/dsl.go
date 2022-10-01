@@ -119,7 +119,7 @@ func DSLQuery(filename string, tplname string, templateData map[string]interface
 
 	if err != nil {
 		mylog.Errorf(`Els-Parse-DslHtml-Template-Error: tmpl=%s, ErrorMessage=%s`, tmpl, err.Error())
-		return "", err
+		return tmpl, err
 	}
 
 	// mapData := utils.MapOf("key", "val")
@@ -128,7 +128,7 @@ func DSLQuery(filename string, tplname string, templateData map[string]interface
 
 	if err := t.Execute(&tpl, templateData); err != nil {
 		mylog.Errorf(`Els-Exccute-Parse-Template-Error: Tmpl=%s, Data=%s, ErrorMessage=%s`, tmpl, utils.ToJsonString(tplname), err.Error())
-		return "", err
+		return tmpl, err
 	}
 
 	return prettyprint(filename, tplname, ([]byte)(html.UnescapeString(tpl.String())))
