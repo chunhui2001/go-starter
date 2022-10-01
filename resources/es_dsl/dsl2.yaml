@@ -33,14 +33,69 @@ DISTINCT_QUERY: >
     },
     "collapse": {
       "field": "{{.fieldName}}"
+    }
+  }
+
+COUNT_OF_DISTINCT_GROUP_BY: >
+  {
+    "size": 0,
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "term": {
+              "createDate": {{.createDate}}
+            }
+          }
+        ]
+      }
     },
-    "sort": [
-      {
-        "createDate": {
-          "order": "desc"
+    "aggs": {
+      "group_by_{{.groupByFieldName}}": {
+        "terms": {
+          "field": "{{.groupByFieldName}}",
+          "size": 10000
+        },
+        "aggs": {
+          "do_a_count_on_field_{{.aggsFieldName}}": {
+            "cardinality": {
+              "field": "{{.aggsFieldName}}"
+            }
+          }
         }
       }
-    ]
+    }
+  }
+
+SUM_OF_GROUP_BY: >
+  {
+    "size": 0,
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "term": {
+              "createDate": {{.createDate}}
+            }
+          }
+        ]
+      }
+    },
+    "aggs": {
+      "group_by_{{.groupByFieldName}}": {
+        "terms": {
+          "field": "{{.groupByFieldName}}",
+          "size": 10000
+        },
+        "aggs": {
+          "do_a_sum_on_field_{{.aggsFieldName}}": {
+            "sum": {
+              "field": "{{.aggsFieldName}}"
+            }
+          }
+        }
+      }
+    }
   }
 
 QUERY_DATA_BY_DATE: >
@@ -92,35 +147,5 @@ QUERY_DATA_BY_DATE: >
         }
       }
     ]
-  }
-
-AGGS_SUM: >
-  {
-    "size": 0,
-    "query": {
-      "bool": {
-        "must": [
-          {
-            "term": {
-              "createDate": {{.createDate}}
-            }
-          }
-        ]
-      }
-    },
-    "aggs": {
-      "by_{{.byFieldName}}": {
-        "terms": {
-          "field": "{{.byFieldName}}"
-        },
-        "aggs": {
-          "do_a_sum_on_field_{{.sumFieldName}}": {
-            "sum": {
-              "field": "{{.sumFieldName}}"
-            }
-          }
-        }
-      }
-    }
   }
 

@@ -157,13 +157,15 @@ var MongoDBSettings = &gmongo.MongoDBConf{
 }
 
 var EsSettings = &ges.ESConf{
-	Enable:  false,
-	Servers: "http://localhost:9200",
+	Enable:      false,
+	Servers:     "http://localhost:9200",
+	PrettyPrint: false,
 }
 
 var OpenEsSettings = &goes.OpenESConf{
-	Enable:  false,
-	Servers: "http://localhost:9200",
+	Enable:      false,
+	Servers:     "http://localhost:9200",
+	PrettyPrint: false,
 }
 
 var jsonFormatter = &MyJSONFormatter{

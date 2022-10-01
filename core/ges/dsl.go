@@ -35,12 +35,14 @@ var (
 	YamlMapBlocks map[string]*YamlFileItem = make(map[string]*YamlFileItem)
 	mylog         *logrus.Entry
 	FuncMaps      = funcMaps()
+	PrettyPrint   bool
 )
 
-func InitDSL(folder string, log *logrus.Entry) {
+func InitDSL(folder string, prettyPrint bool, log *logrus.Entry) {
 
 	mylog = log
 	dslFolder := filepath.Join(utils.RootDir(), folder)
+	PrettyPrint = prettyPrint
 
 	if ok, _ := utils.FileExists(dslFolder); ok {
 
@@ -134,12 +136,22 @@ func DSLQuery(filename string, tplname string, templateData map[string]interface
 }
 
 func prettyprint(filename string, tplname string, b []byte) (string, error) {
+
+	if !PrettyPrint {
+		mylog.Infof(`DSLQuery: filename=%s, tplname=%s, rawjson=%s`, filename, tplname, b)
+		return string(b), nil
+	}
+
 	var out bytes.Buffer
 	err := json.Indent(&out, b, "", "")
+
 	if err != nil {
 		return "", err
 	}
+
 	prettyjson := regexp.MustCompile(`\r?\n`).ReplaceAllString(string(out.Bytes()), "")
 	mylog.Infof(`DSLQuery: filename=%s, tplname=%s, prettyjson=%s`, filename, tplname, prettyjson)
+
 	return prettyjson, nil
+
 }

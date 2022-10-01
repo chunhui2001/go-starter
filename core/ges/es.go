@@ -29,9 +29,10 @@ var (
 )
 
 type ESConf struct {
-	Enable    bool   `mapstructure:"ES_ENABLE"`
-	Servers   string `mapstructure:"ES_SERVERS"`
-	DslFolder string `mapstructure:"ES_DSL_TEMPLATE_FOLDER"`
+	Enable      bool   `mapstructure:"ES_ENABLE"`
+	Servers     string `mapstructure:"ES_SERVERS"`
+	DslFolder   string `mapstructure:"ES_DSL_TEMPLATE_FOLDER"`
+	PrettyPrint bool   `mapstructure:"OPENES_PRETTY_PRINT"`
 }
 
 func Init(conf *ESConf, log *logrus.Entry) {
@@ -66,7 +67,7 @@ func Init(conf *ESConf, log *logrus.Entry) {
 
 	esClient = Ping(es) // print server info
 
-	InitDSL(conf.DslFolder, log)
+	InitDSL(conf.DslFolder, conf.PrettyPrint, log)
 
 }
 
