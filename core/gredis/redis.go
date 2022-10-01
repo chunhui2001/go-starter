@@ -130,18 +130,36 @@ func Init(redisConf *GRedis, log *logrus.Entry) {
 		if conf.Mode == Sentinel {
 
 			if conf.RouteByLatency || conf.RouteRandomly {
-				redisCluster = redis.NewFailoverClusterClient(&redis.FailoverOptions{
-					MasterName:     conf.MasterName,
-					SentinelAddrs:  addrs,
-					RouteByLatency: conf.RouteByLatency,
-					RouteRandomly:  conf.RouteRandomly,
-				})
+				if conf.Passwd != "" {
+					redisCluster = redis.NewFailoverClusterClient(&redis.FailoverOptions{
+						MasterName:     conf.MasterName,
+						SentinelAddrs:  addrs,
+						RouteByLatency: conf.RouteByLatency,
+						RouteRandomly:  conf.RouteRandomly,
+						Password:       conf.Passwd,
+					})
+				} else {
+					redisCluster = redis.NewFailoverClusterClient(&redis.FailoverOptions{
+						MasterName:     conf.MasterName,
+						SentinelAddrs:  addrs,
+						RouteByLatency: conf.RouteByLatency,
+						RouteRandomly:  conf.RouteRandomly,
+					})
+				}
 				universalClient = redisCluster
 			} else {
-				redisClient = redis.NewFailoverClient(&redis.FailoverOptions{
-					MasterName:    conf.MasterName,
-					SentinelAddrs: addrs,
-				})
+				if conf.Passwd != "" {
+					redisClient = redis.NewFailoverClient(&redis.FailoverOptions{
+						MasterName:    conf.MasterName,
+						SentinelAddrs: addrs,
+						Password:      conf.Passwd,
+					})
+				} else {
+					redisClient = redis.NewFailoverClient(&redis.FailoverOptions{
+						MasterName:    conf.MasterName,
+						SentinelAddrs: addrs,
+					})
+				}
 				universalClient = redisClient
 			}
 
