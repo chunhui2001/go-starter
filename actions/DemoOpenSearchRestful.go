@@ -144,6 +144,29 @@ func OpenSearchDistinctQueryRouter(c *gin.Context) {
 
 }
 
+// {
+//     "groupByFieldName": "bdUserId",
+//     "aggs": [
+//         {"inst": "cardinality", "aggsFieldName" : "fUid", "alias": "Accounts_Assigned"},
+//         {"inst": "sum", "aggsFieldName": "netIncomeSubPoint", "alias": "Profit_QTD"},
+//         {"inst": "sum", "aggsFieldName": "incomeSubPoint", "alias": "Revenue_QTD"},
+//         {"inst": "sum", "aggsFieldName": "spotFeeSubPoint", "alias": "QTD_Revenue_Spot"},
+//         {"inst": "sum", "aggsFieldName": "futureFee", "alias": "QTD_Revenue_Futures"},
+//         {"inst": "sum", "aggsFieldName": "warrantFee", "alias": "QTD_Revenue_Options"},
+//         {"inst": "sum", "aggsFieldName": "interestUsdt", "alias": "QTD_Margin_Interest_Revenue"},
+//         {"inst": "sum", "aggsFieldName": "brokerUsdt", "alias": "Referral_Cost"},
+//         {"inst": "sum", "aggsFieldName": "kolInviteCost", "alias": "Kol_Inviter_Cost"},
+//         {"inst": "sum", "aggsFieldName": "kolRewardCost", "alias": "Kol_Reward_Cost"},
+//         {"inst": "sum", "aggsFieldName": "allDeal", "alias": "Volume_QTD"},
+//         {"inst": "sum", "aggsFieldName": "spotDeal", "alias": "QTD_Volume_Spot"},
+//         {"inst": "sum", "aggsFieldName": "futureDeal", "alias": "QTD_Volume_Futures"}
+//     ],
+//     "where": {
+//         "bdUsers": [147],
+//         "labels": ["机构"],
+//         "flags": [0,1]
+//     }
+// }
 func OpenSearchMultipleAggsQueryRouter(c *gin.Context) {
 
 	// indexName := c.Query("indexName")
