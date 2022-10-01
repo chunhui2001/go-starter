@@ -445,7 +445,7 @@ func LatexDemoRouter(c *gin.Context) {
 
 func FuncMapsRouter(c *gin.Context) {
 
-	ges.InitDSL("./resources/es_dsl", config.Log)
+	ges.InitDSL("./resources/es_dsl", config.Log, false)
 
 	// var val string
 	// var nullVal *string = &val
