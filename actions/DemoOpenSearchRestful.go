@@ -169,7 +169,7 @@ func OpenSearchDistinctQueryRouter(c *gin.Context) {
 // }
 func OpenSearchMultipleAggsQueryRouter(c *gin.Context) {
 
-	// indexName := c.Query("indexName")
+	indexName := c.Query("indexName")
 	// querySize := c.Query("size") // default: 10000
 	snapshotDate := c.Query("createDate")
 	tplname := c.Query("tplname")
@@ -196,13 +196,15 @@ func OpenSearchMultipleAggsQueryRouter(c *gin.Context) {
 		return
 	}
 
-	// result, _, err := goes.AggsQuery(indexName, "group_by_"+groupByFieldName, dslJsonString)
+	groupByFieldName := params["groupByFieldName"].(string)
 
-	// if err != nil {
-	// 	c.JSON(200, (&R{Error: err}).Fail(400))
-	// 	return
-	// }
+	result, _, err := goes.AggsQuery(indexName, "group_by_"+groupByFieldName, dslJsonString)
 
-	c.JSON(200, (&R{Data: dslJsonString}).Success())
+	if err != nil {
+		c.JSON(200, (&R{Error: err}).Fail(400))
+		return
+	}
+
+	c.JSON(200, (&R{Data: result}).Success())
 
 }
