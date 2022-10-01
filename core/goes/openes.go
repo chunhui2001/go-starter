@@ -98,6 +98,32 @@ func Ping(es *opensearch.Client) *opensearch.Client {
 
 }
 
+func ConstructQuery(q string, size int) *strings.Reader {
+
+	var queryJsonString = fmt.Sprintf(`{"query": { %s }, "size": %d}`, q, size)
+
+	// Check for JSON errors
+	isValid := json.Valid([]byte(queryJsonString)) // returns bool
+
+	// Default query is "{}" if JSON is invalid
+	if !isValid {
+		fmt.Println("constructQuery() ERROR: query string not valid:", queryJsonString)
+		fmt.Println("Using default match_all query")
+		queryJsonString = "{}"
+	}
+
+	// Build a new string from JSON query
+	var b strings.Builder
+	b.WriteString(queryJsonString)
+
+	// Instantiate a *strings.Reader object from string
+	read := strings.NewReader(b.String())
+
+	// Return a *strings.Reader object
+	return read
+
+}
+
 // 查询所有索引
 func CatIndices(indexNamePattern ...string) ([]map[string]interface{}, error) {
 
@@ -318,28 +344,78 @@ func Collapse(indexName string, queryJsonString string) ([]map[string]interface{
 
 }
 
-func ConstructQuery(q string, size int) *strings.Reader {
-
-	var queryJsonString = fmt.Sprintf(`{"query": { %s }, "size": %d}`, q, size)
+func AggsSum(indexName string, aggsName string, queryJsonString string) ([]map[string]interface{}, int64, error) {
 
 	// Check for JSON errors
 	isValid := json.Valid([]byte(queryJsonString)) // returns bool
 
 	// Default query is "{}" if JSON is invalid
 	if !isValid {
-		fmt.Println("constructQuery() ERROR: query string not valid:", queryJsonString)
-		fmt.Println("Using default match_all query")
-		queryJsonString = "{}"
+		logger.Errorf("OpenSearch-AggsSum-Failed: ErrorMessage=%s, queryJsonString=%s", "Not a valid json query string", queryJsonString)
+		return nil, 0, errors.New("Not a valid json query string")
 	}
 
-	// Build a new string from JSON query
-	var b strings.Builder
-	b.WriteString(queryJsonString)
+	// Pass the JSON query to the Golang client's Search() method
+	res, err := esClient.Search(
+		esClient.Search.WithContext(context.Background()),
+		esClient.Search.WithIndex(indexName),
+		esClient.Search.WithBody(strings.NewReader(queryJsonString)),
+		esClient.Search.WithTrackTotalHits(true),
+	)
 
-	// Instantiate a *strings.Reader object from string
-	read := strings.NewReader(b.String())
+	if err != nil {
+		logger.Errorf("OpenSearch-AggsSum-Error-1: queryJsonString=%s, ErrorMessage=%s", queryJsonString, err.Error())
+		return nil, 0, err
+	}
 
-	// Return a *strings.Reader object
-	return read
+	defer res.Body.Close()
+
+	// Deserialize the response into a map.
+	var resMap map[string]interface{}
+
+	if err := json.NewDecoder(res.Body).Decode(&resMap); err != nil {
+		logger.Errorf("OpenSearch-AggsSum-Error-2: ErrorMessage=%s", err.Error())
+		return nil, 0, err
+	}
+
+	if resMap["error"] != nil {
+		if resMap["error"].(map[string]interface{})["type"].(string) == "index_not_found_exception" {
+			return nil, 0, nil
+		}
+		logger.Errorf("OpenSearch-AggsSum-Error-3: ErrorMessage=%s", utils.ToJsonString(resMap["error"]))
+		return nil, 0, errors.New(resMap["error"].(map[string]interface{})["reason"].(string))
+	}
+
+	if resMap["hits"] == nil {
+		return nil, 0, nil
+	}
+
+	hitsMap := resMap["hits"].(map[string]interface{})
+
+	if hitsMap["hits"] == nil {
+		return nil, 0, nil
+	}
+
+	total := hitsMap["total"].(map[string]interface{})["value"].(float64)
+
+	var returnResult []map[string]interface{}
+
+	if total > 0 {
+
+		var aggsMap map[string]interface{} = resMap["aggregations"].(map[string]interface{})
+		var aggsResult map[string]interface{} = aggsMap[aggsName].(map[string]interface{})
+		var interfaceSlice = aggsResult["buckets"].([]interface{})
+
+		mapSlice := make([]map[string]interface{}, len(interfaceSlice))
+
+		for i, v := range interfaceSlice {
+			mapSlice[i] = v.(map[string]interface{})
+		}
+
+		returnResult = mapSlice
+
+	}
+
+	return returnResult, int64(total), nil
 
 }

@@ -78,8 +78,12 @@ func init() {
 		AppendRouter("GET", []string{"/demo/transactions"}, controller.TransactionRouter)
 
 		// opensearch
-		AppendRouter("GET", []string{"/demo/es/indices"}, actions.OpenSearchIndicesRouter)
-		AppendRouter("GET", []string{"/demo/es"}, actions.OpenSearchRouter)
+		AppendRouter("GET", []string{"/go-board/es/indices"}, actions.OpenSearchIndicesRouter)
+		AppendRouter("GET", []string{"/go-board/lastSnapshotDate"}, actions.OpenSearchLastSnapshotDateRouter)
+		AppendRouter("POST", []string{"/go-board/dynamicQuery"}, actions.OpenSearchDynamicQueryRouter)
+		AppendRouter("POST", []string{"/go-board/queryDataByDate"}, actions.OpenSearchQueryDataByDateRouter)
+		AppendRouter("POST", []string{"/go-board/distinctQuery"}, actions.OpenSearchDistinctQueryRouter)
+		AppendRouter("POST", []string{"/go-board/aggsSumQuery"}, actions.OpenSearchAggsSumQueryRouter)
 
 	}
 

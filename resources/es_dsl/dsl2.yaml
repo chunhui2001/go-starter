@@ -1,5 +1,126 @@
 
-QUERY_ALL: >
+LAST_SNAPSHOT_DATE: >
   {
-    "size": 10
+    "_source": [
+      "createDate"
+    ],
+    "size": 1,
+    "sort": [
+      {
+        "createDate": {
+          "order": "desc"
+        }
+      }
+    ]
   }
+
+DISTINCT_QUERY: >
+  {
+    "_source": [
+      "createDate"
+    ],
+    "size": {{.size}},
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "term": {
+              "createDate": {{.createDate}}
+            }
+          }
+        ]
+      }
+    },
+    "collapse": {
+      "field": "{{.fieldName}}"
+    },
+    "sort": [
+      {
+        "createDate": {
+          "order": "desc"
+        }
+      }
+    ]
+  }
+
+QUERY_DATA_BY_DATE: >
+  {
+    "size": {{.size}},
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "term": {
+              "createDate": {{.createDate}}
+            }
+          }
+        ],
+        "filter": [
+          {
+            "exists": {
+              "field": "_id"
+            }
+          }
+          {{- if .bdUserId}}
+          , {
+            "terms": {
+              "bdUserId": [{{ join "," .bdUsers }}]
+            }
+          }
+          {{- end}}
+          {{- if .labels}}
+          , {
+            "terms": {
+              "identityLabel1Name": ["{{ join "\",\"" .labels }}"]
+            }
+          }
+          {{- end}}
+          {{- if .flags}}
+          , {
+            "terms": {
+              "newRegFlag": [{{ join "," .flags }}]
+            }
+          }
+          {{- end}}
+        ]
+      }
+    },
+    "sort": [
+      {
+        "createDate": {
+          "order": "desc"
+        }
+      }
+    ]
+  }
+
+AGGS_SUM: >
+  {
+    "size": 0,
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "term": {
+              "createDate": {{.createDate}}
+            }
+          }
+        ]
+      }
+    },
+    "aggs": {
+      "by_{{.byFieldName}}": {
+        "terms": {
+          "field": "{{.byFieldName}}"
+        },
+        "aggs": {
+          "do_a_sum_on_field_{{.sumFieldName}}": {
+            "sum": {
+              "field": "{{.sumFieldName}}"
+            }
+          }
+        }
+      }
+    }
+  }
+

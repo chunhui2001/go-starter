@@ -1,17 +1,20 @@
 package actions
 
 import (
+	"strconv"
+
 	. "github.com/chunhui2001/go-starter/core/commons"
 	"github.com/chunhui2001/go-starter/core/ges"
 	"github.com/chunhui2001/go-starter/core/goes"
 	"github.com/chunhui2001/go-starter/core/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
-// var (
-// 	logger = config.Log
-// )
+var (
+	DSL_FILE_NAME = "dsl2.yaml"
+)
 
 func init() {
 
@@ -22,18 +25,199 @@ func OpenSearchIndicesRouter(c *gin.Context) {
 	c.JSON(200, (&R{Data: reault, Error: err}).IfErr(400))
 }
 
-func OpenSearchRouter(c *gin.Context) {
+func OpenSearchLastSnapshotDateRouter(c *gin.Context) {
 
 	indexName := c.Query("indexName")
 
-	params := utils.MapOf("a", "b")
-
-	dslJsonString, err := ges.DSLQuery("dsl2.yaml", "QUERY_ALL", params)
-
-	logger.Infof(`dslJsonString=%s`, dslJsonString)
+	dslJsonString, err := ges.DSLQuery(DSL_FILE_NAME, "LAST_SNAPSHOT_DATE", nil)
 
 	reault, _, err := goes.Search(indexName, dslJsonString)
 
-	c.JSON(200, (&R{Data: reault, Error: err}).IfErr(400))
+	if err != nil {
+		c.JSON(200, (&R{Error: err}).Fail(400))
+		return
+	}
+
+	if len(reault) > 0 {
+		if date, err := strconv.Atoi(reault[0]["createDate"].(string)); err == nil {
+			c.JSON(200, (&R{Data: date}).Success())
+			return
+		}
+	}
+
+	c.JSON(200, (&R{Data: nil}).Success())
+
+}
+
+func OpenSearchQueryDataByDateRouter(c *gin.Context) {
+
+	indexName := c.Query("indexName")
+	querySize := c.Query("size")
+	snapshotDate := c.Query("createDate")
+
+	var data = new(map[string]interface{})
+
+	if err := c.ShouldBindWith(data, binding.JSON); err != nil {
+		c.JSON(200, (&R{Error: err}).Msg(err.Error()).IfErr(413))
+		return
+	}
+
+	params := utils.MapOf(
+		"size", utils.StrToInt(querySize),
+		"createDate", utils.StrToInt(snapshotDate),
+		"bdUsers", (*data)["bdUsers"],
+		"labels", (*data)["labels"],
+		"flags", (*data)["flags"],
+	)
+
+	dslJsonString, err := ges.DSLQuery(DSL_FILE_NAME, "QUERY_DATA_BY_DATE", params)
+
+	reault, _, err := goes.Search(indexName, dslJsonString)
+
+	if err != nil {
+		c.JSON(200, (&R{Error: err}).Fail(400))
+		return
+	}
+
+	c.JSON(200, (&R{Data: reault}).Success())
+
+}
+
+func OpenSearchDynamicQueryRouter(c *gin.Context) {
+
+	indexName := c.Query("indexName")
+	querySize := c.Query("size")
+	snapshotDate := c.Query("createDate")
+	name := c.Query("tplname")
+
+	var dynamicParams = new(map[string]interface{})
+
+	if err := c.ShouldBindWith(dynamicParams, binding.JSON); err != nil {
+		c.JSON(200, (&R{Error: err}).Msg(err.Error()).IfErr(413))
+		return
+	}
+
+	var params map[string]interface{} = utils.MapOf(
+		"size", utils.StrToInt(querySize),
+		"createDate", utils.StrToInt(snapshotDate),
+	)
+
+	for key, val := range *dynamicParams {
+		params[key] = val
+	}
+
+	dslJsonString, err := ges.DSLQuery(DSL_FILE_NAME, name, params)
+
+	if err != nil {
+		c.JSON(200, (&R{Error: err}).Fail(400))
+		return
+	}
+
+	reault, _, err := goes.Search(indexName, dslJsonString)
+
+	if err != nil {
+		c.JSON(200, (&R{Error: err}).Fail(400))
+		return
+	}
+
+	c.JSON(200, (&R{Data: reault}).Success())
+
+}
+
+func OpenSearchDistinctQueryRouter(c *gin.Context) {
+
+	indexName := c.Query("indexName")
+	querySize := c.Query("size")
+	snapshotDate := c.Query("createDate")
+	fieldName := c.Query("fieldName")
+	tplname := "DISTINCT_QUERY"
+
+	var dynamicParams = new(map[string]interface{})
+
+	if err := c.ShouldBindWith(dynamicParams, binding.JSON); err != nil {
+		c.JSON(200, (&R{Error: err}).Msg(err.Error()).IfErr(413))
+		return
+	}
+
+	var params map[string]interface{} = utils.MapOf(
+		"size", utils.StrToInt(querySize),
+		"createDate", utils.StrToInt(snapshotDate),
+		"fieldName", fieldName,
+	)
+
+	for key, val := range *dynamicParams {
+		params[key] = val
+	}
+
+	dslJsonString, err := ges.DSLQuery(DSL_FILE_NAME, tplname, params)
+
+	if err != nil {
+		c.JSON(200, (&R{Error: err}).Fail(400))
+		return
+	}
+
+	result, _, err := goes.Collapse(indexName, dslJsonString)
+
+	if err != nil {
+		c.JSON(200, (&R{Error: err}).Fail(400))
+		return
+	}
+
+	var currentResult []map[string]interface{} = result
+	var returnResult = make([]any, 0)
+
+	for i, _ := range currentResult {
+		var currItem map[string]interface{} = currentResult[i]
+		var currentArray []any = currItem[fieldName].([]any)
+		for j, _ := range currentArray {
+			returnResult = append(returnResult, currentArray[j])
+		}
+	}
+
+	c.JSON(200, (&R{Data: returnResult}).Success())
+
+}
+
+func OpenSearchAggsSumQueryRouter(c *gin.Context) {
+
+	indexName := c.Query("indexName")
+	// querySize := c.Query("size") 0
+	snapshotDate := c.Query("createDate")
+	byFieldName := c.Query("byFieldName")
+	sumFieldName := c.Query("sumFieldName")
+	tplname := "AGGS_SUM"
+
+	var dynamicParams = new(map[string]interface{})
+
+	if err := c.ShouldBindWith(dynamicParams, binding.JSON); err != nil {
+		c.JSON(200, (&R{Error: err}).Msg(err.Error()).IfErr(413))
+		return
+	}
+
+	var params map[string]interface{} = utils.MapOf(
+		"createDate", utils.StrToInt(snapshotDate),
+		"byFieldName", byFieldName,
+		"sumFieldName", sumFieldName,
+	)
+
+	for key, val := range *dynamicParams {
+		params[key] = val
+	}
+
+	dslJsonString, err := ges.DSLQuery(DSL_FILE_NAME, tplname, params)
+
+	if err != nil {
+		c.JSON(200, (&R{Error: err}).Fail(400))
+		return
+	}
+
+	result, _, err := goes.AggsSum(indexName, "by_"+byFieldName, dslJsonString)
+
+	if err != nil {
+		c.JSON(200, (&R{Error: err}).Fail(400))
+		return
+	}
+
+	c.JSON(200, (&R{Data: result}).Success())
 
 }
