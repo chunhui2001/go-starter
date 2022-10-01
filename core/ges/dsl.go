@@ -146,7 +146,7 @@ func prettyprint(filename string, tplname string, b []byte) (string, error) {
 	err := json.Indent(&out, b, "", "")
 
 	if err != nil {
-		return "", err
+		return string(b), err
 	}
 
 	prettyjson := regexp.MustCompile(`\r?\n`).ReplaceAllString(string(out.Bytes()), "")
