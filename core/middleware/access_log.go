@@ -9,7 +9,7 @@ import (
 	"github.com/chunhui2001/go-starter/core/config"
 )
 
-var defaultLogFormatter = func(param gin.LogFormatterParams) string {
+var DefaultLogFormatter = func(param gin.LogFormatterParams) string {
 
 	if param.Latency > time.Minute {
 		param.Latency = param.Latency.Truncate(time.Second)
@@ -55,39 +55,44 @@ func Print(conf gin.LoggerConfig) gin.HandlerFunc {
 		// Start timer
 		start := time.Now()
 		path := c.Request.URL.Path
-		raw := c.Request.URL.RawQuery
 
 		// Process request
 		c.Next()
 
 		// Log only when path is not being skipped
 		if _, ok := skip[path]; !ok {
-
-			param := gin.LogFormatterParams{
-				Request: c.Request,
-				Keys:    c.Keys,
-			}
-
-			// Stop timer
-			param.TimeStamp = time.Now()
-			param.Latency = param.TimeStamp.Sub(start)
-
-			param.ClientIP = c.Request.RemoteAddr
-			param.Method = c.Request.Method
-			param.StatusCode = c.Writer.Status()
-			param.ErrorMessage = c.Errors.ByType(gin.ErrorTypePrivate).String()
-
-			param.BodySize = c.Writer.Size()
-
-			if raw != "" {
-				path = path + "?" + raw
-			}
-
-			param.Path = path
-
-			config.Log.Info(defaultLogFormatter(param))
-
+			config.Log.Info(DefaultLogFormatter(LogParam(c, c.Writer.Status(), path, start)))
 		}
 	}
+
+}
+
+func LogParam(c *gin.Context, code int, path string, start time.Time) gin.LogFormatterParams {
+
+	raw := c.Request.URL.RawQuery
+
+	param := gin.LogFormatterParams{
+		Request: c.Request,
+		Keys:    c.Keys,
+	}
+
+	// Stop timer
+	param.TimeStamp = time.Now()
+	param.Latency = param.TimeStamp.Sub(start)
+
+	param.ClientIP = c.Request.RemoteAddr
+	param.Method = c.Request.Method
+	param.StatusCode = code
+	param.ErrorMessage = c.Errors.ByType(gin.ErrorTypePrivate).String()
+
+	param.BodySize = c.Writer.Size()
+
+	if raw != "" {
+		path = path + "?" + raw
+	}
+
+	param.Path = path
+
+	return param
 
 }

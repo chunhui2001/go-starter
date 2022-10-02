@@ -32,6 +32,10 @@ var (
 	logger = config.Log
 )
 
+func PanicRouter(c *gin.Context) {
+	panic("throw error")
+}
+
 func DeferRouter(c *gin.Context) {
 
 	defer func() {

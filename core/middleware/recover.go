@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"io"
+	"time"
 
 	"github.com/go-errors/errors"
 
@@ -15,15 +16,27 @@ func Recovery(f func(c *gin.Context, err interface{})) gin.HandlerFunc {
 }
 
 func RecoveryWithWriter(f func(c *gin.Context, err interface{}), out io.Writer) gin.HandlerFunc {
+	start := time.Now()
 	return func(c *gin.Context) {
+
+		logLine := DefaultLogFormatter(LogParam(c, 500, c.Request.URL.Path, start))
+
 		defer func() {
 			if err := recover(); err != nil {
-				//httprequest, _ := httputil.DumpRequest(c.Request, false)
+				// httprequest, _ := httputil.DumpRequest(c.Request, false)
 				goErr := errors.Wrap(err, 3)
-				config.Log.Error("requestUri=", c.Request.RequestURI, ", errorStack=", utils.ErrorToString(goErr))
-				f(c, err)
+				config.Log.Errorf(`%s ErrorStack=%s`, logLine, utils.ErrorToString(goErr))
+				//f(c, err)
+				AbortMsg(500, goErr, c) // Instead of c.AbortWithError(500, err)
+				return
 			}
 		}()
 		c.Next() // execute all the handlers
 	}
+}
+
+func AbortMsg(code int, err error, c *gin.Context) {
+	c.String(code, "Oops! Please retry.")
+	c.Error(err)
+	c.Abort()
 }

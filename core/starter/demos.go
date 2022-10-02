@@ -11,6 +11,7 @@ func init() {
 	if APP_SETTINGS.DemoEnable {
 
 		// commons simples
+		AppendRouter("GET", []string{"/labs-panic"}, actions.PanicRouter)
 		AppendRouter("GET", []string{"/httpclient-simple"}, actions.HttpClientSimpleRouter)
 		AppendRouter("GET", []string{"/httpclient-timeout"}, actions.HttpClientTimeOutRouter)
 

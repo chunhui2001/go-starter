@@ -179,6 +179,15 @@ https://github.com/imdario/mergo
 ### A Complete Guide to JSON in Golang (With Examples)
 https://www.sohamkamani.com/golang/json/
 
+### GoLang: When to use string pointers
+https://dhdersch.github.io/golang/2016/01/23/golang-when-to-use-string-pointers.html
+
+### Go Fundamentals: Arrays and Slices (+caveats of appending)
+https://www.integralist.co.uk/posts/go-slices/
+
+### Arrays, slices (and strings): The mechanics of 'append'
+https://go.dev/blog/slices
+
 -----------------------------------------------------------------
 GOOS - Target Operating System		GOARCH - Target Platform
 -----------------------------------------------------------------
