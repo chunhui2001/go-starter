@@ -168,32 +168,36 @@ var OpenEsSettings = &goes.OpenESConf{
 	PrettyPrint: false,
 }
 
-var jsonFormatter = &MyJSONFormatter{
-	TimestampFormat: timeStampFormat,
-	PrettyPrint:     false,
-	AppName:         AppSetting.AppName,
-	Env:             AppSetting.Env,
-	CapationGen:     1,
-	FieldMap: FieldMap{
-		"time": "@timestamp",
-		"msg":  "@message",
-	},
+var jsonFormatter = func() *MyJSONFormatter {
+	return &MyJSONFormatter{
+		TimestampFormat: timeStampFormat,
+		PrettyPrint:     false,
+		AppName:         AppSetting.AppName,
+		Env:             AppSetting.Env,
+		CapationGen:     1,
+		FieldMap: FieldMap{
+			"time": "@timestamp",
+			"msg":  "@message",
+		},
+	}
 }
 
-var txtFormatter = &MyTxtFormatter{
-	TimestampFormat: timeStampFormat,
-	LogFormat:       "%time% [%lvl%] - %file% > %msg%\n",
-	CallerPrettyfier: func(frame *runtime.Frame) (function string, file string) {
-		lineMessage := fmt.Sprintf("%s() %s(%d):%d", frame.Function, path.Base(frame.File), utils.GoroutineId(), frame.Line)
-		lineLength := len(lineMessage)
-		lineMaxLength := 36
-		if lineLength > lineMaxLength {
-			lineMessage = "....." + string(lineMessage[lineLength-lineMaxLength+4:lineLength])
-		} else if lineLength < lineMaxLength {
-			lineMessage = utils.PadLeft(lineMessage, " ", lineMaxLength+1)
-		}
-		return "", "{" + lineMessage + "}"
-	},
+var txtFormatter = func() *MyTxtFormatter {
+	return &MyTxtFormatter{
+		TimestampFormat: timeStampFormat,
+		LogFormat:       "%time% [%lvl%] - %file% > %msg%\n",
+		CallerPrettyfier: func(frame *runtime.Frame) (function string, file string) {
+			lineMessage := fmt.Sprintf("%s() %s(%d):%d", frame.Function, path.Base(frame.File), utils.GoroutineId(), frame.Line)
+			lineLength := len(lineMessage)
+			lineMaxLength := 36
+			if lineLength > lineMaxLength {
+				lineMessage = "....." + string(lineMessage[lineLength-lineMaxLength+4:lineLength])
+			} else if lineLength < lineMaxLength {
+				lineMessage = utils.PadLeft(lineMessage, " ", lineMaxLength+1)
+			}
+			return "", "{" + lineMessage + "}"
+		},
+	}
 }
 
 func (l *LogConf) Console() bool {
@@ -370,7 +374,7 @@ func InitLog() {
 
 		myLog.SetLevel(logrus.DebugLevel)
 		myLog.SetReportCaller(true)
-		myLog.SetFormatter(txtFormatter)
+		myLog.SetFormatter(txtFormatter())
 
 	} else {
 		myLog.Out = ioutil.Discard
@@ -383,12 +387,12 @@ func InitLog() {
 		if LogSettings.FileFormatter == "json" {
 			myLog.Hooks.Add(lfshook.NewHook(
 				lfshook.WriterMap{logrus.InfoLevel: writer, logrus.ErrorLevel: writer},
-				jsonFormatter,
+				jsonFormatter(),
 			))
 		} else {
 			myLog.Hooks.Add(lfshook.NewHook(
 				lfshook.WriterMap{logrus.InfoLevel: writer, logrus.ErrorLevel: writer},
-				txtFormatter,
+				txtFormatter(),
 			))
 		}
 
@@ -402,7 +406,7 @@ func InitLog() {
 		hook, err := lkh.NewKafkaHook(
 			"kh",
 			[]logrus.Level{logrus.InfoLevel, logrus.WarnLevel, logrus.ErrorLevel},
-			jsonFormatter, // &logrus.JSONFormatter{},
+			jsonFormatter(), // &logrus.JSONFormatter{},
 			strings.Split(kafkaServerAddr, ","),
 		)
 
