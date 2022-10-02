@@ -81,7 +81,6 @@ func Favicon(path string) gin.HandlerFunc {
 
 		c.Header("Content-Type", "image/x-icon")
 		c.Header("Content-Length", utils.ToString(len(faviconBuf)))
-		c.Header("Content-Type", "image/x-icon")
 		c.Header("Cache-Control", "public, max-age=2592000") // expiers after a month
 		c.Header("ETag", etag.Generate(faviconBuf, true))
 		c.Header("Expires", utils.ToDateTimeUTCString(time.Now().Add(time.Duration(2592000*time.Second)))) // one month
