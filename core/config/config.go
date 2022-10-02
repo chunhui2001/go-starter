@@ -462,7 +462,7 @@ func loadAppSettings(v1 *viper.Viper, filename string) {
 		log.Println("AppSetting:" +
 			" TimeZone=" + AppSetting.TimeZone +
 			", GIN_ENV=" + AppSetting.Env +
-			", NODE_ID=" + utils.ToString(AppSetting.NodeId) +
+			", NODE_ID=" + utils.ToString(AppSetting.NodeId%1023) +
 			", AppName=" + AppSetting.AppName +
 			", AppPort=" + AppSetting.AppPort +
 			", Version=" + AppSetting.AppVersion +
