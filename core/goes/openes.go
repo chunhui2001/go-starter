@@ -6,12 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"strings"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/chunhui2001/go-starter/core/ges"
+	"github.com/chunhui2001/go-starter/core/ghttp"
 	"github.com/chunhui2001/go-starter/core/utils"
 	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/opensearch-project/opensearch-go"
@@ -47,10 +47,7 @@ func Init(conf *OpenESConf, log *logrus.Entry) {
 			}
 			return retryBackoff.NextBackOff()
 		},
-		Transport: &http.Transport{
-			MaxIdleConnsPerHost:   10,
-			ResponseHeaderTimeout: 5 * time.Second,
-		},
+		Transport: ghttp.DefaultTransport,
 		Addresses: strings.Split(esConf.Servers, ","),
 	}
 

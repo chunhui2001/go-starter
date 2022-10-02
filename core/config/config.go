@@ -313,6 +313,7 @@ func init() {
 
 		loadWebPageSettings(v1, filename)
 		loadWssSettings(v1, filename)
+		loadHttpClientSettings(v1, filename)
 		loadRedisSettings(v1, filename)
 		loadMongoDBSettings(v1, filename)
 		loadCookieSettings(v1, filename)
@@ -321,7 +322,6 @@ func init() {
 		loadOpenEsSettings(v1, filename)
 		loadSimpleGTaskSettings(v1, filename)
 		loadRabbitSettings(v1, filename)
-		loadHttpClientSettings(v1, filename)
 		loadGraphServerSettings(v1, filename)
 
 		printConfigLogLines()

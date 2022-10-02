@@ -85,6 +85,9 @@ func init() {
 		AppendRouter("POST", []string{"/go-board/distinctQuery"}, actions.OpenSearchDistinctQueryRouter)
 		AppendRouter("POST", []string{"/go-board/aggsMultipleQuery"}, actions.OpenSearchMultipleAggsQueryRouter)
 
+		// graph client
+		AppendRouter("GET", []string{"/demo/graph-client"}, actions.GraphClientRouter)
+
 	}
 
 }

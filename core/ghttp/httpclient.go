@@ -16,12 +16,6 @@ import (
 	"moul.io/http2curl"
 )
 
-type ContentType string
-
-const (
-	JSONBody ContentType = "application/json"
-)
-
 type HttpConf struct {
 	Timeout             int `mapstructure:"HTTP_CLIENT_TIMEOUT"`
 	IdleConnTimeout     int `mapstructure:"HTTP_CLIENT_IDLE_CONN_TIMEOUT"`
@@ -33,10 +27,10 @@ type HttpConf struct {
 type HttpClient struct {
 	Method      string
 	Url         string
+	TimeOut     int // 30 * time.Second
 	QueryParams map[string]interface{}
 	RequestBody string
-	ContentType ContentType // ghttp.JSONBody
-	TimeOut     int         // 30 * time.Second
+	Headers     map[string]string
 }
 
 type HttpResult struct {
@@ -72,21 +66,23 @@ func defaultTransport(conf *HttpConf) http.RoundTripper {
 }
 
 var (
-	logger         *logrus.Entry
-	myHttpClient   *http.Client
-	defaultTimeOut int = 150
+	logger           *logrus.Entry
+	myHttpClient     *http.Client
+	defaultTimeOut   int = 150
+	DefaultTransport http.RoundTripper
 )
 
 func Init(conf *HttpConf, log *logrus.Entry) {
 
 	logger = log
+	DefaultTransport = defaultTransport(conf)
 
 	myHttpClient = &http.Client{
 		Transport: defaultTransport(conf),
 		Timeout:   time.Duration(conf.Timeout) * time.Second,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		},
+		// CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		// 	return http.ErrUseLastResponse
+		// },
 	}
 
 	logger.Info("Initialization-a-HttpClient: " +
@@ -123,8 +119,8 @@ func POST(url string, reqBody string) *HttpClient {
 	}
 }
 
-func (c *HttpClient) SetContentType(contentType ContentType) *HttpClient {
-	c.ContentType = contentType
+func (c *HttpClient) SetHeaders(headers map[string]string) *HttpClient {
+	c.Headers = headers
 	return c
 }
 
@@ -179,14 +175,19 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 		// postData := bytes.NewReader([]byte(httpClient.RequestBody))
 		postData := bytes.NewBufferString(httpClient.RequestBody)
 		req, err = http.NewRequest(httpClient.Method, httpClient.Url, postData)
-		req.Header.Set("Content-Type", string(httpClient.ContentType))
 	}
+
+	for k, v := range httpClient.Headers {
+		req.Header.Set(k, v)
+	}
+
+	// req.Header.Set("Accept-Encoding", "gzip")
 
 	if err != nil {
 		logger.Error(
 			fmt.Sprintf(
 				"Could-Not-Create-HttpRequest: Method=%s, contentType=%s, Url=%s, ErrorMessage=%s",
-				httpClient.Method, httpClient.ContentType, httpClient.Url, err))
+				httpClient.Method, httpClient.Headers["Content-Type"], httpClient.Url, err))
 		return &HttpResult{
 			Error: err,
 		}

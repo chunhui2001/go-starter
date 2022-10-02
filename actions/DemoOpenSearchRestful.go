@@ -12,14 +12,6 @@ import (
 	"github.com/gin-gonic/gin/binding"
 )
 
-var (
-	DSL_FILE_NAME = "dsl2.yaml"
-)
-
-func init() {
-
-}
-
 func OpenSearchIndicesRouter(c *gin.Context) {
 	reault, err := goes.CatIndices()
 	c.JSON(200, (&R{Data: reault, Error: err}).IfErr(400))

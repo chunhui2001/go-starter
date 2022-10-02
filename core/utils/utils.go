@@ -228,6 +228,28 @@ func ErrorToString(err interface{}) string {
 	return gerror.Wrap(err, 2).ErrorStack()
 }
 
+func OfMap(kv ...string) map[string]string {
+
+	if kv == nil {
+		return make(map[string]string)
+	}
+
+	if len(kv)%2 != 0 {
+		panic(errors.New("Invalid map size: currentSize=" + ToString(len(kv))))
+	}
+
+	m := make(map[string]string)
+
+	for i := 0; i < len(kv); i++ {
+		k := ToString(kv[i])
+		m[k] = kv[i+1]
+		i++
+	}
+
+	return m
+
+}
+
 func MapOf(kv ...any) map[string]interface{} {
 
 	if kv == nil {

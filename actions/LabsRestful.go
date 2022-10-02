@@ -28,10 +28,6 @@ import (
 	// "github.com/wamuir/go-xslt"
 )
 
-var (
-	logger = config.Log
-)
-
 func PanicRouter(c *gin.Context) {
 	panic("throw error")
 }
