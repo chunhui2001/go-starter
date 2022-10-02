@@ -40,6 +40,16 @@ func OutboundIP() net.IP {
 	return localAddr.IP
 }
 
+func Ip2Int(ip net.IP) int64 {
+	i := big.NewInt(0)
+	i.SetBytes(ip)
+	return i.Int64()
+}
+
+func ParseIp(ipv4 string) net.IP {
+	return net.ParseIP(ipv4).To4()
+}
+
 func RootDir() string {
 
 	var appRoot string = os.Getenv("APP_ROOT")

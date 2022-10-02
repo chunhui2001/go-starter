@@ -61,6 +61,7 @@ type AppConf struct {
 	DemoEnable bool   `mapstructure:"ENABLE_DEMO"`
 	AppVersion string `mapstructure:"APP_VERSION"`
 	OS         string `mapstructure:"APP_OS"`
+	CaptainGEN int    `mapstructure:"CAPTAIN_GEN"`
 }
 
 type Wss struct {
@@ -118,7 +119,7 @@ var AppSetting = &AppConf{
 	AppName:    "go-starter",
 	AppPort:    "0.0.0.0:8080",
 	TimeZone:   map[bool]string{true: os.Getenv("TZ"), false: "UTC"}[os.Getenv("TZ") != ""],
-	NodeId:     1,
+	NodeId:     utils.Ip2Int(utils.OutboundIP()),
 	DemoEnable: false,
 }
 
@@ -174,7 +175,7 @@ var jsonFormatter = func() *MyJSONFormatter {
 		PrettyPrint:     false,
 		AppName:         AppSetting.AppName,
 		Env:             AppSetting.Env,
-		CapationGen:     1,
+		CaptainGEN:      AppSetting.CaptainGEN,
 		FieldMap: FieldMap{
 			"time": "@timestamp",
 			"msg":  "@message",

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/chunhui2001/go-starter/core/built"
 	"github.com/sirupsen/logrus"
 )
 
@@ -57,19 +58,20 @@ type MyJSONFormatter struct {
 	// PrettyPrint will indent all json logs
 	PrettyPrint bool
 
-	AppName     string
-	Env         string
-	CapationGen int
+	AppName    string
+	Env        string
+	CaptainGEN int
 }
 
 // Format renders a single log entry
 func (f *MyJSONFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
-	data := make(logrus.Fields, len(entry.Data)+4+3)
+	data := make(logrus.Fields, len(entry.Data)+4+4)
 
 	data["app"] = f.AppName
 	data["env"] = f.Env
-	data["capation_gen"] = f.CapationGen
+	data["capation_gen"] = f.CaptainGEN
+	data["build_git_version"] = built.Commit
 
 	for k, v := range entry.Data {
 		switch v := v.(type) {

@@ -26,7 +26,10 @@ func (b *BuildInfo) Info() string {
 	return fmt.Sprintf("%s version devel +%s %s [%s]", b.Name, b.Commit, b.OS, b.Time)
 }
 
-var layout = "Mon Jan 2 15:04:05 -0700 MST 2006"
+var (
+	layout = "Mon Jan 2 15:04:05 -0700 MST 2006"
+	Commit string
+)
 
 func init() {
 
@@ -53,6 +56,7 @@ func init() {
 					INFO.Commit = pair[1]
 				}
 			}
+			Commit = INFO.Commit
 		} else if strings.Trim(pair[0], " ") == "main.Name" {
 			INFO.Name = strings.Trim(pair[1], " ")
 		} else if strings.Trim(pair[0], " ") == "main.Time" {
