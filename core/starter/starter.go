@@ -300,7 +300,7 @@ func Setup() *gin.Engine {
 
 	engine.Use(core.Favicon(filepath.Join(config.AppRoot(), "./static/favicon.ico"))) // set favicon middleware
 	engine.Use(middleware.CORS(middleware.CORSOptions{}))
-	engine.Use(middleware.AccessLog())
+	engine.Use(middleware.AccessLog("/favicon.ico", "/static", "/info"))
 
 	// default info
 	engine.GET("/info", defaultServer.HandlerInfo) // info router

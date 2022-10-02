@@ -30,9 +30,9 @@ func init() {
 
 }
 
-func AccessLog() gin.HandlerFunc {
+func AccessLog(skips ...string) gin.HandlerFunc {
 	return Print(gin.LoggerConfig{
-		SkipPaths: []string{"/favicon.ico", "/static"},
+		SkipPaths: skips,
 	})
 }
 
