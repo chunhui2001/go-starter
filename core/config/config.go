@@ -176,6 +176,7 @@ var jsonFormatter = func() *MyJSONFormatter {
 		AppName:         AppSetting.AppName,
 		Env:             AppSetting.Env,
 		CaptainGEN:      AppSetting.CaptainGEN,
+		IP:              utils.OutboundIP().String(),
 		FieldMap: FieldMap{
 			"time": "@timestamp",
 			"msg":  "@message",

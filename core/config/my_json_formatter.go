@@ -7,6 +7,7 @@ import (
 	"runtime"
 
 	"github.com/chunhui2001/go-starter/core/built"
+	"github.com/chunhui2001/go-starter/core/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -61,17 +62,20 @@ type MyJSONFormatter struct {
 	AppName    string
 	Env        string
 	CaptainGEN int
+	IP         string
 }
 
 // Format renders a single log entry
 func (f *MyJSONFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
-	data := make(logrus.Fields, len(entry.Data)+4+4)
+	data := make(logrus.Fields, len(entry.Data)+4+6)
 
 	data["app"] = f.AppName
 	data["env"] = f.Env
-	data["capation_gen"] = f.CaptainGEN
+	data["caption_gen"] = f.CaptainGEN
 	data["build_git_version"] = built.Commit
+	data["ip"] = f.IP
+	data["GoroutineId"] = utils.GoroutineId()
 
 	for k, v := range entry.Data {
 		switch v := v.(type) {
