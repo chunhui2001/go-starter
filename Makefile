@@ -59,7 +59,7 @@ dev:
 
 ### 构建跨平台的可执行程序
 Built1:
-	env GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 go build -buildvcs -ldflags "-X main.Name=$(APP_NAME) -X main.Author=$(COMMITER) -X main.Commit=$(GIT_HASH) -X main.Time=$(TIME)" -o ./dist/$(APP_NAME)-darwin-amd64 ./main.go
+	env GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -buildvcs -ldflags "-X main.Name=$(APP_NAME) -X main.Author=$(COMMITER) -X main.Commit=$(GIT_HASH) -X main.Time=$(TIME)" -o ./dist/$(APP_NAME)-darwin-amd64 ./main.go
 
 Built2:
 	env GOOS=linux  GOARCH=amd64 CGO_ENABLED=1 go build -buildvcs -ldflags "-X main.Name=$(APP_NAME) -X main.Author=$(COMMITER) -X main.Commit=$(GIT_HASH) -X main.Time=$(TIME)" -o ./dist/$(APP_NAME)-linux-amd64 ./main.go

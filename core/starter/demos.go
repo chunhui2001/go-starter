@@ -41,7 +41,7 @@ func init() {
 		AppendRouter("GET", []string{"/labs-redis-consumer"}, actions.RedisQueueConsumerRouter)
 
 		// xslt
-		AppendRouter("GET", []string{"/labs-xslt-demo"}, actions.XsltDemoRouter)
+		// AppendRouter("GET", []string{"/labs-xslt-demo"}, actions.XsltDemoRouter)
 
 		// latex
 		AppendRouter("GET", []string{"/labs-latex-demo"}, actions.LatexDemoRouter)
