@@ -7,7 +7,7 @@ e 			?=local
 c 			?=10000
 #zone 		?=Asia/Shanghai
 zone 		?=UTC
-WSS_HOST	?=ws://127.0.0.1:8080
+#WSS_HOST	?=ws://127.0.0.1:8080
 APP_PORT 	?=8080
 GIT_HASH 	?=$(shell git rev-parse HEAD)
 COMMITER 	?=$(shell git log -1 --pretty=format:'%ae')
@@ -54,7 +54,7 @@ run:
 ### 启动调试程序, 当代码变化时自动重启
 # make dev
 dev:
-	TZ=$(zone) GIN_ENV=$(e) NODE_ID=$(NODE_ID) WSS_HOST=$(WSS_HOST) gin -i --appPort 8080 --port 3000 run main.go
+	TZ=$(zone) GIN_ENV=$(e) NODE_ID=$(NODE_ID) gin -i --appPort 8080 --port 3000 run main.go
 
 
 ### 构建跨平台的可执行程序

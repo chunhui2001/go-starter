@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/base64"
-	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -135,28 +134,12 @@ func randint64() (int64, error) {
 	return val.Int64(), nil
 }
 
-func ShortId() string {
+func ToBase64String(s string) string {
+	return base64.StdEncoding.EncodeToString([]byte(s))
+}
 
-	// encoded, _ := basex.Encode(BigIntRandom().String())
-
-	val, err := rand.Int(rand.Reader, big.NewInt(int64(math.MaxInt64)))
-
-	if err != nil {
-		panic(err)
-	}
-
-	b := make([]byte, 8)
-
-	binary.LittleEndian.PutUint64(b, uint64(val.Int64()))
-	encoded := base64.StdEncoding.EncodeToString([]byte(b))
-
-	var replacer = strings.NewReplacer(
-		"+", "-",
-		"/", "_",
-	)
-
-	return replacer.Replace(encoded[:11])
-
+func FromBase64String(s string) ([]byte, error) {
+	return base64.StdEncoding.DecodeString(s)
 }
 
 func ToJsonString(v interface{}) string {

@@ -111,7 +111,10 @@ type GraphServerConf struct {
 }
 
 func (w *Wss) Wss() string {
-	return w.Host + w.Prefix
+	if w.Enable {
+		return w.Host + w.Prefix
+	}
+	return ""
 }
 
 var AppSetting = &AppConf{
@@ -119,7 +122,7 @@ var AppSetting = &AppConf{
 	AppName:    "go-starter",
 	AppPort:    "0.0.0.0:8080",
 	TimeZone:   map[bool]string{true: os.Getenv("TZ"), false: "UTC"}[os.Getenv("TZ") != ""],
-	NodeId:     utils.Ip2Int(utils.OutboundIP()),
+	NodeId:     utils.Ip2Int(utils.OutboundIP()) % 1023,
 	DemoEnable: false,
 }
 
@@ -462,7 +465,7 @@ func loadAppSettings(v1 *viper.Viper, filename string) {
 		log.Println("AppSetting:" +
 			" TimeZone=" + AppSetting.TimeZone +
 			", GIN_ENV=" + AppSetting.Env +
-			", NODE_ID=" + utils.ToString(AppSetting.NodeId%1023) +
+			", NODE_ID=" + utils.ToString(AppSetting.NodeId) +
 			", AppName=" + AppSetting.AppName +
 			", AppPort=" + AppSetting.AppPort +
 			", Version=" + AppSetting.AppVersion +
@@ -644,6 +647,8 @@ func loadWssSettings(v1 *viper.Viper, filename string) {
 			configLoggerLines = append(configLoggerLines, []string{"WssSetting", "Enable=" + utils.ToString(WssSetting.Enable)})
 		}
 	}
+
+	fmt.Println(WssSetting)
 
 }
 

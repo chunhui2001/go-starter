@@ -17,6 +17,7 @@ import (
 	"github.com/chunhui2001/go-starter/core/config"
 	"github.com/chunhui2001/go-starter/core/ges"
 	"github.com/chunhui2001/go-starter/core/ghttp"
+	"github.com/chunhui2001/go-starter/core/gid"
 	"github.com/chunhui2001/go-starter/core/gras"
 	"github.com/chunhui2001/go-starter/core/gredis"
 	"github.com/chunhui2001/go-starter/core/gwss"
@@ -60,7 +61,7 @@ func BigRouter(c *gin.Context) {
 }
 
 func YtIdRouter(c *gin.Context) {
-	c.JSON(http.StatusOK, (&R{Data: utils.ShortId()}).Success())
+	c.JSON(http.StatusOK, (&R{Data: gid.ID()}).Success())
 }
 
 func PemRouter(c *gin.Context) {
@@ -335,7 +336,7 @@ func UploadFileRouterMany(c *gin.Context) {
 
 func WsClientSimple(c *gin.Context) {
 
-	connectId := utils.ShortId()
+	connectId := gid.ID()
 	serverAddress := c.Query("serverAddress")
 
 	_, err := gwss.NewClient(connectId, serverAddress).Connect(func(client *gwss.Client, opcode string, messageBuf []byte) {

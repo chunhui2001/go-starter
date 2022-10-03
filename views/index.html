@@ -19,7 +19,9 @@
     var ws;
 
     $(function() {
+      {{- if .wssEndpoint }}
         connect();
+      {{- end}}
     });
 
     function connect() {

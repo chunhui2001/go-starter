@@ -3,6 +3,7 @@ package ghttp
 import (
 	"bytes"
 	_ "context"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -56,6 +57,9 @@ func defaultTransport(conf *HttpConf) http.RoundTripper {
 			Timeout: time.Duration(conf.Timeout) * time.Second,
 		}).Dial,
 		TLSHandshakeTimeout: time.Duration(conf.Timeout) * time.Second,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
 		MaxIdleConns:        conf.MaxIdleConns,
 		IdleConnTimeout:     time.Duration(conf.IdleConnTimeout) * time.Second,
 		MaxIdleConnsPerHost: conf.MaxIdleConnsPerHost,
@@ -141,33 +145,11 @@ func (c *HttpClient) Query(queryParams map[string]interface{}) *HttpClient {
 	return c
 }
 
-/*
-	ghttp.Post(&ghttp.HttpClient{
-		Method: http.MethodPost,
-		Url: "https://www.google.com"
-	})
-*/
 func SendRequest(httpClient *HttpClient) *HttpResult {
 
 	var req *http.Request
 	var res *http.Response
 	var err error
-
-	// ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second) // 避免 ioutil.ReadAll(res.Body) 超时
-	// defer cancel()
-
-	// go func() {
-	// 	select {
-	// 	case <-time.After(10 * time.Second):
-	// 		logger.Error(
-	// 			fmt.Sprintf(
-	// 				"Send-HttpRequest-Context-TimeOut-After: Url=%s, Message=%s", httpClient.Url, ctx.Err()))
-	// 	case <-ctx.Done():
-	// 		logger.Infof(
-	// 			fmt.Sprintf(
-	// 				"Send-HttpRequest-Context-TimeOut-Done: Url=%s, Message=%s", httpClient.Url, ctx.Err()))
-	// 	}
-	// }()
 
 	if strings.EqualFold(http.MethodGet, strings.TrimSpace(httpClient.Method)) {
 		req, err = http.NewRequest(httpClient.Method, httpClient.Url, nil)
@@ -180,8 +162,6 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 	for k, v := range httpClient.Headers {
 		req.Header.Set(k, v)
 	}
-
-	// req.Header.Set("Accept-Encoding", "gzip")
 
 	if err != nil {
 		logger.Error(
@@ -211,31 +191,26 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 	res, err = myHttpClient.Do(req)
 	latency := time.Since(start)
 	command, _ := http2curl.GetCurlCommand(req)
+	commandCurl := command.String()
+
+	if httpClient.RequestBody != "" {
+		commandCurl = strings.Replace(command.String(), "-d ''", "-d '"+httpClient.RequestBody+"'", 1)
+	}
 
 	if err != nil {
 		if res != nil {
 			logger.Error(
 				fmt.Sprintf(
-					"Send-HttpRequest-Failed: StatusCode=%d, Curl=%s, ErrorMessage=%s", res.StatusCode, command, err))
+					"Send-HttpRequest-Failed: StatusCode=%d, Curl=%s, ErrorMessage=%s", res.StatusCode, commandCurl, err))
 		} else {
 			logger.Error(
 				fmt.Sprintf(
-					"Send-HttpRequest-Failed: Curl=%s, ErrorMessage=%s", command, err))
+					"Send-HttpRequest-Failed: Curl=%s, ErrorMessage=%s", commandCurl, err))
 		}
 		return &HttpResult{
 			Error: err,
 		}
 	}
-
-	// keys := make([]string, 0, len(res.Header))
-
-	// for k := range res.Header {
-	// 	keys = append(keys, k)
-	// }
-
-	// logger.Info(
-	// 	fmt.Sprintf(
-	// 		"HttpRequest-Response-Headers: Keys=%s", utils.ToJsonString(keys)))
 
 	contentLength := res.Header.Get("Content-Length")
 	keepAlived := res.Header.Get("Connection")
@@ -251,7 +226,7 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 		logger.Error(
 			fmt.Sprintf(
 				"HttpRequest-Could-Not-Read-Response-Body: StatusCode=%d, ContentLength=%s, Connection=%s, Curl=%s, ErrorMessage=%s",
-				res.StatusCode, utils.HumanFileSizeWithInt(contentLengthValue), keepAlived, command, err))
+				res.StatusCode, utils.HumanFileSizeWithInt(contentLengthValue), keepAlived, commandCurl, err))
 		return &HttpResult{
 			Error: err,
 		}
@@ -261,7 +236,7 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 	logger.Info(
 		fmt.Sprintf(
 			"HttpRequest-Successful: Latency=%s, StatusCode=%d, ContentLength=%s, Connection=%s, Curl=%s",
-			latency, res.StatusCode, utils.HumanFileSizeWithInt(contentLengthValue), keepAlived, command))
+			latency, res.StatusCode, utils.HumanFileSizeWithInt(contentLengthValue), keepAlived, commandCurl))
 
 	return &HttpResult{
 		Status:       res.StatusCode,
