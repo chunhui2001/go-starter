@@ -15,6 +15,7 @@ PWD 		?=$(shell pwd)
 TIME 		?=$(shell date +%s)
 CGO_ENABLED ?=0
 NODE_ID 	?=1
+GOPROXY 	?=go env -w GO111MODULE=on && go env -w GOPROXY=https://goproxy.cn,direct
 
 ### 整理模块
 # 确保go.mod与模块中的源代码一致。
@@ -27,12 +28,12 @@ tidy:
 ### 安装模块
 # make install mod=github.com/codegangsta/gin
 install:
-	go get github.com/codegangsta/gin
-	go install github.com/codegangsta/gin
-	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-	#go install github.com/99designs/gqlgen
-	go get $(mod)
-	go install $(mod)
+	$(GOPROXY) && go get github.com/codegangsta/gin
+	$(GOPROXY) && go install github.com/codegangsta/gin
+	$(GOPROXY) && go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+	@#$(GOPROXY) && go install github.com/99designs/gqlgen
+	$(GOPROXY) && go get $(mod)
+	$(GOPROXY) && go install $(mod)
 
 ### generator code
 gen:
