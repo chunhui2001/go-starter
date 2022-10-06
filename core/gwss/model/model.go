@@ -198,7 +198,7 @@ func (s *Server) Publish(message *Message) {
 		for _, client := range clients {
 			s.Send(&client, message.Bytes())
 			if WSSConf.PrintMessage {
-				logger.Debugf(`Wss广播了一条消息: topic=%s, message=%s, clientId=%s`, message.Topic, message.Message, client.ID)
+				logger.Debugf(`Wss广播了一条消息: topic=%s, messageSize=%d, clientId=%s`, message.Topic, len(message.Bytes()), client.ID)
 			}
 		}
 	} else {
