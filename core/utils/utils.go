@@ -82,8 +82,9 @@ func ReadFile(filePath string) ([]byte, error) {
 func DateTimeParse(s string) time.Time {
 	if t, err := time.Parse(TimeStampFormat, s); err == nil {
 		return t
+	} else {
+		panic(err)
 	}
-	return time.Time{}
 }
 
 func DateTimeUTCString() string {
@@ -172,7 +173,7 @@ func ToJsonBytes(v interface{}) []byte {
 func AsMap(buf []byte) map[string]interface{} {
 	var m map[string]interface{}
 	if err := json.Unmarshal(buf, &m); err != nil {
-		return nil
+		panic(err)
 	}
 	return m
 }
@@ -260,7 +261,6 @@ func MapsOf(kv ...any) *map[string]interface{} {
 	m := make(map[string]interface{})
 
 	if kv == nil {
-
 		return &m
 	}
 
