@@ -114,14 +114,15 @@ func Proxy(c *gin.Context, prefix string, remotes ...string) {
 	proxy.Director = func(req *http.Request) {
 
 		RequestURI := req.URL.Path
+		requestPath := strings.Replace((prefix + "" + c.Param("proxyPath")), "//", "/", -1)
 
 		req.Header = c.Request.Header
 		req.Host = upstream.Host
 		req.URL.Scheme = upstream.Scheme
 		req.URL.Host = upstream.Host
-		req.URL.Path = prefix + "" + c.Param("proxyPath")
+		req.URL.Path = requestPath
 
-		logger.Infof(`Reverse-Proxy: URI=%s, Upstream=%s, ProxyPath=%s`, RequestURI, currentRemote, prefix+""+c.Param("proxyPath"))
+		logger.Infof(`Reverse-Proxy: URI=%s, Upstream=%s, ProxyPath=%s`, RequestURI, currentRemote, requestPath)
 
 	}
 
