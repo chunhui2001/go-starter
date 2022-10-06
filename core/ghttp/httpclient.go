@@ -18,11 +18,12 @@ import (
 )
 
 type HttpConf struct {
-	Timeout             int `mapstructure:"HTTP_CLIENT_TIMEOUT"`
-	IdleConnTimeout     int `mapstructure:"HTTP_CLIENT_IDLE_CONN_TIMEOUT"`
-	MaxIdleConns        int `mapstructure:"HTTP_CLIENT_MAX_IDLE_CONNS"`
-	MaxIdleConnsPerHost int `mapstructure:"HTTP_CLIENT_MAX_IDLE_CONNS_PERHOST"`
-	MaxConnsPerHost     int `mapstructure:"HTTP_CLIENT_MAX_CONNS_PERHOST"`
+	Timeout             int  `mapstructure:"HTTP_CLIENT_TIMEOUT"`
+	IdleConnTimeout     int  `mapstructure:"HTTP_CLIENT_IDLE_CONN_TIMEOUT"`
+	MaxIdleConns        int  `mapstructure:"HTTP_CLIENT_MAX_IDLE_CONNS"`
+	MaxIdleConnsPerHost int  `mapstructure:"HTTP_CLIENT_MAX_IDLE_CONNS_PERHOST"`
+	MaxConnsPerHost     int  `mapstructure:"HTTP_CLIENT_MAX_CONNS_PERHOST"`
+	PrintCurl           bool `mapstructure:"HTTP_CLIENT_PRINT_CURL"`
 }
 
 type HttpClient struct {
@@ -74,12 +75,14 @@ var (
 	myHttpClient     *http.Client
 	defaultTimeOut   int = 150
 	DefaultTransport http.RoundTripper
+	printCurl        bool
 )
 
 func Init(conf *HttpConf, log *logrus.Entry) {
 
 	logger = log
 	DefaultTransport = defaultTransport(conf)
+	printCurl = conf.PrintCurl
 
 	myHttpClient = &http.Client{
 		Transport: defaultTransport(conf),
@@ -233,10 +236,17 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 
 	}
 
-	logger.Info(
-		fmt.Sprintf(
-			"HttpRequest-Successful: Latency=%s, StatusCode=%d, ContentLength=%s, Connection=%s, Curl=%s",
-			latency, res.StatusCode, utils.HumanFileSizeWithInt(contentLengthValue), keepAlived, commandCurl))
+	if printCurl {
+		logger.Info(
+			fmt.Sprintf(
+				"HttpRequest-Successful: Latency=%s, StatusCode=%d, ContentLength=%s, Connection=%s, Curl=%s",
+				latency, res.StatusCode, utils.HumanFileSizeWithInt(contentLengthValue), keepAlived, commandCurl))
+	} else {
+		logger.Info(
+			fmt.Sprintf(
+				"HttpRequest-Successful: Latency=%s, StatusCode=%d, ContentLength=%s, Connection=%s",
+				latency, res.StatusCode, utils.HumanFileSizeWithInt(contentLengthValue), keepAlived))
+	}
 
 	return &HttpResult{
 		Status:       res.StatusCode,

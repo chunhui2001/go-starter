@@ -272,6 +272,7 @@ var HttpClientConf = &ghttp.HttpConf{
 	MaxIdleConns:        100,
 	MaxIdleConnsPerHost: 100,
 	MaxConnsPerHost:     100,
+	PrintCurl:           true,
 }
 
 var Log *logrus.Entry
