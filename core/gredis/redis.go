@@ -57,6 +57,7 @@ type GRedis struct {
 	RouteByLatency bool          `mapstructure:"REDIS_ROUTE_BY_LATENCY"`
 	RouteRandomly  bool          `mapstructure:"REDIS_ROUTE_RANDOMLY"`
 	SubChannels    string        `mapstructure:"REDIS_SUB_CHANNELS"`
+	PrintMessage   bool          `mapstructure:"REDIS_MESSAGE_PRINT"`
 }
 
 func (r *GRedis) ServerAddrs() string {

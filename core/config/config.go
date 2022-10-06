@@ -253,6 +253,7 @@ var RedisConf = &gredis.GRedis{
 	RouteByLatency: false,
 	RouteRandomly:  false,
 	SubChannels:    "",
+	PrintMessage:   true,
 }
 
 var MySqlConf = &gsql.MySql{

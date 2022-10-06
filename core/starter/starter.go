@@ -142,9 +142,11 @@ func (s *Server) Bootstrap(hooks ...func(*gin.Engine)) *Server {
 
 	if Redis_Conf.Mode != gredis.Disabled {
 		for _, channel := range strings.Split(Redis_Conf.SubChannels, ",") {
-			gredis.Sub(channel, func(channel string, payload string) {
-				config.Log.Info("收到了消息1: channel=" + channel + ", payload=" + payload)
-			})
+			if Redis_Conf.PrintMessage {
+				gredis.Sub(channel, func(channel string, payload string) {
+					config.Log.Info("RedisMessage-收到了消息: channel=" + channel + ", payload=" + payload)
+				})
+			}
 		}
 	}
 
