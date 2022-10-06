@@ -179,6 +179,10 @@ func (s *Server) ProcessMessage(client Client, messageType int, payload []byte) 
 
 func (s *Server) Publish(message *Message) {
 
+	if message == nil {
+		return
+	}
+
 	var clients []Client
 
 	// get list of clients subscribed to topic
