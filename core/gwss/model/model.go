@@ -55,14 +55,14 @@ type Client struct {
 
 // type for a valid message.
 type Message struct {
-	Id      string `json:"id"`
-	Action  string `json:"action"`
-	Topic   string `json:"topic"`
-	Message string `json:"message"`
-	Time    string `json:"time"`
+	Id      string      `json:"id"`
+	Action  string      `json:"action"`
+	Topic   string      `json:"topic"`
+	Message interface{} `json:"message"`
+	Time    string      `json:"time"`
 }
 
-func NewMessage(topic string, action string, message string) *Message {
+func NewMessage(topic string, action string, message interface{}) *Message {
 	return &Message{
 		Id:      gid.ID(),
 		Action:  action,
@@ -168,7 +168,7 @@ func (s *Server) ProcessMessage(client Client, messageType int, payload []byte) 
 		s.Unsubscribe(&client, m.Topic)
 		break
 	case pong:
-		s.ReceiveClientPong(&client, m.Message)
+		s.ReceiveClientPong(&client, m.Message.(string))
 		break
 	default:
 		s.Send(&client, []byte("Server: Action unrecognized"))
