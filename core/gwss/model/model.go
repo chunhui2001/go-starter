@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/chunhui2001/go-starter/core/config"
+	"github.com/chunhui2001/go-starter/core/gid"
 	"github.com/chunhui2001/go-starter/core/utils"
 	"github.com/gorilla/websocket"
 )
@@ -53,6 +54,7 @@ type Client struct {
 
 // type for a valid message.
 type Message struct {
+	Id      string `json:"id"`
 	Action  string `json:"action"`
 	Topic   string `json:"topic"`
 	Message string `json:"message"`
@@ -61,6 +63,7 @@ type Message struct {
 
 func NewMessage(topic string, action string, message string) *Message {
 	return &Message{
+		Id:      gid.ID(),
 		Action:  action,
 		Topic:   topic,
 		Message: message,
@@ -73,7 +76,7 @@ func (m *Message) Bytes() []byte {
 }
 
 func (s *Server) ServerPing() {
-	s.Publish(server_ping, "ping", utils.DateTimeUTCString())
+	s.Publish(NewMessage(server_ping, "ping", utils.DateTimeUTCString()))
 }
 
 func (s *Server) DetectedClientPong() {
@@ -154,7 +157,8 @@ func (s *Server) ProcessMessage(client Client, messageType int, payload []byte) 
 
 	switch m.Action {
 	case publish:
-		s.Publish(m.Topic, "publish", m.Message)
+		// s.Publish(m.Topic, "publish", m.Message)
+		s.Publish(NewMessage(m.Topic, "publish", m.Message))
 		break
 	case subscribe:
 		s.Subscribe(&client, m.Topic)
@@ -173,13 +177,13 @@ func (s *Server) ProcessMessage(client Client, messageType int, payload []byte) 
 	return s
 }
 
-func (s *Server) Publish(topic string, action string, message string) {
+func (s *Server) Publish(message *Message) {
 
 	var clients []Client
 
 	// get list of clients subscribed to topic
 	for _, sub := range s.Subscriptions {
-		if sub.Topic == topic {
+		if sub.Topic == message.Topic {
 			clients = append(clients, *sub.Clients...)
 		}
 	}
@@ -187,8 +191,7 @@ func (s *Server) Publish(topic string, action string, message string) {
 	if len(clients) != 0 {
 		// send to clients
 		for _, client := range clients {
-			m := utils.MapOf("topic", topic, "action", action, "message", message)
-			s.Send(&client, []byte(utils.ToJsonString(m)))
+			s.Send(&client, message.Bytes())
 			// logger.Log.Info(topic + ": " + message + ", clientId: " + client.ID)
 		}
 	} else {

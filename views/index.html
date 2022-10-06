@@ -41,6 +41,7 @@
                     
                     if (messageData.topic == 'server_ping') {
                         $("#_server_time").html(messageData.message);
+                        ws.send('{ "action": "pong", "message": "' + new Date().toISOString() + '"}')
                     } else {
                         console.info(messageData)
                     }
