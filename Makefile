@@ -16,6 +16,7 @@ TIME 		?=$(shell date +%s)
 CGO_ENABLED ?=0
 NODE_ID 	?=1
 GOPROXY 	?=go env -w GO111MODULE=on && go env -w GOPROXY=https://goproxy.cn,direct
+GIN_MAPS_TIMESTAMP ?= 23232323
 
 ### 整理模块
 # 确保go.mod与模块中的源代码一致。
@@ -55,7 +56,7 @@ run:
 ### 启动调试程序, 当代码变化时自动重启
 # make dev
 dev:
-	TZ=$(zone) GIN_ENV=$(e) NODE_ID=$(NODE_ID) gin -i --appPort 8080 --port 3000 run main.go
+	TZ=$(zone) GIN_ENV=$(e) GIN_MAPS_TIMESTAMP=$(GIN_MAPS_TIMESTAMP) NODE_ID=$(NODE_ID) gin -i --appPort 8080 --port 3000 run main.go
 
 
 ### 构建跨平台的可执行程序

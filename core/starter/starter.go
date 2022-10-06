@@ -213,13 +213,31 @@ func (s *Server) RunningTLS() {
 		return
 	}
 
-	if graphServerConf.Enable {
-
-	}
-
 	config.Log.Infof(`Congratulations! Your server startup successfully, Listening and serving HTTP on %s`, APP_SETTINGS.AppPort)
 
 	srv.ServeTLS(l, "server.crt", "server.key")
+
+}
+
+func ginFuncMap() template.FuncMap {
+
+	funcMaps := template.FuncMap{
+		"string": func(b any) string {
+			return utils.ToString(b)
+		},
+		"plainstring": func(b any) string {
+			return fmt.Sprintf("%.0f", b)
+		},
+		"timestring": func(b uint32) string {
+			return time.Unix(int64(b), 0).Format("2006-01-02T15:04:05Z07:00")
+		},
+		"GIN_MAPS_ENV": func(b string) string {
+			return os.Getenv(b)
+		},
+		// more funcs
+	}
+
+	return funcMaps
 
 }
 
@@ -239,22 +257,11 @@ func Setup() *gin.Engine {
 		// https://noknow.info/it/go/how_to_use_if_in_html_template?lang=ja
 		// init html template
 		engine.HTMLRender = ginview.New(goview.Config{
-			Root:      filepath.Join(config.AppRoot(), WEB_PAGE_CONF.Root),
-			Extension: WEB_PAGE_CONF.Extension,
-			Master:    WEB_PAGE_CONF.Master,
-			Partials:  []string{"partials/ad"},
-			Funcs: template.FuncMap{
-				"string": func(b any) string {
-					return utils.ToString(b)
-				},
-				"plainstring": func(b any) string {
-					return fmt.Sprintf("%.0f", b)
-				},
-				"timestring": func(b uint32) string {
-					return time.Unix(int64(b), 0).Format("2006-01-02T15:04:05Z07:00")
-				},
-				// more funcs
-			},
+			Root:         filepath.Join(config.AppRoot(), WEB_PAGE_CONF.Root),
+			Extension:    WEB_PAGE_CONF.Extension,
+			Master:       WEB_PAGE_CONF.Master,
+			Partials:     []string{"partials/ad"},
+			Funcs:        ginFuncMap(),
 			DisableCache: true,
 		})
 	}
