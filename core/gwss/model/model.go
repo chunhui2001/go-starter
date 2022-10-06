@@ -13,7 +13,8 @@ import (
 )
 
 var (
-	logger = config.Log
+	logger              = config.Log
+	WSSConf *config.Wss = config.WssSetting
 )
 
 // contant for 4 type actions
@@ -196,10 +197,14 @@ func (s *Server) Publish(message *Message) {
 		// send to clients
 		for _, client := range clients {
 			s.Send(&client, message.Bytes())
-			// logger.Log.Info(topic + ": " + message + ", clientId: " + client.ID)
+			if WSSConf.PrintMessage {
+				logger.Debugf(`Wss广播了一条消息: topic=%s, message=%s, clientId=%s`, message.Topic, message.Message, client.ID)
+			}
 		}
 	} else {
-		//logger.Log.Info("no-have-clients-to-be-subscribe: topic=" + topic)
+		if WSSConf.PrintMessage {
+			logger.Debugf("no-have-clients-to-be-subscribe: topic=" + message.Topic)
+		}
 	}
 
 }

@@ -65,9 +65,10 @@ type AppConf struct {
 }
 
 type Wss struct {
-	Enable bool   `mapstructure:"WSS_ENABLE"`
-	Prefix string `mapstructure:"WSS_PREFIX"`
-	Host   string `mapstructure:"WSS_HOST"`
+	Enable       bool   `mapstructure:"WSS_ENABLE"`
+	Prefix       string `mapstructure:"WSS_PREFIX"`
+	Host         string `mapstructure:"WSS_HOST"`
+	PrintMessage bool   `mapstructure:"WSS_PRINT_MESSAGE"`
 }
 
 type Cookie struct {
@@ -232,8 +233,9 @@ func (l *LogConf) LumberjackLogger() *lumberjack.Logger {
 }
 
 var WssSetting = &Wss{
-	Enable: false,
-	Prefix: "",
+	Enable:       false,
+	Prefix:       "",
+	PrintMessage: true,
 }
 
 var CookieSetting = &Cookie{
