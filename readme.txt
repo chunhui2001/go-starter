@@ -1,3 +1,5 @@
+### 限制
+Content-Type restriction
 
 ### 设置国内代理
 $ go env -w GO111MODULE=on
