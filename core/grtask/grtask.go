@@ -86,7 +86,12 @@ func Lock(lockKey string, taskId string, memo string, expr string, task func(nod
 	if gredis.SetNX(lockKey, currentNode, 5) {
 		runTask(lockKey, currentNode, task)
 	} else {
-		logger.Infof(`GRTask-Discard: currentNode=%s, LockedNode=%s, LockKey=%s`, currentNode, gredis.Get(lockKey), lockKey)
+		if gredis.Get(lockKey) == currentNode {
+			logger.Infof(`GRTask-Discard-1: currentNode=%s, LockedNode=%s, LockKey=%s`, currentNode, gredis.Get(lockKey), lockKey)
+			gredis.Del(lockKey)
+			return
+		}
+		logger.Infof(`GRTask-Discard-2: currentNode=%s, LockedNode=%s, LockKey=%s`, currentNode, gredis.Get(lockKey), lockKey)
 	}
 
 }
