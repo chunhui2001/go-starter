@@ -96,7 +96,15 @@ func runTask(lockKey string, currentNode string, task func(node string, lockKey 
 	start := time.Now()
 
 	defer func() {
-		time.Sleep(75 * time.Millisecond) // 暂停75毫秒, 避免定时任务执行的太快, 同时拿到锁
+		time.Sleep(15 * time.Millisecond)
+		gredis.Del(lockKey)
+		time.Sleep(15 * time.Millisecond)
+		gredis.Del(lockKey)
+		time.Sleep(15 * time.Millisecond)
+		gredis.Del(lockKey)
+		time.Sleep(15 * time.Millisecond)
+		gredis.Del(lockKey)
+		time.Sleep(15 * time.Millisecond) // 暂停75毫秒, 避免定时任务执行的太快, 同时拿到锁
 		gredis.Del(lockKey)
 		logger.Infof(`GRTask-Completed: currentNode=%s, 耗时=%s, LockKey=%s`, currentNode, time.Since(start)-75*time.Millisecond, lockKey)
 	}()
@@ -108,7 +116,7 @@ func runTask(lockKey string, currentNode string, task func(node string, lockKey 
 		for {
 			time.Sleep(100 * time.Millisecond)
 			if ok, _ := gredis.Exists(lockKey); ok {
-				// 安保线程, 里边的人没出来外边的人进不去
+				// 安保线程, 里边的人没出来外边的人进不去, 返回给定 key 的旧值。 当 key 没有旧值时，即 key 不存在时，返回 nil 。
 				if currentVal := gredis.GetSet(lockKey, currentNode+"_update"); currentVal == currentNode {
 					// 说明key还没有删, 安全的延长当前key的过期时间
 					gredis.Set(lockKey, currentNode, 5)
