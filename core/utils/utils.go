@@ -475,3 +475,10 @@ func SortedKeysInt(maps ...map[int]interface{}) (map[int]interface{}, []int) {
 	return resultMap, keys
 
 }
+
+func ReverseMapOfStringSlice(ss []*map[string]interface{}) {
+	last := len(ss) - 1
+	for i := 0; i < len(ss)/2; i++ {
+		ss[i], ss[last-i] = ss[last-i], ss[i]
+	}
+}
