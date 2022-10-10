@@ -190,6 +190,9 @@ https://www.integralist.co.uk/posts/go-slices/
 ### Arrays, slices (and strings): The mechanics of 'append'
 https://go.dev/blog/slices
 
+### HTML Versus XHTML
+https://www.w3schools.com/html/html_xhtml.asp
+
 -----------------------------------------------------------------
 GOOS - Target Operating System		GOARCH - Target Platform
 -----------------------------------------------------------------
