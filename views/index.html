@@ -20,13 +20,13 @@
 
     $(function() {
       {{- if .wssEndpoint }}
-        connect();
+        connect({{.wssEndpoint}});
       {{- end}}
     });
 
-    function connect() {
+    function connect(wssEndpoint) {
 
-        ws = new WebSocket({{.wssEndpoint}});
+        ws = new WebSocket(wssEndpoint);
 
         ws.onopen = e => {
             //console.log('connected!')

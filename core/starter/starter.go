@@ -296,6 +296,14 @@ func Setup() *gin.Engine {
 		engine.Use(sessions.Sessions(APP_COOKIE.Name, store))
 	}
 
+	if err := config.ReadConfig("Reverse-Proxy", &reverseProxyArray); err != nil {
+		logger.Errorf("Reverse-Proxy-Configuration-Error: Key=%s, ErrorMessage=%s", "Reverse-Proxy", err.Error())
+	}
+
+	for _, val := range reverseProxyArray {
+		gproxy.Any(engine, val.From, val.To, val.Remotes...)
+	}
+
 	// apply middlewares
 	engine.Use(middleware.Urlwriter())               // urlwriter
 	engine.Use(middleware.Recovery(recoveryHandler)) // error nice handle
@@ -316,9 +324,8 @@ func Setup() *gin.Engine {
 
 	if WEB_PAGE_CONF.Enable {
 
-		// index page route
+		// builtin pages
 		AppendRouter(http.MethodGet, []string{"/", "/index", "home"}, ratelimitMiddleWare, defaultServer.HandlerIndexPage)
-		// about simple page
 		AppendRouter(http.MethodGet, []string{"/about"}, ratelimitMiddleWare, controller.AboutRouter)
 
 		if WEB_PAGE_CONF.LoginUrl != "" {
@@ -362,14 +369,6 @@ func Setup() *gin.Engine {
 				config.Log.Infof("定时任务正在执行每秒1次,耗时3秒: num=%d, node=%s, taskId=%s", i+1, node, taskId)
 			}
 		})
-	}
-
-	if err := config.ReadConfig("Reverse-Proxy", &reverseProxyArray); err != nil {
-		logger.Errorf("Reverse-Proxy-Configuration-Error: Key=%s, ErrorMessage=%s", "Reverse-Proxy", err.Error())
-	}
-
-	for _, val := range reverseProxyArray {
-		gproxy.Any(engine, val.From, val.To, val.Remotes...)
 	}
 
 	if graphServerConf.Enable {
