@@ -652,8 +652,6 @@ func loadWssSettings(v1 *viper.Viper, filename string) {
 		}
 	}
 
-	fmt.Println(WssSetting)
-
 }
 
 func loadWebPageSettings(v1 *viper.Viper, filename string) {
