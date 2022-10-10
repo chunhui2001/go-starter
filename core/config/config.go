@@ -183,7 +183,7 @@ var jsonFormatter = func() *MyJSONFormatter {
 		IP:              utils.OutboundIP().String(),
 		FieldMap: FieldMap{
 			"time": "@timestamp",
-			"msg":  "@message",
+			"msg":  "message",
 		},
 	}
 }
