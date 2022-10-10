@@ -276,11 +276,31 @@ var HttpClientConf = &ghttp.HttpConf{
 }
 
 var Log *logrus.Entry
+var myViper *viper.Viper
 var filename string = ".env"
 var applicationConfig map[string]interface{}
 
 func AppRoot() string {
 	return utils.RootDir()
+}
+
+// GetEnv returns an environment variable or a default value if not present
+func GetEnv(key, defaultValue string) string {
+
+	value := os.Getenv(key)
+
+	if value != "" {
+		return value
+	}
+
+	value = myViper.GetString(key)
+
+	if value != "" {
+		return value
+	}
+
+	return defaultValue
+
 }
 
 // LoadEnvVars will load a ".env[.development|.test]" file if it exists and set ENV vars.
@@ -302,6 +322,7 @@ func init() {
 	log.SetOutput(new(logWriter))
 
 	var env string = os.Getenv("GIN_ENV")
+	var defaultenv = ".env/.env"
 	var envfile = ".env/.env." + env
 
 	if exists, _ := utils.FileExists(filepath.Join(AppRoot(), envfile)); exists == true {
@@ -310,7 +331,11 @@ func init() {
 		log.Println("Configuration loading " + filepath.Join(AppRoot(), envfile) + " file error, use .env file.")
 	}
 
-	if v1 := readConfig(filename, map[string]interface{}{}); v1 != nil {
+	log.Println(built.INFO.Info())
+
+	if v1 := readConfig(map[string]interface{}{}, defaultenv, filename); v1 != nil {
+
+		myViper = v1
 
 		loadAppSettings(v1, filename)
 		loadLoggerSettings(v1, filename)
@@ -691,33 +716,6 @@ func loadCookieSettings(v1 *viper.Viper, filename string) {
 
 }
 
-func readConfig(filename string, defaults map[string]interface{}) *viper.Viper {
-
-	log.Println(built.INFO.Info())
-
-	v := viper.New()
-
-	for key, value := range defaults {
-		v.SetDefault(key, value)
-	}
-
-	v.AddConfigPath(AppRoot())
-	v.SetConfigName(filename)
-	v.SetConfigType("env")
-	v.AutomaticEnv() // 将读取当前目录下的 .env 配置文件或"环境变量", .env 优先级最高
-
-	err := v.ReadInConfig()
-
-	if err != nil {
-		log.Println("viper loaded error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
-		return nil
-	}
-
-	log.Println("viper Configuration loaded " + filepath.Join(AppRoot(), filename) + " successful.")
-	return v
-
-}
-
 func loadYamlConfiguraion() {
 
 	var f = func(file string) map[string]interface{} {
@@ -759,6 +757,7 @@ func loadYamlConfiguraion() {
 
 }
 
+// yaml config
 func ReadConfig(key string, data any) error {
 	value := applicationConfig[key]
 	if err := json.Unmarshal(utils.ToJsonBytes(value), data); err != nil {
@@ -767,15 +766,45 @@ func ReadConfig(key string, data any) error {
 	return nil
 }
 
-// GetEnv returns an environment variable or a default value if not present
-func GetEnv(key, defaultValue string) string {
+func readConfig(defaults map[string]interface{}, filenames ...string) *viper.Viper {
 
-	value := os.Getenv(key)
+	var f = func(file string, defaultMaps map[string]interface{}) *viper.Viper {
 
-	if value != "" {
-		return value
+		v := viper.New()
+
+		for key, value := range defaultMaps {
+			v.SetDefault(key, value)
+		}
+
+		v.SetConfigName(file)
+		v.SetConfigType("env")
+		// v.AddConfigPath("/etc/appname/")   // path to look for the config file in
+		// v.AddConfigPath("$(home)/.env") // call multiple times to add many search paths
+		v.AddConfigPath(AppRoot())
+		v.AutomaticEnv() // 将读取当前目录下的 .env 配置文件或"环境变量", .env 优先级最高
+
+		err := v.ReadInConfig()
+
+		if err != nil {
+			log.Println("viper loaded error: file=" + file + " errorMessage=" + fmt.Sprint(err) + ".")
+			return nil
+		}
+
+		log.Println("viper Configuration loaded " + filepath.Join(AppRoot(), file) + " successful.")
+
+		return v
 	}
 
-	return defaultValue
+	v := viper.New()
+
+	for key, value := range defaults {
+		v.SetDefault(key, value)
+	}
+
+	for _, fname := range filenames {
+		v = f(fname, v.AllSettings())
+	}
+
+	return v
 
 }

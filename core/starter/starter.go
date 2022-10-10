@@ -234,7 +234,7 @@ func ginFuncMap() template.FuncMap {
 			return time.Unix(int64(b), 0).Format("2006-01-02T15:04:05Z07:00")
 		},
 		"GIN_MAPS_ENV": func(b string) string {
-			return os.Getenv(b)
+			return config.GetEnv(b, "")
 		},
 		// more funcs
 	}
