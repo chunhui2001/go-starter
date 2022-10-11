@@ -390,10 +390,12 @@ func AggsQuery(indexName string, aggsName string, queryJsonString string) ([]map
 
 	if resMap["_shards"] != nil {
 		shardsMap := resMap["_shards"].(map[string]interface{})
-		failuresArray := shardsMap["failures"].([]map[string]interface{})
-		if len(failuresArray) > 0 {
-			for _, failItem := range failuresArray {
-				logger.Warnf(`OpenSearch-AggsQuery-Fail-3: indexName=%s, queryJsonString=%s, ErrorMessage=%s`, indexName, queryJsonString, utils.ToJsonString(failItem))
+		if shardsMap["failures"] != nil {
+			failuresArray := shardsMap["failures"].([]map[string]interface{})
+			if len(failuresArray) > 0 {
+				for _, failItem := range failuresArray {
+					logger.Warnf(`OpenSearch-AggsQuery-Fail-3: indexName=%s, queryJsonString=%s, ErrorMessage=%s`, indexName, queryJsonString, utils.ToJsonString(failItem))
+				}
 			}
 		}
 	}
