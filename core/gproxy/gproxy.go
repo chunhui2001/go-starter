@@ -122,7 +122,10 @@ func Proxy(c *gin.Context, prefix string, remotes ...string) {
 		req.URL.Host = upstream.Host
 		req.URL.Path = requestPath
 
-		logger.Infof(`Reverse-Proxy: URI=%s, Upstream=%s, ProxyPath=%s`, RequestURI, currentRemote, requestPath)
+		// c.Request.WithContext(context.WithValue(c.Request.Context(), "ProxyReverse", utils.MapOf("Upstream", currentRemote, "RequestPath", requestPath)))
+
+		logger.Infof(`Access-by-Proxy: URI=%s, Upstream=%s, ProxyPath=%s`, RequestURI, currentRemote, requestPath)
+		// c.AbortWithStatus(201)
 
 	}
 

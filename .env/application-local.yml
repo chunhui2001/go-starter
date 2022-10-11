@@ -9,17 +9,4 @@ Reverse-Proxy:
     from: /a/scan-api
     to: /scan-api
     remotes: 
-      - http://172.16.197.233:8080
-      - http://172.16.197.134:8080
-  - 
-    from: /e/scan-api
-    to: /scan-api
-    remotes: 
-      - http://172.16.197.233:8080
-      - http://172.16.197.134:8080
-  - 
-    from: /f/scan-api
-    to: /scan-api
-    remotes: 
-      - http://172.16.197.233:8080
-      - http://172.16.197.134:8080
+      - http://127.0.0.1:4002

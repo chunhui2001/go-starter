@@ -16,7 +16,6 @@ TIME 		?=$(shell date +%s)
 CGO_ENABLED ?=0
 NODE_ID 	?=1
 GOPROXY 	?=go env -w GO111MODULE=on && go env -w GOPROXY=https://goproxy.cn,direct
-GIN_MAPS_TIMESTAMP ?= 23232323
 
 ### 整理模块
 # 确保go.mod与模块中的源代码一致。
