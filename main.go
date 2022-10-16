@@ -37,7 +37,7 @@ func init() {
 
 func main() {
 
-	starterServer.Bootstrap().Running()
-	// starterServer.Bootstrap().RunningTLS()
+	// starterServer.Bootstrap().Running()
+	starterServer.Bootstrap().RunningTLS()
 
 }

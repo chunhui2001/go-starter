@@ -193,6 +193,9 @@ https://go.dev/blog/slices
 ### HTML Versus XHTML
 https://www.w3schools.com/html/html_xhtml.asp
 
+### Gin 101: Enable CSRF middleware
+https://medium.com/@pointgoal/gin-101-enable-csrf-middleware-27faa2420186
+
 -----------------------------------------------------------------
 GOOS - Target Operating System		GOARCH - Target Platform
 -----------------------------------------------------------------

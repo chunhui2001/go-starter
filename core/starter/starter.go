@@ -169,6 +169,13 @@ func (s *Server) Running() {
 		Handler: s.R,
 	}
 
+	utils.AddShutDownHook(func() {
+		config.Log.Info("shutting down server")
+		// clean up
+		srv.Shutdown(nil)
+		config.Log.Info("shutting down server-done")
+	})
+
 	l, err := net.Listen("tcp", APP_SETTINGS.AppPort)
 
 	if err != nil {
@@ -177,9 +184,12 @@ func (s *Server) Running() {
 		return
 	}
 
-	config.Log.Info("Congratulations! Your server startup successfully, Listening and serving HTTP on " + APP_SETTINGS.AppPort)
+	go func() {
+		config.Log.Info("Congratulations! Your server startup successfully, Listening and serving HTTP on " + APP_SETTINGS.AppPort)
+		config.Log.Info(srv.Serve(l))
+	}()
 
-	srv.Serve(l)
+	utils.WaitShutDown()
 
 }
 
@@ -207,6 +217,13 @@ func (s *Server) RunningTLS() {
 
 	// srv.SetKeepAlivesEnabled(true) // 默认是true
 
+	utils.AddShutDownHook(func() {
+		config.Log.Info("shutting down server")
+		// clean up
+		srv.Shutdown(nil)
+		config.Log.Info("shutting down server-done")
+	})
+
 	l, err := net.Listen("tcp", APP_SETTINGS.AppPort)
 
 	if err != nil {
@@ -215,10 +232,12 @@ func (s *Server) RunningTLS() {
 		return
 	}
 
-	config.Log.Infof(`Congratulations! Your server startup successfully, Listening and serving HTTP on %s`, APP_SETTINGS.AppPort)
+	go func() {
+		config.Log.Infof(`Congratulations! Your server startup successfully, Listening and serving HTTP on %s`, APP_SETTINGS.AppPort)
+		config.Log.Info(srv.ServeTLS(l, "server.crt", "server.key"))
+	}()
 
-	srv.ServeTLS(l, "server.crt", "server.key")
-
+	utils.WaitShutDown()
 }
 
 func ginFuncMap() template.FuncMap {
