@@ -2,13 +2,16 @@ package utils
 
 import (
 	"bytes"
+	"crypto/md5"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"math"
 	"math/big"
+	"mime/multipart"
 	"net"
 	"os"
 	"reflect"
@@ -78,6 +81,23 @@ func FileExists(name string) (bool, error) {
 
 func ReadFile(filePath string) ([]byte, error) {
 	return os.ReadFile(filePath)
+}
+
+// https://gist.github.com/josephspurrier/90e957f1277964f26852
+func GetFileMd5(file multipart.File) (md5Str string) {
+
+	h := md5.New()
+
+	if _, err := file.Seek(0, 0); err != nil {
+		panic(err)
+	}
+
+	if _, err := io.Copy(h, file); err != nil {
+		panic(err)
+	}
+
+	return fmt.Sprintf("%x\n", h.Sum(nil))
+
 }
 
 func DateTimeParse(s string) time.Time {
