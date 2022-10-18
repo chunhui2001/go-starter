@@ -75,13 +75,13 @@ up: rm
 ### 1 = stdout = normal output of a command
 ### 2 = stderr = error output of a command
 ### 0 = stdin = input to a command (this isn't usefull for redirecting, more for logging)
-# make -i newtag
+# make -i newtag tag=1.1
 newtag:
-	git tag -d 1.0 >/dev/null 2>&1
-	git push --delete origin 1.0 >/dev/null 2>&1
-	git tag 1.0
+	git tag -d $(tag) >/dev/null 2>&1
+	git push --delete origin $(tag) >/dev/null 2>&1
+	git tag $(tag)
 	git tag -l
-	git push origin 1.0
+	git push origin $(tag)
 
 ### 查看程序日志
 logs:
