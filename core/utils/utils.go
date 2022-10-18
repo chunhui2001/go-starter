@@ -21,6 +21,7 @@ import (
 
 	gerror "github.com/go-errors/errors"
 	_ "github.com/kardianos/osext"
+	"github.com/shopspring/decimal"
 	"github.com/ubiq/go-ubiq/common/hexutil"
 )
 
@@ -481,4 +482,63 @@ func ReverseMapOfStringSlice(ss []*map[string]interface{}) {
 	for i := 0; i < len(ss)/2; i++ {
 		ss[i], ss[last-i] = ss[last-i], ss[i]
 	}
+}
+
+func DecimalFromString(str string) decimal.Decimal {
+	price, err := decimal.NewFromString(str)
+	if err != nil {
+		panic(err)
+	}
+	return price
+}
+
+// Division with specified precision
+func DecimalPow(d1 string, d2 int64) decimal.Decimal {
+
+	d11, err := decimal.NewFromString(d1)
+
+	if err != nil {
+		panic(err)
+	}
+
+	d22 := decimal.NewFromInt(d2)
+
+	return d11.Pow(d22)
+
+}
+
+func DecimalDiv(d1 string, d2 string, precision int32) decimal.Decimal {
+
+	d11, err := decimal.NewFromString(d1)
+
+	if err != nil {
+		panic(err)
+	}
+
+	d22, err := decimal.NewFromString(d2)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return d11.DivRound(d22, precision)
+
+}
+
+func DecimalMul(d1 string, d2 string) decimal.Decimal {
+
+	d11, err := decimal.NewFromString(d1)
+
+	if err != nil {
+		panic(err)
+	}
+
+	d22, err := decimal.NewFromString(d2)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return d11.Mul(d22)
+
 }
