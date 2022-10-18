@@ -333,8 +333,6 @@ func Setup() *gin.Engine {
 
 	if ok, _ := utils.FileExists(filepath.Join(config.AppRoot(), "static")); ok {
 		engine.Use(static.Serve("/static", static.LocalFile(filepath.Join(config.AppRoot(), "./static"), false)))
-	} else {
-		logger.Warn("static folder not exists" + config.WssSetting.Wss())
 	}
 
 	engine.Use(core.Favicon(filepath.Join(config.AppRoot(), "./static/favicon.ico"))) // set favicon middleware

@@ -59,7 +59,7 @@ func Favicon(path string) gin.HandlerFunc {
 			}
 		}
 	} else {
-		logger.Warnf(`Favicon-Path-Not-Exists-Used-Memory-File: path=%s`, path)
+		logger.Infof(`Favicon-Path-Not-Exists-Used-Memory-File: path=%s`, path)
 		reader = bytes.NewReader(faviconBuf)
 	}
 
