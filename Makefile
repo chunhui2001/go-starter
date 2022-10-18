@@ -72,6 +72,18 @@ Build:
 up: rm
 	docker-compose -f docker-compose.yml up -d
 
+### 1 = stdout = normal output of a command
+### 2 = stderr = error output of a command
+### 0 = stdin = input to a command (this isn't usefull for redirecting, more for logging)
+# make -i newtag
+newtag:
+	git tag 1.0 >/dev/null 2>&1
+	git tag -d 1.0 >/dev/null 2>&1
+	git push --delete origin 1.0 >/dev/null 2>&1
+	git tag 1.0
+	git tag -l
+	git push origin 1.0
+
 ### 查看程序日志
 logs:
 	docker logs -f --tail 1000 $(APP_NAME)
