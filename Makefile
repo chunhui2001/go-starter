@@ -77,7 +77,6 @@ up: rm
 ### 0 = stdin = input to a command (this isn't usefull for redirecting, more for logging)
 # make -i newtag
 newtag:
-	git tag 1.0 >/dev/null 2>&1
 	git tag -d 1.0 >/dev/null 2>&1
 	git push --delete origin 1.0 >/dev/null 2>&1
 	git tag 1.0
