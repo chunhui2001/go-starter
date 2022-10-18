@@ -85,6 +85,9 @@ func init() {
 		AppendRouter("POST", []string{"/go-board/distinctQuery"}, actions.OpenSearchDistinctQueryRouter)
 		AppendRouter("POST", []string{"/go-board/aggsMultipleQuery"}, actions.OpenSearchMultipleAggsQueryRouter)
 
+		// decimal
+		AppendRouter("GET", []string{"/demo/NewFromString"}, actions.DecimalNewFromStringHandler)
+
 	}
 
 }

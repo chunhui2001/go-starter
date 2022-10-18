@@ -49,6 +49,8 @@ $ sysctl -w fs.file-max=1000000
 ### and /etc/security/limits.conf or /etc/sysctl.conf change:
 fs.file-max = 1000000
 
+### Go Playground
+https://go.dev/play/
 
 ### websocket 
 # https://hoohoo.top/blog/20220320172715-go-websocket/

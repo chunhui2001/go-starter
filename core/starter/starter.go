@@ -165,9 +165,12 @@ func (s *Server) Bootstrap(hooks ...func(*gin.Engine)) *Server {
 func (s *Server) Running() {
 
 	srv := &http.Server{
-		Addr:    APP_SETTINGS.AppPort,
-		Handler: s.R,
+		Addr:        APP_SETTINGS.AppPort,
+		Handler:     s.R,
+		IdleTimeout: 5 * time.Second,
 	}
+
+	// srv.SetKeepAlivesEnabled(true) // 默认是true
 
 	utils.AddShutDownHook(func() {
 		config.Log.Info("shutting down server")
