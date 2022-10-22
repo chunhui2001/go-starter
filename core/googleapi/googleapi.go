@@ -175,7 +175,6 @@ func AllRevisions(fileId string) ([]*drive.Revision, error) {
 
 }
 
-// 设置文件权限
 func PatchRevision(fileId string, revisionId string, revision *drive.Revision) error {
 
 	r := revision
@@ -188,6 +187,49 @@ func PatchRevision(fileId string, revisionId string, revision *drive.Revision) e
 
 	if err != nil {
 		logger.Errorf("GoogleApi-PatchRevision-Error: %v", err)
+		return err
+	}
+
+	return nil
+
+}
+
+// AllPermissions fetches all permissions for a given file
+func AllPermissions(fileId string) ([]*drive.Permission, error) {
+
+	r, err := DRIVE_SERVICE.Permissions.List(fileId).Do()
+
+	if err != nil {
+		logger.Errorf("GoogleApi-AllPermissions-Error: %v", err)
+		return nil, err
+	}
+
+	return r.Items, nil
+
+}
+
+// 设置文件权限
+// https://developers.google.com/drive/api/guides/manage-sharing
+// type — The type identifies the scope of the permission (user, group, domain, or anyone).
+//        A permission with type=user applies to a specific user whereas a permission with type=domain applies to everyone in a specific domain.
+// role — The role field identifies the operations that the type can perform.
+//        For example, a permission with type=user and role=reader grants a specific user read-only access to the file or folder.
+//        Or, a permission with type=domain and role=commenter lets everyone in the domain add comments to a file.
+//        For a complete list of roles and the operations permitted by each, refer to Roles.
+
+// InsertPermission adds a permission to the given file with value type and role
+func InsertPermission(d *drive.Service, fileId string, value string, permType string, role string) error {
+
+	p := &drive.Permission{Type: permType, Role: role}
+
+	if value != "" {
+		p = &drive.Permission{Value: value, Type: permType, Role: role}
+	}
+
+	_, err := DRIVE_SERVICE.Permissions.Insert(fileId, p).Do()
+
+	if err != nil {
+		logger.Errorf("GoogleApi-InsertPermission-Error: %v", err)
 		return err
 	}
 
