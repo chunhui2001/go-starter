@@ -167,11 +167,31 @@ func AllRevisions(fileId string) ([]*drive.Revision, error) {
 	r, err := DRIVE_SERVICE.Revisions.List(fileId).Do()
 
 	if err != nil {
-		fmt.Printf("An error occurred: %v\n", err)
+		logger.Errorf("GoogleApi-AllRevisions-Error: %v", err)
 		return nil, err
 	}
 
 	return r.Items, nil
+
+}
+
+// 设置文件权限
+func PatchRevision(fileId string, revisionId string, revision *drive.Revision) error {
+
+	r := revision
+
+	if revision == nil {
+		r = &drive.Revision{Pinned: true}
+	}
+
+	_, err := DRIVE_SERVICE.Revisions.Patch(fileId, revisionId, r).Do()
+
+	if err != nil {
+		logger.Errorf("GoogleApi-PatchRevision-Error: %v", err)
+		return err
+	}
+
+	return nil
 
 }
 
