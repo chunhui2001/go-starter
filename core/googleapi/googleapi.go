@@ -175,6 +175,12 @@ func AllRevisions(fileId string) ([]*drive.Revision, error) {
 
 }
 
+//	{
+//	    "pinned": true,
+//	    "publishAuto": true,
+//	    "published": true,
+//	    "publishedOutsideDomain": true
+//	}
 func PatchRevision(fileId string, revisionId string, revision *drive.Revision) error {
 
 	r := revision
