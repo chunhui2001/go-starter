@@ -42,6 +42,9 @@ gen:
 gqlgen:
 	gqlgen generate
 
+newGoogleAccessToken:
+	go run core/googleapi/main/quickstart.go
+
 ### 下载模块
 get:
 	go get

@@ -198,6 +198,20 @@ https://www.w3schools.com/html/html_xhtml.asp
 ### Gin 101: Enable CSRF middleware
 https://medium.com/@pointgoal/gin-101-enable-csrf-middleware-27faa2420186
 
+## Google Doc
+https://docs.google.com/
+
+## Google API Console
+# https://console.developers.google.com/
+
+## 快速开始
+# https://developers.google.com/sheets/api/quickstart/go
+
+## 修改文件权限
+# https://developers.google.com/drive/api/v3/reference/revisions
+
+
+
 -----------------------------------------------------------------
 GOOS - Target Operating System		GOARCH - Target Platform
 -----------------------------------------------------------------

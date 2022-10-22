@@ -21,6 +21,7 @@ import (
 	"github.com/chunhui2001/go-starter/core/gid"
 	"github.com/chunhui2001/go-starter/core/gmongo"
 	"github.com/chunhui2001/go-starter/core/goes"
+	"github.com/chunhui2001/go-starter/core/googleapi"
 	"github.com/chunhui2001/go-starter/core/grabbit"
 	"github.com/chunhui2001/go-starter/core/gredis"
 	"github.com/chunhui2001/go-starter/core/grtask"
@@ -275,6 +276,13 @@ var HttpClientConf = &ghttp.HttpConf{
 	PrintCurl:           true,
 }
 
+var GoogleAPIConfSettings = &googleapi.GoogleAPIConf{
+	Enable:          false,
+	CredentialsFile: "resources/googleapi-oauth-credentials_gos3.json",
+	TokenFile:       "resources/gos3_token.json",
+	Scopes:          []string{"https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive.metadata", "https://www.googleapis.com/auth/drive.appdata", "https://www.googleapis.com/auth/spreadsheets"},
+}
+
 var Log *logrus.Entry
 var myViper *viper.Viper
 var filename string = ".env"
@@ -355,6 +363,7 @@ func init() {
 		loadSimpleGTaskSettings(v1, filename)
 		loadRabbitSettings(v1, filename)
 		loadGraphServerSettings(v1, filename)
+		loadGoogleApiServiceSettings(v1, filename)
 
 		printConfigLogLines()
 
@@ -627,6 +636,23 @@ func loadGraphServerSettings(v1 *viper.Viper, filename string) {
 		return
 	} else {
 		configLoggerLines = append(configLoggerLines, []string{"GraphServer", "Enabled=" + utils.ToString(GraphServerSetting.Enable)})
+	}
+
+}
+
+func loadGoogleApiServiceSettings(v1 *viper.Viper, filename string) {
+
+	err := v1.Unmarshal(&GoogleAPIConfSettings)
+
+	if err != nil {
+		Log.Info("viper parse GoogleAPIConfSettings  error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		os.Exit(3)
+		return
+	} else {
+		configLoggerLines = append(configLoggerLines, []string{"GoogleAPIConfSettings", "Enabled=" + utils.ToString(GoogleAPIConfSettings.Enable) + ",CREDENTIALS_FILE=" + GoogleAPIConfSettings.CredentialsFile})
+		if GoogleAPIConfSettings.Enable {
+			googleapi.Init(GoogleAPIConfSettings, Log)
+		}
 	}
 
 }
