@@ -224,7 +224,7 @@ func AllPermissions(fileId string) ([]*drive.Permission, error) {
 //        For a complete list of roles and the operations permitted by each, refer to Roles.
 
 // InsertPermission adds a permission to the given file with value type and role
-func InsertPermission(d *drive.Service, fileId string, value string, permType string, role string) error {
+func InsertPermission(fileId string, value string, permType string, role string) error {
 
 	p := &drive.Permission{Type: permType, Role: role}
 
