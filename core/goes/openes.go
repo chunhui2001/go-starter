@@ -277,6 +277,7 @@ func Bulk(indexName string, dataMap *[]map[string]interface{}) (uint64, error) {
 
 }
 
+// // curl -X 'POST' -H 'Content-Type: application/x-ndjson' 'http://localhost:9092/sales_achiev_20221028/_bulk?pretty' --data-binary "@/Users/keesh/Desktop/ndjson.txt"
 func BulkRequest(indexName string, dataMap *[]map[string]interface{}) (bool, error) {
 
 	nsJsonString := GetNdJson(indexName, "_doc", dataMap)
