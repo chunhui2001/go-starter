@@ -200,6 +200,50 @@ func SaveOrUpdate(indexName string, id string, dataMap map[string]interface{}) (
 
 }
 
+// 批量处理
+func Bulk(indexName string, dataMap *[]map[string]interface{}) (bool, error) {
+
+	res, err := esapi.BulkRequest{
+		Index: indexName,
+		Body:  strings.NewReader(utils.ToJsonString(dataMap)),
+	}.Do(context.Background(), esClient)
+
+	for _, item := range *dataMap {
+
+		if item["_id"] == nil {
+			item["_id"] = utils.Base64UUID()
+		}
+
+		if item["@timestamp"] == nil {
+			item["@timestamp"] = utils.DateTimeUTCString()
+		}
+
+	}
+
+	if err != nil {
+		logger.Errorf("Es-Bulk-Error-1: ErrorMessage=%s", err.Error())
+		return false, err
+	}
+
+	defer res.Body.Close()
+
+	// Deserialize the response into a map.
+	var resMap map[string]interface{}
+
+	if err := json.NewDecoder(res.Body).Decode(&resMap); err != nil {
+		logger.Errorf("Es-Bulk-Error-1: ErrorMessage=%s", err.Error())
+		return false, err
+	}
+
+	if resMap["error"] != nil {
+		logger.Errorf("Es-Bulk-Failed: ErrorMessage=%s", utils.ToJsonString(resMap["error"]))
+		return false, errors.New(resMap["error"].(map[string]interface{})["reason"].(string))
+	}
+
+	return true, nil
+
+}
+
 func Search(indexName string, queryJsonString string) ([]map[string]interface{}, int64, error) {
 
 	// Check for JSON errors
