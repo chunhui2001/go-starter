@@ -215,9 +215,13 @@ func Bulk(indexName string, dataMap *[]map[string]interface{}) (bool, error) {
 
 	}
 
+	jsonString := utils.ToJsonString(dataMap) + `\\n`
+
+	fmt.Println(jsonString)
+
 	res, err := esapi.BulkRequest{
 		Index: indexName,
-		Body:  strings.NewReader(utils.ToJsonString(dataMap) + `\n`),
+		Body:  strings.NewReader(jsonString),
 	}.Do(context.Background(), esClient)
 
 	if err != nil {
