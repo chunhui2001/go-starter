@@ -142,6 +142,10 @@ https://www.ardanlabs.com/blog/2013/11/using-xslt-with-go.html
 ### Installing protoc
 http://google.github.io/proto-lens/installing-protoc.html
 
+### How To Bulk Index Elasticsearch Documents Using Golang
+https://kb.objectrocket.com/elasticsearch/how-to-bulk-index-elasticsearch-documents-using-golang-450
+https://onexlab-io.medium.com/elasticsearch-bulk-insert-json-data-322f97115d8d
+
 >>>> $ PROTOC_ZIP=protoc-3.14.0-osx-x86_64.zip
 >>>> $ curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.14.0/$PROTOC_ZIP
 >>>> $ sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
