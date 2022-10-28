@@ -218,6 +218,8 @@ func Bulk(indexName string, dataMap *[]map[string]interface{}) (uint64, error) {
 		return 0, err
 	}
 
+	start := time.Now().UTC()
+
 	var countSuccessful uint64
 
 	for _, item := range *dataMap {
@@ -234,7 +236,7 @@ func Bulk(indexName string, dataMap *[]map[string]interface{}) (uint64, error) {
 		return 0, nil
 	}
 
-	logger.Infof("Es-Bulk-Successful: IndexName=%s, Count=%d", indexName, countSuccessful)
+	logger.Infof("Es-Bulk-Successful: IndexName=%s, Count=%d, Duration=%s", indexName, countSuccessful, time.Since(start))
 
 	return countSuccessful, nil
 
