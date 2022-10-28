@@ -204,7 +204,7 @@ func SaveOrUpdate(indexName string, id string, dataMap map[string]interface{}) (
 }
 
 // 批量处理
-func Bulk(indexName string, dataMap *[]map[string]interface{}) (bool, error) {
+func Bulk(indexName string, dataMap *[]map[string]interface{}) (uint64, error) {
 
 	bi, err := opensearchutil.NewBulkIndexer(opensearchutil.BulkIndexerConfig{
 		Client:        esClient,
@@ -215,32 +215,28 @@ func Bulk(indexName string, dataMap *[]map[string]interface{}) (bool, error) {
 
 	if err != nil {
 		logger.Errorf("Es-Bulk-Error-1: ErrorMessage=%s", err.Error())
-		return false, err
+		return 0, err
 	}
 
 	var countSuccessful uint64
 
 	for _, item := range *dataMap {
-
-		err = bi.Add(context.Background(), getBulkIndexerItem(&item, &countSuccessful))
-
-		if err != nil {
+		if err := bi.Add(context.Background(), getBulkIndexerItem(&item, &countSuccessful)); err != nil {
 			panic(err)
 		}
-
 	}
 
 	if err := bi.Close(context.Background()); err != nil {
 		panic(err)
 	}
 
-	biStatus := bi.Stats()
-
-	if biStatus.NumFailed > 0 {
-		return false, nil
+	if biStatus := bi.Stats(); biStatus.NumFailed > 0 {
+		return 0, nil
 	}
 
-	return true, nil
+	logger.Infof("Es-Bulk-Successful: IndexName=%s, Count=%d", indexName, countSuccessful)
+
+	return countSuccessful, nil
 
 }
 
