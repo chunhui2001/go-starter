@@ -1,20 +1,24 @@
 package goes
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/chunhui2001/go-starter/core/ges"
 	"github.com/chunhui2001/go-starter/core/ghttp"
 	"github.com/chunhui2001/go-starter/core/utils"
+	"github.com/dustin/go-humanize"
 	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/opensearch-project/opensearch-go"
+	"github.com/opensearch-project/opensearch-go/opensearchutil"
 	"github.com/sirupsen/logrus"
 )
 
@@ -198,6 +202,111 @@ func SaveOrUpdate(indexName string, id string, dataMap map[string]interface{}) (
 
 	return _id, nil
 
+}
+
+// 批量处理
+func Bulk(indexName string, dataMap *[]map[string]interface{}) (uint64, error) {
+
+	bi, err := opensearchutil.NewBulkIndexer(opensearchutil.BulkIndexerConfig{
+		Client:        esClient,
+		NumWorkers:    4,
+		FlushBytes:    1024 * 1024, // bytes
+		FlushInterval: 1 * time.Second,
+	})
+
+	if err != nil {
+		logger.Errorf("Es-Bulk-Error-1: ErrorMessage=%s", err.Error())
+		return 0, err
+	}
+
+	res, err := esapi.IndicesExistsRequest{
+		Index: []string{indexName},
+	}.Do(context.Background(), esClient)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode == 404 {
+
+		res2, err := esClient.Indices.Create(indexName)
+
+		if err != nil {
+			panic(err)
+		}
+
+		defer res2.Body.Close()
+
+	}
+
+	start := time.Now().UTC()
+
+	var countSuccessful uint64
+
+	for _, item := range *dataMap {
+		if err := bi.Add(context.Background(), getBulkIndexerItem(&item, &countSuccessful)); err != nil {
+			panic(err)
+		}
+	}
+
+	if err := bi.Close(context.Background()); err != nil {
+		panic(err)
+	}
+
+	dur := time.Since(start)
+
+	if biStatus := bi.Stats(); biStatus.NumFailed > 0 {
+		logger.Errorf(
+			"Es-Bulk-Failed: IndexName=%s, Indexed [%s] documents with [%s] errors in %s (%s docs/sec)",
+			indexName,
+			humanize.Comma(int64(biStatus.NumFlushed)),
+			humanize.Comma(int64(biStatus.NumFailed)),
+			dur.Truncate(time.Millisecond),
+			humanize.Comma(int64(1000.0/float64(dur/time.Millisecond)*float64(biStatus.NumFlushed))),
+		)
+		return 0, nil
+	}
+
+	logger.Infof("Es-Bulk-Successful: IndexName=%s, Count=%d, Duration=%s", indexName, countSuccessful, dur)
+
+	return countSuccessful, nil
+
+}
+
+func getBulkIndexerItem(item *map[string]interface{}, countSuccessful *uint64) opensearchutil.BulkIndexerItem {
+
+	if (*item)["_id"] == nil {
+		(*item)["_id"] = utils.Base64UUID()
+	}
+
+	if (*item)["@timestamp"] == nil {
+		(*item)["@timestamp"] = utils.DateTimeUTCString()
+	}
+
+	data, err := json.Marshal(item)
+
+	if err != nil {
+		panic(err)
+	}
+
+	// index, create, delete, update
+	return opensearchutil.BulkIndexerItem{
+		Action:     "create",
+		DocumentID: (*item)["_id"].(string),
+		Body:       bytes.NewReader(data),
+		OnSuccess: func(ctx context.Context, item opensearchutil.BulkIndexerItem, res opensearchutil.BulkIndexerResponseItem) {
+			atomic.AddUint64(countSuccessful, 1)
+		},
+		OnFailure: func(ctx context.Context, item opensearchutil.BulkIndexerItem, res opensearchutil.BulkIndexerResponseItem, err error) {
+			if err != nil {
+				logger.Errorf("Es-Bulk-ERROR: ErrorMessage=%s", err.Error())
+			} else {
+				logger.Errorf("Es-Bulk-ERROR: ErrorType=%s, Reason=%s", res.Error.Type, res.Error.Reason)
+			}
+		},
+	}
 }
 
 func Search(indexName string, queryJsonString string) ([]map[string]interface{}, int64, error) {
