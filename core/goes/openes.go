@@ -1,12 +1,14 @@
 package goes
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -15,6 +17,7 @@ import (
 	"github.com/chunhui2001/go-starter/core/utils"
 	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/opensearch-project/opensearch-go"
+	"github.com/opensearch-project/opensearch-go/opensearchutil"
 	"github.com/sirupsen/logrus"
 )
 
@@ -203,45 +206,75 @@ func SaveOrUpdate(indexName string, id string, dataMap map[string]interface{}) (
 // 批量处理
 func Bulk(indexName string, dataMap *[]map[string]interface{}) (bool, error) {
 
-	for _, item := range *dataMap {
-
-		if item["_id"] == nil {
-			item["_id"] = utils.Base64UUID()
-		}
-
-		if item["@timestamp"] == nil {
-			item["@timestamp"] = utils.DateTimeUTCString()
-		}
-
-	}
-
-	res, err := esapi.BulkRequest{
-		Index: indexName,
-		Body:  strings.NewReader(utils.ToJsonString(dataMap) + "\n"),
-	}.Do(context.Background(), esClient)
+	bi, err := opensearchutil.NewBulkIndexer(opensearchutil.BulkIndexerConfig{
+		Client:        esClient,
+		NumWorkers:    4,
+		FlushBytes:    1024 * 1024, // bytes
+		FlushInterval: 1 * time.Second,
+	})
 
 	if err != nil {
 		logger.Errorf("Es-Bulk-Error-1: ErrorMessage=%s", err.Error())
 		return false, err
 	}
 
-	defer res.Body.Close()
+	var countSuccessful uint64
 
-	// Deserialize the response into a map.
-	var resMap map[string]interface{}
+	for _, item := range *dataMap {
 
-	if err := json.NewDecoder(res.Body).Decode(&resMap); err != nil {
-		logger.Errorf("Es-Bulk-Error-1: ErrorMessage=%s", err.Error())
-		return false, err
+		err = bi.Add(context.Background(), getBulkIndexerItem(&item, &countSuccessful))
+
+		if err != nil {
+			panic(err)
+		}
+
 	}
 
-	if resMap["error"] != nil {
-		logger.Errorf("Es-Bulk-Failed: ErrorMessage=%s", utils.ToJsonString(resMap["error"]))
-		return false, errors.New(resMap["error"].(map[string]interface{})["reason"].(string))
+	if err := bi.Close(context.Background()); err != nil {
+		panic(err)
+	}
+
+	biStatus := bi.Stats()
+
+	if biStatus.NumFailed > 0 {
+		return false, nil
 	}
 
 	return true, nil
 
+}
+
+func getBulkIndexerItem(item *map[string]interface{}, countSuccessful *uint64) opensearchutil.BulkIndexerItem {
+
+	if (*item)["_id"] == nil {
+		(*item)["_id"] = utils.Base64UUID()
+	}
+
+	if (*item)["@timestamp"] == nil {
+		(*item)["@timestamp"] = utils.DateTimeUTCString()
+	}
+
+	data, err := json.Marshal(item)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return opensearchutil.BulkIndexerItem{
+		Action:     "index",
+		DocumentID: (*item)["_id"].(string),
+		Body:       bytes.NewReader(data),
+		OnSuccess: func(ctx context.Context, item opensearchutil.BulkIndexerItem, res opensearchutil.BulkIndexerResponseItem) {
+			atomic.AddUint64(countSuccessful, 1)
+		},
+		OnFailure: func(ctx context.Context, item opensearchutil.BulkIndexerItem, res opensearchutil.BulkIndexerResponseItem, err error) {
+			if err != nil {
+				logger.Errorf("Es-Bulk-ERROR: ErrorMessage=%s", err.Error())
+			} else {
+				logger.Errorf("Es-Bulk-ERROR: ErrorMessage=%s", res.Error.Type, res.Error.Reason)
+			}
+		},
+	}
 }
 
 func Search(indexName string, queryJsonString string) ([]map[string]interface{}, int64, error) {
