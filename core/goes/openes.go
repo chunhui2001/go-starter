@@ -223,6 +223,8 @@ func Bulk(indexName string, dataMap *[]map[string]interface{}) (bool, error) {
 		panic(err)
 	}
 
+	fmt.Println(string(out.Bytes()))
+
 	res, err := esapi.BulkRequest{
 		Index: indexName,
 		Body:  bytes.NewReader(out.Bytes()),
