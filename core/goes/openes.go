@@ -203,11 +203,6 @@ func SaveOrUpdate(indexName string, id string, dataMap map[string]interface{}) (
 // 批量处理
 func Bulk(indexName string, dataMap *[]map[string]interface{}) (bool, error) {
 
-	res, err := esapi.BulkRequest{
-		Index: indexName,
-		Body:  strings.NewReader(utils.ToJsonString(dataMap)),
-	}.Do(context.Background(), esClient)
-
 	for _, item := range *dataMap {
 
 		if item["_id"] == nil {
@@ -219,6 +214,11 @@ func Bulk(indexName string, dataMap *[]map[string]interface{}) (bool, error) {
 		}
 
 	}
+
+	res, err := esapi.BulkRequest{
+		Index: indexName,
+		Body:  strings.NewReader(utils.ToJsonString(dataMap) + `\n`),
+	}.Do(context.Background(), esClient)
 
 	if err != nil {
 		logger.Errorf("Es-Bulk-Error-1: ErrorMessage=%s", err.Error())
