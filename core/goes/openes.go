@@ -1,7 +1,6 @@
 package goes
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -216,19 +215,9 @@ func Bulk(indexName string, dataMap *[]map[string]interface{}) (bool, error) {
 
 	}
 
-	var out bytes.Buffer
-	err := json.Indent(&out, ([]byte)(utils.ToJsonString(dataMap)), "", "  ")
-
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(string(out.Bytes()))
-
 	res, err := esapi.BulkRequest{
 		Index: indexName,
-		// Body:  bytes.NewReader(out.Bytes()),
-		Body: strings.NewReader(utils.ToJsonString(dataMap) + "\n"),
+		Body:  strings.NewReader(utils.ToJsonString(dataMap) + "\\n"),
 	}.Do(context.Background(), esClient)
 
 	if err != nil {
