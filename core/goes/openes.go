@@ -15,6 +15,7 @@ import (
 	"github.com/chunhui2001/go-starter/core/ges"
 	"github.com/chunhui2001/go-starter/core/ghttp"
 	"github.com/chunhui2001/go-starter/core/utils"
+	"github.com/dustin/go-humanize"
 	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/opensearch-project/opensearch-go"
 	"github.com/opensearch-project/opensearch-go/opensearchutil"
@@ -232,11 +233,20 @@ func Bulk(indexName string, dataMap *[]map[string]interface{}) (uint64, error) {
 		panic(err)
 	}
 
+	dur := time.Since(start)
+
 	if biStatus := bi.Stats(); biStatus.NumFailed > 0 {
+		logger.Errorf(
+			"Es-Bulk-Failed: Indexed [%s] documents with [%s] errors in %s (%s docs/sec)",
+			humanize.Comma(int64(biStatus.NumFlushed)),
+			humanize.Comma(int64(biStatus.NumFailed)),
+			dur.Truncate(time.Millisecond),
+			humanize.Comma(int64(1000.0/float64(dur/time.Millisecond)*float64(biStatus.NumFlushed))),
+		)
 		return 0, nil
 	}
 
-	logger.Infof("Es-Bulk-Successful: IndexName=%s, Count=%d, Duration=%s", indexName, countSuccessful, time.Since(start))
+	logger.Infof("Es-Bulk-Successful: IndexName=%s, Count=%d, Duration=%s", indexName, countSuccessful, dur)
 
 	return countSuccessful, nil
 
