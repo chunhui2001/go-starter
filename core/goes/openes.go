@@ -26,6 +26,8 @@ var (
 	esConf   *OpenESConf
 	logger   *logrus.Entry
 	esClient *opensearch.Client
+	newLine  string = `
+`
 )
 
 type OpenESConf struct {
@@ -272,6 +274,51 @@ func Bulk(indexName string, dataMap *[]map[string]interface{}) (uint64, error) {
 	logger.Infof("Es-Bulk-Successful: IndexName=%s, Count=%d, Duration=%s", indexName, countSuccessful, dur)
 
 	return countSuccessful, nil
+
+}
+
+func BulkRequest(indexName string, dataMap *[]map[string]interface{}) (bool, error) {
+
+	nsJsonString := GetNdJson(indexName, "_doc", dataMap)
+	serverUri := strings.Split(esConf.Servers, ",")[0]
+	requestUrl := fmt.Sprintf(`%s/%s/_bulk?pretty=`, serverUri, indexName)
+
+	httpResult := ghttp.SendRequest(
+		ghttp.POST(requestUrl, nsJsonString).AddHeader("Content-Type", "application/x-ndjson"),
+	)
+
+	if httpResult.Success() {
+		return true, nil
+	}
+
+	return false, httpResult.Error
+
+}
+
+func GetNdJson(indexName string, docType string, dataMap *[]map[string]interface{}) string {
+
+	stringArray := make([]string, 0, len(*dataMap)*2)
+
+	for _, item := range *dataMap {
+
+		_id := item["_id"]
+
+		if item["_id"] == nil {
+			_id = utils.Base64UUID()
+		}
+
+		if item["@timestamp"] == nil {
+			item["@timestamp"] = utils.DateTimeUTCString()
+		}
+
+		stringArray = append(stringArray, fmt.Sprintf(`{"index": {"_index": "%s", "_id": "%s", "_type" : "_doc"}}`, indexName, _id.(string)))
+		stringArray = append(stringArray, utils.ToJsonString(item))
+
+		item["_id"] = _id
+
+	}
+
+	return strings.Join(stringArray, newLine) + newLine
 
 }
 

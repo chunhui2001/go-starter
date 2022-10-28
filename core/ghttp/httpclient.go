@@ -33,6 +33,7 @@ type HttpClient struct {
 	QueryParams map[string]interface{}
 	RequestBody string
 	Headers     map[string]string
+	Ellipsis    bool
 }
 
 type HttpResult struct {
@@ -123,11 +124,17 @@ func POST(url string, reqBody string) *HttpClient {
 		TimeOut:     defaultTimeOut,
 		Url:         url,
 		RequestBody: reqBody,
+		Ellipsis:    true,
 	}
 }
 
 func (c *HttpClient) SetHeaders(headers map[string]string) *HttpClient {
 	c.Headers = headers
+	return c
+}
+
+func (c *HttpClient) AddHeader(key string, val string) *HttpClient {
+	c.Headers = utils.OfMap(key, val)
 	return c
 }
 
@@ -197,7 +204,11 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 	commandCurl := command.String()
 
 	if httpClient.RequestBody != "" {
-		commandCurl = strings.Replace(command.String(), "-d ''", "-d '"+httpClient.RequestBody+"'", 1)
+		if httpClient.Ellipsis && len(httpClient.RequestBody) > 165 {
+			commandCurl = strings.Replace(command.String(), "-d ''", "-d '"+httpClient.RequestBody[0:160]+"....'", 1)
+		} else {
+			commandCurl = strings.Replace(command.String(), "-d ''", "-d '"+httpClient.RequestBody+"'", 1)
+		}
 	}
 
 	if err != nil {

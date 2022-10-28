@@ -84,6 +84,7 @@ func init() {
 		AppendRouter("POST", []string{"/go-board/dynamicQuery"}, actions.OpenSearchDynamicQueryRouter)
 		AppendRouter("POST", []string{"/go-board/distinctQuery"}, actions.OpenSearchDistinctQueryRouter)
 		AppendRouter("POST", []string{"/go-board/aggsMultipleQuery"}, actions.OpenSearchMultipleAggsQueryRouter)
+		AppendRouter("POST", []string{"/go-board/ngJsonGenerator"}, actions.NdJsonHandler)
 
 		// decimal
 		AppendRouter("GET", []string{"/demo/NewFromString"}, actions.DecimalNewFromStringHandler)
