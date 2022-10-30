@@ -26,6 +26,7 @@ import (
 	_ "github.com/kardianos/osext"
 	"github.com/shopspring/decimal"
 	"github.com/ubiq/go-ubiq/common/hexutil"
+	"golang.org/x/exp/slices"
 )
 
 // 2006-01-02T15:04:05.999Z
@@ -209,6 +210,18 @@ func StrToInt(str string) int {
 		panic(err)
 	}
 	return intVar
+}
+
+func StrToBool(str string) bool {
+	boolVal, err := strconv.ParseBool(str)
+	if err != nil {
+		panic(err)
+	}
+	return boolVal
+}
+
+func ArrayContains(array []string, val string) bool {
+	return slices.Contains(array, val)
 }
 
 func ToString(s any) string {
