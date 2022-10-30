@@ -328,7 +328,7 @@ func PadLeft(s string, padStr string, maxLen int) string {
 }
 
 func Trim(s string, leftChar string, rightChar string) string {
-	return strings.TrimSuffix(strings.TrimSuffix(s, rightChar), leftChar)
+	return strings.TrimPrefix(strings.TrimSuffix(s, rightChar), leftChar)
 }
 
 func TrimRight(s string) string {
@@ -336,7 +336,7 @@ func TrimRight(s string) string {
 }
 
 func TrimLeft(s string) string {
-	return strings.TrimSuffix(s, ",")
+	return strings.TrimPrefix(s, ",")
 }
 
 func Split(s string, sep string) []string {
