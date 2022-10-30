@@ -1,10 +1,12 @@
 package actions
 
 import (
+	"fmt"
 	"strconv"
 
 	. "github.com/chunhui2001/go-starter/core/commons"
 	"github.com/chunhui2001/go-starter/core/ges"
+	"github.com/chunhui2001/go-starter/core/ghttp"
 	"github.com/chunhui2001/go-starter/core/goes"
 	"github.com/chunhui2001/go-starter/core/utils"
 
@@ -15,6 +17,32 @@ import (
 func OpenSearchIndicesRouter(c *gin.Context) {
 	reault, err := goes.CatIndices()
 	c.JSON(200, (&R{Data: reault, Error: err}).IfErr(400))
+}
+
+func NdJsonHandler(c *gin.Context) {
+
+	indexName := c.Query("indexName")
+	serverUri := c.Query("serverUri")
+	var data = new([]map[string]interface{})
+
+	if err := c.ShouldBindWith(data, binding.JSON); err != nil {
+		c.JSON(200, (&R{Error: err}).Msg(err.Error()).IfErr(413))
+		return
+	}
+
+	nsJsonString := goes.GetNdJson(indexName, "_doc", data)
+
+	// c.Header("Content-Type", "application/octet-stream")
+	// c.Writer.Write([]byte(nsJsonString))
+
+	requestUrl := fmt.Sprintf(`%s/%s/_bulk?pretty=`, serverUri, indexName)
+
+	httpResult := ghttp.SendRequest(
+		ghttp.POST(requestUrl, nsJsonString).AddHeader("Content-Type", "application/x-ndjson"),
+	)
+
+	c.JSON(200, (&R{Data: httpResult.Success(), Error: httpResult.Error}).IfErr(400))
+
 }
 
 func OpenSearchLastSnapshotDateRouter(c *gin.Context) {

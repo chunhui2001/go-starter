@@ -68,6 +68,7 @@ require (
 	github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/elastic/elastic-transport-go/v8 v8.1.0 // indirect
+	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/fogleman/ease v0.0.0-20170301025033-8da417bf1776 // indirect
 	github.com/fogleman/gg v1.3.0 // indirect
 	github.com/fogleman/simplify v0.0.0-20170216171241-d32f302d5046 // indirect
@@ -135,6 +136,7 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be // indirect
+	golang.org/x/exp v0.0.0-20221028150844-83b7d23a625f // indirect
 	golang.org/x/image v0.0.0-20220902085622-e7cb96979f69 // indirect
 	golang.org/x/net v0.1.0 // indirect
 	golang.org/x/oauth2 v0.1.0 // indirect
