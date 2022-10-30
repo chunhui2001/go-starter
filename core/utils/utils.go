@@ -351,8 +351,16 @@ func Join(delim string, s ...any) string {
 	return strings.Trim(strings.Replace(fmt.Sprint(s...), " ", delim, -1), "[]")
 }
 
-func JoinString(delim string, s ...string) string {
-	return strings.Join(s[:], delim)
+func JoinString(delim string, s ...any) string {
+
+	arr := make([]string, 0, len(s))
+
+	for _, val := range s {
+		arr = append(arr, val.(string))
+	}
+
+	return strings.Join(arr[:], delim)
+
 }
 
 func Matches(s string, regx string) [][]string {
