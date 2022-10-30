@@ -356,7 +356,7 @@ func JoinString(delim string, s ...any) string {
 	arr := make([]string, 0, len(s))
 
 	for _, val := range s {
-		arr = append(arr, val.(string))
+		arr = append(arr, ToString(val))
 	}
 
 	return strings.Join(arr[:], delim)
