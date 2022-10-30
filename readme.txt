@@ -181,6 +181,9 @@ https://www.agiliq.com/blog/2020/04/graphql-api-server-using-golang-gin-framewor
 ### gqlgen
 https://gqlgen.com/config/
 
+### Mapping GraphQL scalar types to Go types
+https://gqlgen.com/reference/scalars/
+
 ### A helper to merge structs and maps in Golang. Useful for configuration default values, avoiding messy if-statements.
 https://github.com/imdario/mergo
 
