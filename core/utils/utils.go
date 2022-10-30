@@ -351,6 +351,10 @@ func Join(delim string, s ...any) string {
 	return strings.Trim(strings.Replace(fmt.Sprint(s...), " ", delim, -1), "[]")
 }
 
+func JoinString(delim string, s ...string) string {
+	return strings.Join(s[:], delim)
+}
+
 func Matches(s string, regx string) [][]string {
 	re := regexp.MustCompile(regx)
 	return re.FindAllStringSubmatch(s, -1)

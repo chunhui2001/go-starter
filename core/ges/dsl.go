@@ -19,8 +19,9 @@ import (
 // {{$x := join ", " "hello" "world"}}
 func funcMaps() template.FuncMap {
 	return template.FuncMap{
-		"join":   utils.Join,   // {{- join "\",\"" .name .name  }} , ["{{- join "\",\"" .name .name  }}"]
-		"ifnull": utils.IfNull, // {{- ifnull .nullVal 99 }}
+		"join":       utils.Join, // {{- join "\",\"" .name .name  }} , ["{{- join "\",\"" .name .name  }}"]
+		"JoinString": utils.JoinString,
+		"ifnull":     utils.IfNull, // {{- ifnull .nullVal 99 }}
 	}
 }
 
