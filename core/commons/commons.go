@@ -14,6 +14,7 @@ const (
 	SERVER_ERROR     int = 500
 	TOO_MANY_REQUEST int = 429
 	UN_AUTH          int = 401
+	ILLEGAL_SIGN     int = 414
 	TIME_OUT         int = 402
 	FAILED           int = 400
 	NOT_FOUND        int = 404

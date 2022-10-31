@@ -39,7 +39,7 @@ func CheckSign(accessKeyID string, secretAccessKey string, method string, reqUrl
 	var accessQuery url.Values = reqUrl.Query()
 
 	if !accessQuery.Has("Signature") {
-		return false, errors.New("ILLEGAL_ACCESS")
+		return false, errors.New("ILLEGAL_SIGN")
 	}
 
 	newUrl, err1 := SignV2(accessKeyID, secretAccessKey, method, reqUrl, nil)
@@ -61,14 +61,14 @@ func CheckSign(accessKeyID string, secretAccessKey string, method string, reqUrl
 
 		// 时间格式不对
 		if err != nil {
-			return false, errors.New("ILLEGAL_ACCESS")
+			return false, errors.New("ILLEGAL_SIGN")
 		}
 
 		expireSeconds, err := strconv.Atoi(accessQuery.Get("ExpireSeconds"))
 
 		// 过期时间格式不对
 		if err != nil {
-			return false, errors.New("ILLEGAL_ACCESS")
+			return false, errors.New("ILLEGAL_SIGN")
 		}
 
 		// 过期时间在当前时间之后, 签名有效
@@ -77,7 +77,7 @@ func CheckSign(accessKeyID string, secretAccessKey string, method string, reqUrl
 		}
 
 		// 签名已过期
-		return false, errors.New("ILLEGAL_ACCESS")
+		return false, errors.New("ILLEGAL_SIGN")
 
 	}
 
@@ -113,7 +113,7 @@ func SignV2(accessKeyID string, secretAccessKey string, method string, reqUrl *u
 	if path == "" {
 		path = "/"
 	} else if strings.Contains(path, "../") {
-		return nil, errors.New("ILLEGAL_PARAMS")
+		return nil, errors.New("ILLEGAL_SIGN")
 	}
 
 	// obtain all of the query keys and sort them
