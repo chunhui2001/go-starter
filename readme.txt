@@ -68,6 +68,7 @@ $ go get github.com/gorilla/websocket
 
 ### html template
 # https://betterprogramming.pub/how-to-render-html-pages-with-gin-for-golang-9cb9c8d7e7b6
+# http://2016.8-p.info/post/06-18-go-html-template/
 
 ### goview
 # https://github.com/foolin/goview
