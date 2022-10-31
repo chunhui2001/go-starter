@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"fmt"
 	"net/http"
 	"net/url"
 	"sort"
@@ -14,16 +15,20 @@ import (
 )
 
 func SignV2Request(req *http.Request, accessKeyID string, secretAccessKey string) {
-	req.URL.RawQuery = SignV2(accessKeyID, secretAccessKey, req.Method, req.URL.RequestURI(), nil)
-}
 
-func SignV2(accessKeyID string, secretAccessKey string, method string, rawUrl string, queryParams *map[string]interface{}) string {
+	Query, _, _ := SignV2(accessKeyID, secretAccessKey, req.Method, req.URL, nil)
 
-	currurl, err := url.Parse(rawUrl)
+	currurl, err := url.Parse(fmt.Sprintf(`%s://%s?%s`, req.URL.Scheme, req.URL.Host, Query.Encode()))
 
 	if err != nil {
 		panic(err)
 	}
+
+	req.URL = currurl
+
+}
+
+func SignV2(accessKeyID string, secretAccessKey string, method string, currurl *url.URL, queryParams *map[string]interface{}) (url.Values, string, string) {
 
 	var Query url.Values = currurl.Query()
 
@@ -85,6 +90,6 @@ func SignV2(accessKeyID string, secretAccessKey string, method string, rawUrl st
 
 	Query.Set("Signature", signature)
 
-	return Query.Encode()
+	return Query, signature, Query.Get("Timestamp")
 
 }
