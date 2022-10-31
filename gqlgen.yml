@@ -61,3 +61,5 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
+  Decimal:
+    model: github.com/chunhui2001/go-starter/graph/mypkg.Decimal

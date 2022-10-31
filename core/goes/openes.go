@@ -490,8 +490,10 @@ func Collapse(indexName string, queryJsonString string) ([]map[string]interface{
 	if total > 0 {
 		for _, item := range dataMap {
 			_map := item.(map[string]interface{})
-			object := _map["fields"].(map[string]interface{})
-			interfaceSlice = append(interfaceSlice, object)
+			if _map["fields"] != nil {
+				object := _map["fields"].(map[string]interface{})
+				interfaceSlice = append(interfaceSlice, object)
+			}
 		}
 	}
 
