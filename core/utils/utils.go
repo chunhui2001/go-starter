@@ -205,7 +205,21 @@ func ToMap(v interface{}) map[string]interface{} {
 }
 
 func StrToInt(str string) int {
+	if str == "" {
+		return 0
+	}
 	intVar, err := strconv.Atoi(str)
+	if err != nil {
+		panic(err)
+	}
+	return intVar
+}
+
+func StrToFloat64(str string) float64 {
+	if str == "" {
+		return 0
+	}
+	intVar, err := strconv.ParseFloat(str, 64)
 	if err != nil {
 		panic(err)
 	}
@@ -218,6 +232,65 @@ func StrToBool(str string) bool {
 		panic(err)
 	}
 	return boolVal
+}
+
+func DecimalFromString(str string) decimal.Decimal {
+	price, err := decimal.NewFromString(str)
+	if err != nil {
+		panic(err)
+	}
+	return price
+}
+
+// Division with specified precision
+func DecimalPow(d1 string, precision int64) decimal.Decimal {
+
+	d11, err := decimal.NewFromString(d1)
+
+	if err != nil {
+		panic(err)
+	}
+
+	precisionDecimal := decimal.NewFromInt(precision)
+
+	return d11.Pow(precisionDecimal)
+
+}
+
+func DecimalDiv(d1 string, d2 string, precision int32) decimal.Decimal {
+
+	d11, err := decimal.NewFromString(d1)
+
+	if err != nil {
+		panic(err)
+	}
+
+	d22, err := decimal.NewFromString(d2)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return d11.DivRound(d22, precision)
+
+}
+
+func DecimalMul(d1 string, d2 string) decimal.Decimal {
+
+	d11, err := decimal.NewFromString(d1)
+
+	if err != nil {
+		panic(err)
+	}
+
+	d22, err := decimal.NewFromString(d2)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return d11.Mul(d22)
+
 }
 
 func ArrayContains(array []string, val string) bool {
@@ -326,19 +399,6 @@ func PadLeft(s string, padStr string, maxLen int) string {
 	var retStr = strings.Repeat(padStr, padCountInt) + s
 	return retStr[(len(retStr) - maxLen):]
 }
-
-func Trim(s string, leftChar string, rightChar string) string {
-	return strings.TrimPrefix(strings.TrimSuffix(s, rightChar), leftChar)
-}
-
-func TrimRight(s string) string {
-	return strings.TrimSuffix(s, ",")
-}
-
-func TrimLeft(s string) string {
-	return strings.TrimPrefix(s, ",")
-}
-
 func Split(s string, sep string) []string {
 	return strings.Split(s, sep)
 }
@@ -387,6 +447,22 @@ func MatchesGroup(regEx, str string) (paramsMap map[string]string) {
 
 	return paramsMap
 
+}
+
+func Trim(s string, leftChar string, rightChar string) string {
+	return strings.TrimPrefix(strings.TrimSuffix(s, rightChar), leftChar)
+}
+
+func TrimRight(s string) string {
+	return strings.TrimSuffix(s, ",")
+}
+
+func TrimLeft(s string) string {
+	return strings.TrimPrefix(s, ",")
+}
+
+func TrimNewLine(s string) string {
+	return regexp.MustCompile(`\r?\n`).ReplaceAllString(s, "")
 }
 
 func IfNull(obj any, defaultValue interface{}) interface{} {
@@ -535,63 +611,4 @@ func ReverseMapOfStringSlice(ss []*map[string]interface{}) {
 	for i := 0; i < len(ss)/2; i++ {
 		ss[i], ss[last-i] = ss[last-i], ss[i]
 	}
-}
-
-func DecimalFromString(str string) decimal.Decimal {
-	price, err := decimal.NewFromString(str)
-	if err != nil {
-		panic(err)
-	}
-	return price
-}
-
-// Division with specified precision
-func DecimalPow(d1 string, d2 int64) decimal.Decimal {
-
-	d11, err := decimal.NewFromString(d1)
-
-	if err != nil {
-		panic(err)
-	}
-
-	d22 := decimal.NewFromInt(d2)
-
-	return d11.Pow(d22)
-
-}
-
-func DecimalDiv(d1 string, d2 string, precision int32) decimal.Decimal {
-
-	d11, err := decimal.NewFromString(d1)
-
-	if err != nil {
-		panic(err)
-	}
-
-	d22, err := decimal.NewFromString(d2)
-
-	if err != nil {
-		panic(err)
-	}
-
-	return d11.DivRound(d22, precision)
-
-}
-
-func DecimalMul(d1 string, d2 string) decimal.Decimal {
-
-	d11, err := decimal.NewFromString(d1)
-
-	if err != nil {
-		panic(err)
-	}
-
-	d22, err := decimal.NewFromString(d2)
-
-	if err != nil {
-		panic(err)
-	}
-
-	return d11.Mul(d22)
-
 }
