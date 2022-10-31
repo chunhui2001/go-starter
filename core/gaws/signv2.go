@@ -36,13 +36,18 @@ func SignV2Request(req *http.Request, accessKeyID string, secretAccessKey string
 
 func CheckSign(accessKeyID string, secretAccessKey string, method string, reqUrl *url.URL) (bool, error) {
 
+	var accessQuery url.Values = reqUrl.Query()
+
+	if !accessQuery.Has("Signature") {
+		return false, errors.New("ILLEGAL_ACCESS")
+	}
+
 	newUrl, err1 := SignV2(accessKeyID, secretAccessKey, method, reqUrl, nil)
 
 	if err1 != nil {
 		return false, err1
 	}
 
-	var accessQuery url.Values = reqUrl.Query()
 	var newQuery url.Values = newUrl.Query()
 
 	// 签名不匹配, 签名无效
@@ -94,7 +99,10 @@ func SignV2(accessKeyID string, secretAccessKey string, method string, reqUrl *u
 	Query.Set("AWSAccessKeyId", accessKeyID)
 	Query.Set("SignatureVersion", signatureVersion)
 	Query.Set("SignatureMethod", signatureMethod)
-	Query.Set("Timestamp", time.Now().Format(timeFormat))
+
+	if !Query.Has("Timestamp") {
+		Query.Set("Timestamp", time.Now().Format(timeFormat))
+	}
 
 	// in case this is a retry, ensure no signature present
 	Query.Del("Signature")
