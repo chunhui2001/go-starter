@@ -7,6 +7,18 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+const (
+	Ok               int = 200
+	ILLEGAL_ACCESS   int = 411
+	ILLEGAL_PARAMS   int = 413
+	SERVER_ERROR     int = 500
+	TOO_MANY_REQUEST int = 429
+	UN_AUTH          int = 401
+	TIME_OUT         int = 402
+	FAILED           int = 400
+	NOT_FOUND        int = 404
+)
+
 func GetErrorMsg(fe validator.FieldError) string {
 
 	switch fe.Tag() {

@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -16,19 +17,17 @@ import (
 
 func SignV2Request(req *http.Request, accessKeyID string, secretAccessKey string) {
 
-	Query, _, _ := SignV2(accessKeyID, secretAccessKey, req.Method, req.URL, nil)
+	newUrl, err1 := SignV2(accessKeyID, secretAccessKey, req.Method, req.URL, nil)
 
-	currurl, err := url.Parse(fmt.Sprintf(`%s://%s?%s`, req.URL.Scheme, req.URL.Host, Query.Encode()))
-
-	if err != nil {
-		panic(err)
+	if err1 != nil {
+		panic(err1)
 	}
 
-	req.URL = currurl
+	req.URL = newUrl
 
 }
 
-func SignV2(accessKeyID string, secretAccessKey string, method string, currurl *url.URL, queryParams *map[string]interface{}) (url.Values, string, string) {
+func SignV2(accessKeyID string, secretAccessKey string, method string, currurl *url.URL, queryParams *map[string]interface{}) (*url.URL, error) {
 
 	var Query url.Values = currurl.Query()
 
@@ -44,6 +43,8 @@ func SignV2(accessKeyID string, secretAccessKey string, method string, currurl *
 	Query.Set("SignatureMethod", signatureMethod)
 	Query.Set("Timestamp", time.Now().Format(timeFormat))
 
+	// ExpireSeconds
+
 	// in case this is a retry, ensure no signature present
 	Query.Del("Signature")
 
@@ -52,6 +53,8 @@ func SignV2(accessKeyID string, secretAccessKey string, method string, currurl *
 
 	if path == "" {
 		path = "/"
+	} else if strings.Contains(path, "../") {
+		return nil, errors.New("ILLEGAL_PARAMS")
 	}
 
 	// obtain all of the query keys and sort them
@@ -90,6 +93,12 @@ func SignV2(accessKeyID string, secretAccessKey string, method string, currurl *
 
 	Query.Set("Signature", signature)
 
-	return Query, signature, Query.Get("Timestamp")
+	newUrl, err1 := url.Parse(fmt.Sprintf(`%s://%s%s?%s`, currurl.Scheme, currurl.Host, currurl.Path, Query.Encode()))
+
+	if err1 != nil {
+		panic(err1)
+	}
+
+	return newUrl, nil
 
 }

@@ -13,6 +13,8 @@ import (
 	"math/big"
 	"mime/multipart"
 	"net"
+	"net/http"
+	"net/url"
 	"os"
 	"reflect"
 	"regexp"
@@ -611,4 +613,21 @@ func ReverseMapOfStringSlice(ss []*map[string]interface{}) {
 	for i := 0; i < len(ss)/2; i++ {
 		ss[i], ss[last-i] = ss[last-i], ss[i]
 	}
+}
+
+func RequestURL(req *http.Request) *url.URL {
+
+	scheme := "http"
+
+	if req.TLS != nil {
+		scheme = "https"
+	}
+
+	newUrl, err1 := url.Parse(fmt.Sprintf(`%s://%s%s?%s`, scheme, req.Host, req.URL.Path, req.URL.Query().Encode()))
+
+	if err1 != nil {
+		panic(err1)
+	}
+
+	return newUrl
 }

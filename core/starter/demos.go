@@ -76,7 +76,11 @@ func init() {
 		AppendRouter("GET", []string{"/demo/ribbon-png"}, actions.RibbonDiagramsRouter)
 		AppendRouter("GET", []string{"/demo/defer-func"}, actions.DeferRouter)
 
+		// mysql transaction demo
 		AppendRouter("GET", []string{"/demo/transactions"}, controller.TransactionRouter)
+
+		// mysql transaction demo
+		AppendRouter("POST", []string{"/demo/awsv2-sign-simple"}, actions.AwsV2SignSimpleRouter)
 
 		// opensearch
 		AppendRouter("GET", []string{"/go-board/es/indices"}, actions.OpenSearchIndicesRouter)
