@@ -111,6 +111,14 @@ func DateTimeParse(s string) time.Time {
 	}
 }
 
+func DateTimeParseer(s string, format string) time.Time {
+	if t, err := time.Parse(format, s); err == nil {
+		return t
+	} else {
+		panic(err)
+	}
+}
+
 func DateTimeUTCString() string {
 	return time.Now().Format(TimeStampFormat)
 }

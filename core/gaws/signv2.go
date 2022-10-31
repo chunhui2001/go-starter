@@ -9,18 +9,11 @@ import (
 	"net/http"
 	"net/url"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/chunhui2001/go-starter/core/config"
-)
-
-var (
-	errInvalidMethod = errors.New("v2 signer only handles HTTP POST")
-	Logger           = config.Log
+	"github.com/chunhui2001/go-starter/core/utils"
 )
 
 const (
@@ -29,118 +22,100 @@ const (
 	timeFormat       = "2006-01-02T15:04:05Z"
 )
 
-type signer struct {
-	// Values that must be populated from the request
-	Request     *http.Request
-	Time        time.Time
-	Credentials *credentials.Credentials
-	Debug       aws.LogLevelType
+func SignV2Request(req *http.Request, accessKeyID string, secretAccessKey string) {
 
-	Query        url.Values
-	stringToSign string
-	signature    string
-}
+	newUrl, err1 := SignV2(accessKeyID, secretAccessKey, req.Method, req.URL, nil)
 
-// SignRequestHandler is a named request handler the SDK will use to sign
-// service client request with using the V4 signature.
-var SignRequestHandler = request.NamedHandler{
-	Name: "v2.SignRequestHandler", Fn: SignSDKRequest,
-}
-
-// SignSDKRequest requests with signature version 2.
-//
-// Will sign the requests with the service config's Credentials object
-// Signing is skipped if the credentials is the credentials.AnonymousCredentials
-// object.
-func SignSDKRequest(req *request.Request) {
-
-	// If the request does not need to be signed ignore the signing of the
-	// request if the AnonymousCredentials object is used.
-	if req.Config.Credentials == credentials.AnonymousCredentials {
-		return
+	if err1 != nil {
+		panic(err1)
 	}
 
-	if req.HTTPRequest.Method != "POST" && req.HTTPRequest.Method != "GET" {
-		// The V2 signer only supports GET and POST
-		req.Error = errInvalidMethod
-		return
-	}
-
-	v2 := signer{
-		Request:     req.HTTPRequest,
-		Time:        req.Time,
-		Credentials: req.Config.Credentials,
-		Debug:       req.Config.LogLevel.Value(),
-	}
-
-	req.Error = v2.Sign()
-
-	if req.Error != nil {
-		return
-	}
-
-	if req.HTTPRequest.Method == "POST" {
-		// Set the body of the request based on the modified query parameters
-		req.SetStringBody(v2.Query.Encode())
-		// Now that the body has changed, remove any Content-Length header,
-		// because it will be incorrect
-		req.HTTPRequest.ContentLength = 0
-		req.HTTPRequest.Header.Del("Content-Length")
-	} else {
-		req.HTTPRequest.URL.RawQuery = v2.Query.Encode()
-	}
+	req.URL = newUrl
 
 }
 
-func (v2 *signer) Sign() error {
+func CheckSign(accessKeyID string, secretAccessKey string, method string, reqUrl *url.URL) (bool, error) {
 
-	credValue, err := v2.Credentials.Get()
+	newUrl, err1 := SignV2(accessKeyID, secretAccessKey, method, reqUrl, nil)
 
-	if err != nil {
-		return err
+	if err1 != nil {
+		return false, err1
 	}
 
-	if v2.Request.Method == "POST" {
-		// Parse the HTTP request to obtain the query parameters that will
-		// be used to build the string to sign. Note that because the HTTP
-		// request will need to be modified, the PostForm and Form properties
-		// are reset to nil after parsing.
-		v2.Request.ParseForm()
-		v2.Query = v2.Request.PostForm
-		v2.Request.PostForm = nil
-		v2.Request.Form = nil
-	} else {
-		v2.Query = v2.Request.URL.Query()
+	var accessQuery url.Values = reqUrl.Query()
+	var newQuery url.Values = newUrl.Query()
+
+	// 签名不匹配, 签名无效
+	if accessQuery.Get("Signature") != newQuery.Get("Signature") {
+		return false, errors.New("UN_AUTH")
+	}
+
+	if accessQuery.Has("ExpireSeconds") {
+
+		signTime, err := time.Parse(timeFormat, accessQuery.Get("Timestamp"))
+
+		// 时间格式不对
+		if err != nil {
+			return false, errors.New("ILLEGAL_ACCESS")
+		}
+
+		expireSeconds, err := strconv.Atoi(accessQuery.Get("ExpireSeconds"))
+
+		// 过期时间格式不对
+		if err != nil {
+			return false, errors.New("ILLEGAL_ACCESS")
+		}
+
+		// 过期时间在当前时间之后, 签名有效
+		if signTime.Add(time.Duration(expireSeconds) * time.Second).After(time.Now()) {
+			return true, nil
+		}
+
+		// 签名已过期
+		return false, errors.New("ILLEGAL_ACCESS")
+
+	}
+
+	return true, nil
+
+}
+
+func SignV2(accessKeyID string, secretAccessKey string, method string, reqUrl *url.URL, queryParams *map[string]interface{}) (*url.URL, error) {
+
+	var Query url.Values = reqUrl.Query()
+
+	if queryParams != nil {
+		for key, val := range *queryParams {
+			Query.Set(key, utils.ToString(val))
+		}
 	}
 
 	// Set new query parameters
-	v2.Query.Set("AWSAccessKeyId", credValue.AccessKeyID)
-	v2.Query.Set("SignatureVersion", signatureVersion)
-	v2.Query.Set("SignatureMethod", signatureMethod)
-	v2.Query.Set("Timestamp", v2.Time.UTC().Format(timeFormat))
-
-	if credValue.SessionToken != "" {
-		v2.Query.Set("SecurityToken", credValue.SessionToken)
-	}
+	Query.Set("AWSAccessKeyId", accessKeyID)
+	Query.Set("SignatureVersion", signatureVersion)
+	Query.Set("SignatureMethod", signatureMethod)
+	Query.Set("Timestamp", time.Now().Format(timeFormat))
 
 	// in case this is a retry, ensure no signature present
-	v2.Query.Del("Signature")
+	Query.Del("Signature")
 
-	method := v2.Request.Method
-	host := v2.Request.URL.Host
-	path := v2.Request.URL.Path
+	host := reqUrl.Host
+	path := reqUrl.Path
 
 	if path == "" {
 		path = "/"
+	} else if strings.Contains(path, "../") {
+		return nil, errors.New("ILLEGAL_PARAMS")
 	}
 
 	// obtain all of the query keys and sort them
-	queryKeys := make([]string, 0, len(v2.Query))
+	queryKeys := make([]string, 0, len(Query))
 
-	for key := range v2.Query {
+	for key := range Query {
 		queryKeys = append(queryKeys, key)
 	}
 
+	// sort keys
 	sort.Strings(queryKeys)
 
 	// build URL-encoded query keys and values
@@ -148,7 +123,7 @@ func (v2 *signer) Sign() error {
 
 	for i, key := range queryKeys {
 		k := strings.Replace(url.QueryEscape(key), "+", "%20", -1)
-		v := strings.Replace(url.QueryEscape(v2.Query.Get(key)), "+", "%20", -1)
+		v := strings.Replace(url.QueryEscape(Query.Get(key)), "+", "%20", -1)
 		queryKeysAndValues[i] = k + "=" + v
 	}
 
@@ -156,33 +131,25 @@ func (v2 *signer) Sign() error {
 	query := strings.Join(queryKeysAndValues, "&")
 
 	// build the canonical string for the V2 signature
-	v2.stringToSign = strings.Join([]string{
+	stringToSign := strings.Join([]string{
 		method,
 		host,
 		path,
 		query,
 	}, "\n")
 
-	hash := hmac.New(sha256.New, []byte(credValue.SecretAccessKey))
-	hash.Write([]byte(v2.stringToSign))
-	v2.signature = base64.StdEncoding.EncodeToString(hash.Sum(nil))
-	v2.Query.Set("Signature", v2.signature)
+	hash := hmac.New(sha256.New, []byte(secretAccessKey))
+	hash.Write([]byte(stringToSign))
+	signature := base64.StdEncoding.EncodeToString(hash.Sum(nil))
 
-	if v2.Debug.Matches(aws.LogDebugWithSigning) {
-		v2.logSigningInfo()
+	Query.Set("Signature", signature)
+
+	newUrl, err1 := url.Parse(fmt.Sprintf(`%s://%s%s?%s`, reqUrl.Scheme, reqUrl.Host, reqUrl.Path, Query.Encode()))
+
+	if err1 != nil {
+		panic(err1)
 	}
 
-	return nil
-}
+	return newUrl, nil
 
-const logSignInfoMsg = `DEBUG: Request Signature:
----[ STRING TO SIGN ]--------------------------------
-%s
----[ SIGNATURE ]-------------------------------------
-%s
------------------------------------------------------`
-
-func (v2 *signer) logSigningInfo() {
-	msg := fmt.Sprintf(logSignInfoMsg, v2.stringToSign, v2.Query.Get("Signature"))
-	Logger.Info(msg)
 }
