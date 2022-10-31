@@ -218,6 +218,8 @@ https://docs.google.com/
 ## 修改文件权限
 # https://developers.google.com/drive/api/v3/reference/revisions
 
+### (Go) Generate an AWS (S3) Pre-Signed URL using Signature V4
+# https://www.example-code.com/golang/aws_pre_signed_url_v4.asp
 
 
 -----------------------------------------------------------------

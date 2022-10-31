@@ -462,7 +462,7 @@ func TrimLeft(s string) string {
 }
 
 func TrimNewLine(s string) string {
-	return regexp.MustCompile(`\r?\n`).ReplaceAllString(s, "")
+	return regexp.MustCompile(`\r?\n$|^\r?\n`).ReplaceAllString(s, "")
 }
 
 func IfNull(obj any, defaultValue interface{}) interface{} {
