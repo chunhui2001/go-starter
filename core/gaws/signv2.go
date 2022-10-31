@@ -17,20 +17,21 @@ import (
 )
 
 const (
-	signatureVersion = "2"
-	signatureMethod  = "HmacSHA256"
-	timeFormat       = "2006-01-02T15:04:05Z"
+	signatureVersion      = "2"
+	signatureMethod       = "HmacSHA256"
+	timeFormat            = "2006-01-02T15:04:05Z"
+	ExpireSecondsFieldKey = "ExpireSeconds"
 )
 
-func SignV2Request(req *http.Request, accessKeyID string, secretAccessKey string) {
+func SignV2Request(req *http.Request, accessKeyID string, secretAccessKey string, expireSeconds int) {
 
-	newUrl, err1 := SignV2(accessKeyID, secretAccessKey, req.Method, req.URL, nil)
+	preSignedUrl, err1 := PreSignedUrlV2(accessKeyID, secretAccessKey, expireSeconds, req.Method, req.URL, nil)
 
 	if err1 != nil {
 		panic(err1)
 	}
 
-	req.URL = newUrl
+	req.URL = preSignedUrl
 
 }
 
@@ -39,36 +40,38 @@ func CheckSign(accessKeyID string, secretAccessKey string, method string, reqUrl
 	var accessQuery url.Values = reqUrl.Query()
 
 	if !accessQuery.Has("Signature") {
-		return false, errors.New("ILLEGAL_SIGN")
+		return false, errors.New("ILLEGAL_SIGNATURE")
 	}
 
-	newUrl, err1 := SignV2(accessKeyID, secretAccessKey, method, reqUrl, nil)
+	expireSeconds, _ := strconv.Atoi(accessQuery.Get(ExpireSecondsFieldKey))
+
+	preSignedUrl, err1 := PreSignedUrlV2(accessKeyID, secretAccessKey, expireSeconds, method, reqUrl, nil)
 
 	if err1 != nil {
 		return false, err1
 	}
 
-	var newQuery url.Values = newUrl.Query()
+	var newQuery url.Values = preSignedUrl.Query()
 
 	// 签名不匹配, 签名无效
 	if accessQuery.Get("Signature") != newQuery.Get("Signature") {
 		return false, errors.New("UN_AUTH")
 	}
 
-	if accessQuery.Has("ExpireSeconds") {
+	if accessQuery.Has(ExpireSecondsFieldKey) {
 
 		signTime, err := time.Parse(timeFormat, accessQuery.Get("Timestamp"))
 
 		// 时间格式不对
 		if err != nil {
-			return false, errors.New("ILLEGAL_SIGN")
+			return false, errors.New("ILLEGAL_SIGNATURE")
 		}
 
-		expireSeconds, err := strconv.Atoi(accessQuery.Get("ExpireSeconds"))
+		expireSeconds, err := strconv.Atoi(accessQuery.Get(ExpireSecondsFieldKey))
 
 		// 过期时间格式不对
 		if err != nil {
-			return false, errors.New("ILLEGAL_SIGN")
+			return false, errors.New("ILLEGAL_SIGNATURE")
 		}
 
 		// 过期时间在当前时间之后, 签名有效
@@ -77,7 +80,7 @@ func CheckSign(accessKeyID string, secretAccessKey string, method string, reqUrl
 		}
 
 		// 签名已过期
-		return false, errors.New("ILLEGAL_SIGN")
+		return false, errors.New("SIGNATURE_EXPIRED")
 
 	}
 
@@ -85,7 +88,7 @@ func CheckSign(accessKeyID string, secretAccessKey string, method string, reqUrl
 
 }
 
-func SignV2(accessKeyID string, secretAccessKey string, method string, reqUrl *url.URL, queryParams *map[string]interface{}) (*url.URL, error) {
+func PreSignedUrlV2(accessKeyID string, secretAccessKey string, expireSeconds int, method string, reqUrl *url.URL, queryParams *map[string]interface{}) (*url.URL, error) {
 
 	var Query url.Values = reqUrl.Query()
 
@@ -104,6 +107,10 @@ func SignV2(accessKeyID string, secretAccessKey string, method string, reqUrl *u
 		Query.Set("Timestamp", time.Now().Format(timeFormat))
 	}
 
+	if expireSeconds > 0 {
+		Query.Set(ExpireSecondsFieldKey, utils.ToString(expireSeconds))
+	}
+
 	// in case this is a retry, ensure no signature present
 	Query.Del("Signature")
 
@@ -113,7 +120,7 @@ func SignV2(accessKeyID string, secretAccessKey string, method string, reqUrl *u
 	if path == "" {
 		path = "/"
 	} else if strings.Contains(path, "../") {
-		return nil, errors.New("ILLEGAL_SIGN")
+		return nil, errors.New("ILLEGAL_SIGNATURE")
 	}
 
 	// obtain all of the query keys and sort them
@@ -140,7 +147,7 @@ func SignV2(accessKeyID string, secretAccessKey string, method string, reqUrl *u
 
 	// build the canonical string for the V2 signature
 	stringToSign := strings.Join([]string{
-		method,
+		strings.ToUpper(method),
 		host,
 		path,
 		query,

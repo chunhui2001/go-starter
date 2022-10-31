@@ -1,7 +1,9 @@
 package actions
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
 	. "github.com/chunhui2001/go-starter/core/commons"
 	"github.com/chunhui2001/go-starter/core/gaws"
@@ -16,13 +18,20 @@ func AwsV2SignSimpleRouter(c *gin.Context) {
 
 	c.Header("Content-Type", "text/plain")
 
-	newUrl, err := gaws.SignV2(accessKeyID, secretAccessKey, c.Request.Method, utils.RequestURL(c.Request), nil)
+	preSignedUrl, err := gaws.PreSignedUrlV2(accessKeyID, secretAccessKey, 10, c.Request.Method, utils.RequestURL(c.Request), nil)
 
 	if err != nil {
 		c.JSON(http.StatusOK, (&R{Error: err}).Fail(ILLEGAL_ACCESS))
 		return
 	}
 
-	c.Writer.Write([]byte(newUrl.String()))
+	time.Sleep(1 * time.Second)
+
+	result, err := gaws.CheckSign(accessKeyID, secretAccessKey, "POST", preSignedUrl)
+
+	fmt.Println(err)
+	fmt.Println(result)
+
+	c.Writer.Write([]byte(preSignedUrl.String()))
 
 }
