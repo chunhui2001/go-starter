@@ -60,16 +60,21 @@ func CheckSign(accessKeyID string, secretAccessKey string, method string, reqUrl
 
 	if accessQuery.Has(ExpireSecondsFieldKey) {
 
-		signTime, err := time.Parse(timeFormat, accessQuery.Get("Timestamp"))
+		expireSeconds, err := strconv.Atoi(accessQuery.Get(ExpireSecondsFieldKey))
 
-		// 时间格式不对
+		// 过期时间格式不对
 		if err != nil {
 			return false, errors.New("ILLEGAL_SIGNATURE")
 		}
 
-		expireSeconds, err := strconv.Atoi(accessQuery.Get(ExpireSecondsFieldKey))
+		// 无过期时间
+		if expireSeconds <= 0 {
+			return true, nil
+		}
 
-		// 过期时间格式不对
+		signTime, err := time.Parse(timeFormat, accessQuery.Get("Timestamp"))
+
+		// 时间格式不对
 		if err != nil {
 			return false, errors.New("ILLEGAL_SIGNATURE")
 		}
