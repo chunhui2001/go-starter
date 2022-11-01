@@ -68,6 +68,7 @@ $ go get github.com/gorilla/websocket
 
 ### html template
 # https://betterprogramming.pub/how-to-render-html-pages-with-gin-for-golang-9cb9c8d7e7b6
+# http://2016.8-p.info/post/06-18-go-html-template/
 
 ### goview
 # https://github.com/foolin/goview
@@ -217,6 +218,8 @@ https://docs.google.com/
 ## 修改文件权限
 # https://developers.google.com/drive/api/v3/reference/revisions
 
+### (Go) Generate an AWS (S3) Pre-Signed URL using Signature V4
+# https://www.example-code.com/golang/aws_pre_signed_url_v4.asp
 
 
 -----------------------------------------------------------------

@@ -13,6 +13,8 @@ import (
 	"math/big"
 	"mime/multipart"
 	"net"
+	"net/http"
+	"net/url"
 	"os"
 	"reflect"
 	"regexp"
@@ -103,6 +105,14 @@ func GetFileMd5(file multipart.File) (md5Str string) {
 
 func DateTimeParse(s string) time.Time {
 	if t, err := time.Parse(TimeStampFormat, s); err == nil {
+		return t
+	} else {
+		panic(err)
+	}
+}
+
+func DateTimeParseer(s string, format string) time.Time {
+	if t, err := time.Parse(format, s); err == nil {
 		return t
 	} else {
 		panic(err)
@@ -205,7 +215,21 @@ func ToMap(v interface{}) map[string]interface{} {
 }
 
 func StrToInt(str string) int {
+	if str == "" {
+		return 0
+	}
 	intVar, err := strconv.Atoi(str)
+	if err != nil {
+		panic(err)
+	}
+	return intVar
+}
+
+func StrToFloat64(str string) float64 {
+	if str == "" {
+		return 0
+	}
+	intVar, err := strconv.ParseFloat(str, 64)
 	if err != nil {
 		panic(err)
 	}
@@ -218,6 +242,65 @@ func StrToBool(str string) bool {
 		panic(err)
 	}
 	return boolVal
+}
+
+func DecimalFromString(str string) decimal.Decimal {
+	price, err := decimal.NewFromString(str)
+	if err != nil {
+		panic(err)
+	}
+	return price
+}
+
+// Division with specified precision
+func DecimalPow(d1 string, precision int64) decimal.Decimal {
+
+	d11, err := decimal.NewFromString(d1)
+
+	if err != nil {
+		panic(err)
+	}
+
+	precisionDecimal := decimal.NewFromInt(precision)
+
+	return d11.Pow(precisionDecimal)
+
+}
+
+func DecimalDiv(d1 string, d2 string, precision int32) decimal.Decimal {
+
+	d11, err := decimal.NewFromString(d1)
+
+	if err != nil {
+		panic(err)
+	}
+
+	d22, err := decimal.NewFromString(d2)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return d11.DivRound(d22, precision)
+
+}
+
+func DecimalMul(d1 string, d2 string) decimal.Decimal {
+
+	d11, err := decimal.NewFromString(d1)
+
+	if err != nil {
+		panic(err)
+	}
+
+	d22, err := decimal.NewFromString(d2)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return d11.Mul(d22)
+
 }
 
 func ArrayContains(array []string, val string) bool {
@@ -326,19 +409,6 @@ func PadLeft(s string, padStr string, maxLen int) string {
 	var retStr = strings.Repeat(padStr, padCountInt) + s
 	return retStr[(len(retStr) - maxLen):]
 }
-
-func Trim(s string, leftChar string, rightChar string) string {
-	return strings.TrimPrefix(strings.TrimSuffix(s, rightChar), leftChar)
-}
-
-func TrimRight(s string) string {
-	return strings.TrimSuffix(s, ",")
-}
-
-func TrimLeft(s string) string {
-	return strings.TrimPrefix(s, ",")
-}
-
 func Split(s string, sep string) []string {
 	return strings.Split(s, sep)
 }
@@ -387,6 +457,22 @@ func MatchesGroup(regEx, str string) (paramsMap map[string]string) {
 
 	return paramsMap
 
+}
+
+func Trim(s string, leftChar string, rightChar string) string {
+	return strings.TrimPrefix(strings.TrimSuffix(s, rightChar), leftChar)
+}
+
+func TrimRight(s string) string {
+	return strings.TrimSuffix(s, ",")
+}
+
+func TrimLeft(s string) string {
+	return strings.TrimPrefix(s, ",")
+}
+
+func TrimNewLine(s string) string {
+	return regexp.MustCompile(`\r?\n$|^\r?\n`).ReplaceAllString(s, "")
 }
 
 func IfNull(obj any, defaultValue interface{}) interface{} {
@@ -537,65 +623,19 @@ func ReverseMapOfStringSlice(ss []*map[string]interface{}) {
 	}
 }
 
-func DecimalFromString(str string) decimal.Decimal {
-	price, err := decimal.NewFromString(str)
-	if err != nil {
-		panic(err)
-	}
-	return price
-}
+func RequestURL(req *http.Request) *url.URL {
 
-// Division with specified precision
-func DecimalPow(d1 string, d2 int64) decimal.Decimal {
+	scheme := "http"
 
-	d11, err := decimal.NewFromString(d1)
-
-	if err != nil {
-		panic(err)
+	if req.TLS != nil {
+		scheme = "https"
 	}
 
-	d22 := decimal.NewFromInt(d2)
+	newUrl, err1 := url.Parse(fmt.Sprintf(`%s://%s%s?%s`, scheme, req.Host, req.URL.Path, req.URL.Query().Encode()))
 
-	return d11.Pow(d22)
-
-}
-
-func DecimalDiv(d1 string, d2 string, precision int32) decimal.Decimal {
-
-	d11, err := decimal.NewFromString(d1)
-
-	if err != nil {
-		panic(err)
+	if err1 != nil {
+		panic(err1)
 	}
 
-	d22, err := decimal.NewFromString(d2)
-
-	if err != nil {
-		panic(err)
-	}
-
-	if d22.IsZero() {
-		return decimal.Zero
-	}
-
-	return d11.DivRound(d22, precision)
-
-}
-
-func DecimalMul(d1 string, d2 string) decimal.Decimal {
-
-	d11, err := decimal.NewFromString(d1)
-
-	if err != nil {
-		panic(err)
-	}
-
-	d22, err := decimal.NewFromString(d2)
-
-	if err != nil {
-		panic(err)
-	}
-
-	return d11.Mul(d22)
-
+	return newUrl
 }
