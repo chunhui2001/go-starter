@@ -10,3 +10,13 @@ Reverse-Proxy:
     to: /scan-api
     remotes: 
       - http://127.0.0.1:4002
+
+Access-Clients:
+  x5iDuUTmxfECU0uV:
+    clientName: simple-app
+    accessKeyID: x5iDuUTmxfECU0uV
+    secretAccessKey: tgY+fmagF85tA1as
+    enabled: true
+    scope:
+      - /info
+      - /health

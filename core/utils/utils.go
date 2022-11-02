@@ -631,11 +631,24 @@ func RequestURL(req *http.Request) *url.URL {
 		scheme = "https"
 	}
 
-	newUrl, err1 := url.Parse(fmt.Sprintf(`%s://%s%s?%s`, scheme, req.Host, req.URL.Path, req.URL.Query().Encode()))
+	var rawQuery = req.URL.Query().Encode()
+
+	if rawQuery != "" {
+		newUrl, err1 := url.Parse(fmt.Sprintf(`%s://%s%s?%s`, scheme, req.Host, req.URL.Path, rawQuery))
+
+		if err1 != nil {
+			panic(err1)
+		}
+
+		return newUrl
+	}
+
+	newUrl, err1 := url.Parse(fmt.Sprintf(`%s://%s%s`, scheme, req.Host, req.URL.Path))
 
 	if err1 != nil {
 		panic(err1)
 	}
 
 	return newUrl
+
 }

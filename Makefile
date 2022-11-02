@@ -117,6 +117,11 @@ clear:
 	rm -rf dist gin-bin
 	docker image prune -a -f
 
+# 随机密码
+passwd:
+	head -c12 < /dev/random | base64
+	@#head -c12 < /dev/urandom | base64
+
 ### 显示已安装的可执行程序
 # show install utils
 list:

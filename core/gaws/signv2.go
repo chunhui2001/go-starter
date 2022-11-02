@@ -17,10 +17,11 @@ import (
 )
 
 const (
-	signatureVersion      = "2"
-	signatureMethod       = "HmacSHA256"
-	timeFormat            = "2006-01-02T15:04:05Z"
-	ExpireSecondsFieldKey = "ExpireSeconds"
+	signatureVersion       = "2"
+	signatureMethod        = "HmacSHA256"
+	timeFormat             = "2006-01-02T15:04:05Z"
+	ExpireSecondsFieldKey  = "ExpireSeconds"
+	AWSAccessKeyIdFieldKey = "AWSAccessKeyId"
 )
 
 func SignV2Request(req *http.Request, accessKeyID string, secretAccessKey string, expireSeconds int) {
@@ -104,7 +105,7 @@ func PreSignedUrlV2(accessKeyID string, secretAccessKey string, expireSeconds in
 	}
 
 	// Set new query parameters
-	Query.Set("AWSAccessKeyId", accessKeyID)
+	Query.Set(AWSAccessKeyIdFieldKey, accessKeyID)
 	Query.Set("SignatureVersion", signatureVersion)
 	Query.Set("SignatureMethod", signatureMethod)
 

@@ -3,6 +3,7 @@ package starter
 import (
 	"github.com/chunhui2001/go-starter/actions"
 	"github.com/chunhui2001/go-starter/controller"
+	"github.com/chunhui2001/go-starter/core/middleware"
 )
 
 func init() {
@@ -12,7 +13,7 @@ func init() {
 
 		// commons simples
 		AppendRouter("GET", []string{"/labs-panic"}, actions.PanicRouter)
-		AppendRouter("GET", []string{"/httpclient-simple"}, actions.HttpClientSimpleRouter)
+		AppendRouter("GET", []string{"/httpclient-simple"}, middleware.AccessInterceptor(true), actions.HttpClientSimpleRouter)
 		AppendRouter("GET", []string{"/httpclient-timeout"}, actions.HttpClientTimeOutRouter)
 
 		AppendRouter("GET", []string{"/labs-bigint"}, actions.BigRouter)

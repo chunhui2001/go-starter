@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/chunhui2001/go-starter/core/config"
 	"github.com/chunhui2001/go-starter/core/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -24,7 +23,6 @@ type rule struct {
 }
 
 var (
-	logger      = config.Log
 	UrlRewriter = UrlRewrite{}
 )
 
