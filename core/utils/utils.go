@@ -281,6 +281,10 @@ func DecimalDiv(d1 string, d2 string, precision int32) decimal.Decimal {
 		panic(err)
 	}
 
+	if d22.IsZero() {
+		return decimal.Zero
+	}
+
 	return d11.DivRound(d22, precision)
 
 }
