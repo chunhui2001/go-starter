@@ -627,6 +627,18 @@ func ReverseMapOfStringSlice(ss []*map[string]interface{}) {
 	}
 }
 
+func UrlParse(uri string) *url.URL {
+
+	newUrl, err1 := url.Parse(uri)
+
+	if err1 != nil {
+		panic(err1)
+	}
+
+	return newUrl
+
+}
+
 func RequestURL(req *http.Request) *url.URL {
 
 	scheme := "http"

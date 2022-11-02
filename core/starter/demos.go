@@ -80,8 +80,9 @@ func init() {
 		// mysql transaction demo
 		AppendRouter("GET", []string{"/demo/transactions"}, controller.TransactionRouter)
 
-		// mysql transaction demo
+		// aws
 		AppendRouter("POST", []string{"/demo/awsv2-sign-simple"}, actions.AwsV2SignSimpleRouter)
+		AppendRouter("GET", []string{"/demo/awsv2-sign-http"}, actions.AwsV2SignHttpClientRouter)
 
 		// opensearch
 		AppendRouter("GET", []string{"/go-board/es/indices"}, actions.OpenSearchIndicesRouter)

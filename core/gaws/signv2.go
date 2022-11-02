@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/chunhui2001/go-starter/core/config"
 	"github.com/chunhui2001/go-starter/core/utils"
 )
 
@@ -22,6 +23,10 @@ const (
 	timeFormat             = "2006-01-02T15:04:05Z"
 	ExpireSecondsFieldKey  = "ExpireSeconds"
 	AWSAccessKeyIdFieldKey = "AWSAccessKeyId"
+)
+
+var (
+	logger = config.Log
 )
 
 func SignV2Request(req *http.Request, accessKeyID string, secretAccessKey string, expireSeconds int) {
@@ -56,7 +61,7 @@ func CheckSign(accessKeyID string, secretAccessKey string, method string, reqUrl
 
 	// 签名不匹配, 签名无效
 	if accessQuery.Get("Signature") != newQuery.Get("Signature") {
-		return false, errors.New("UN_AUTH")
+		return false, errors.New("UN_AUTH_INVALID_SIGNATURE")
 	}
 
 	if accessQuery.Has(ExpireSecondsFieldKey) {
@@ -65,7 +70,7 @@ func CheckSign(accessKeyID string, secretAccessKey string, method string, reqUrl
 
 		// 过期时间格式不对
 		if err != nil {
-			return false, errors.New("ILLEGAL_SIGNATURE")
+			return false, errors.New("ILLEGAL_EXPIRES_ECONDS")
 		}
 
 		// 无过期时间
@@ -77,7 +82,7 @@ func CheckSign(accessKeyID string, secretAccessKey string, method string, reqUrl
 
 		// 时间格式不对
 		if err != nil {
-			return false, errors.New("ILLEGAL_SIGNATURE")
+			return false, errors.New("ILLEGAL_INVALID_TIMESTAMP")
 		}
 
 		// 过期时间在当前时间之后, 签名有效
