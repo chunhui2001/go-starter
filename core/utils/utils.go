@@ -673,6 +673,7 @@ func AscIIValue(i int) string {
 	return fmt.Sprintf("%c", i)
 }
 
+// A1-Z1
 // AA-AZ >>>> AA1-AB1,AC1,AZ1
 // BA-BZ >>>> BA1-BB1,BC1,BZ1
 // CA-CZ >>>> CA1-CB1,CC1,CZ1
@@ -694,7 +695,7 @@ func IncrementNextCellIndex(cellname string, rowNum int) string {
 		c1 := cellname[0]
 		c2 := cellname[1]
 		if c2 == 'Z' {
-			return fmt.Sprintf("%dA%d", firstChar, rowNo)
+			return fmt.Sprintf("%cA%d", firstChar, rowNo)
 		}
 		number := StrToInt(fmt.Sprintf("%d", c2)) + 1
 		return fmt.Sprintf("%c%s%d", c1, AscIIValue(number), rowNo)
