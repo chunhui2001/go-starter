@@ -668,3 +668,42 @@ func RequestURL(req *http.Request) *url.URL {
 	return newUrl
 
 }
+
+func AscIIValue(i int) string {
+	return fmt.Sprintf("%c", i)
+}
+
+// AA-AZ >>>> AA1-AB1,AC1,AZ1
+// BA-BZ >>>> BA1-BB1,BC1,BZ1
+// CA-CZ >>>> CA1-CB1,CC1,CZ1
+func IncrementNextCellIndex(cellname string, rowNum int) string {
+
+	cellPrefix := regexp.MustCompile(`[0-9]{1,}`).ReplaceAllString(cellname, "")
+
+	if len(cellPrefix) == 1 { // A1-Z1
+		c1 := cellname[0]
+		if c1 == 'Z' {
+			return fmt.Sprintf("AA%d", rowNum)
+		}
+		number := StrToInt(fmt.Sprintf("%d", c1)) + 1
+		return fmt.Sprintf("%s%d", AscIIValue(number), rowNum)
+	}
+
+	var f2 = func(cellPrefix string, rowNo int) string {
+		var firstChar int = StrToInt(fmt.Sprintf("%d", cellPrefix[0])) + 1
+		c1 := cellname[0]
+		c2 := cellname[1]
+		if c2 == 'Z' {
+			return fmt.Sprintf("%dA%d", firstChar, rowNo)
+		}
+		number := StrToInt(fmt.Sprintf("%d", c2)) + 1
+		return fmt.Sprintf("%c%s%d", c1, AscIIValue(number), rowNo)
+	}
+
+	if len(cellPrefix) == 2 {
+		return f2(cellPrefix, rowNum)
+	}
+
+	panic("Could-Not-Calculate-CellIndex")
+
+}
