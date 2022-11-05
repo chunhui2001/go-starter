@@ -494,8 +494,8 @@ func loadAppSettings(v1 *viper.Viper, filename string) {
 			", Cores=" + utils.ToString(cores) +
 			", TotalMem=" + utils.HumanFileSizeUint(v.Total) +
 			", PhysicalID=" + physicalID +
-			", CPUMode=" + cpuMode,
-		)
+			", GOMAXPROCS=" + os.Getenv("GOMAXPROCS") +
+			", CPUMode=" + cpuMode)
 
 		AppSetting.AppVersion = built.INFO.Commit
 		AppSetting.OS = built.INFO.OS
