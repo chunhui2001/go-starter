@@ -74,6 +74,8 @@ func AccessInterceptor(enable bool) gin.HandlerFunc {
 
 func AbortAccess(err error, c *gin.Context) {
 	c.String(401, err.Error())
-	c.Error(err)
+	if e := c.Error(err); e != nil {
+		panic(e)
+	}
 	c.Abort()
 }

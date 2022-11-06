@@ -249,7 +249,7 @@ func getBulkIndexerItem(item *map[string]interface{}, countSuccessful *uint64) e
 			if err != nil {
 				logger.Errorf("Es-Bulk-ERROR: ErrorMessage=%s", err.Error())
 			} else {
-				logger.Errorf("Es-Bulk-ERROR: ErrorMessage=%s", res.Error.Type, res.Error.Reason)
+				logger.Errorf("Es-Bulk-ERROR: ErrorType=%s, ErrorMessage=%s", res.Error.Type, res.Error.Reason)
 			}
 		},
 	}

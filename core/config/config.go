@@ -333,7 +333,7 @@ func init() {
 	var defaultenv = ".env/.env"
 	var envfile = ".env/.env." + env
 
-	if exists, _ := utils.FileExists(filepath.Join(AppRoot(), envfile)); exists == true {
+	if exists, _ := utils.FileExists(filepath.Join(AppRoot(), envfile)); exists {
 		filename = envfile
 	} else {
 		log.Println("Configuration loading " + filepath.Join(AppRoot(), envfile) + " file error, use .env file.")
@@ -748,7 +748,7 @@ func loadYamlConfiguraion() {
 
 		yamlFilePath := filepath.Join(utils.RootDir(), ".env", file)
 
-		if exists, _ := utils.FileExists(yamlFilePath); exists == true {
+		if exists, _ := utils.FileExists(yamlFilePath); exists {
 
 			if yamlContent, err := utils.ReadFile(yamlFilePath); err != nil {
 				Log.Errorf(`Read-Yaml-File-Error: FilePath=%s, ErrorMessage=%s`, yamlFilePath, err.Error())
@@ -774,11 +774,15 @@ func loadYamlConfiguraion() {
 	var body2 map[string]interface{} = f("application-" + env + ".yml")
 
 	if body1 != nil {
-		copier.CopyWithOption(&applicationConfig, &body1, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+		if err := copier.CopyWithOption(&applicationConfig, &body1, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+			panic(err)
+		}
 	}
 
 	if body2 != nil {
-		copier.CopyWithOption(&applicationConfig, &body2, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+		if err := copier.CopyWithOption(&applicationConfig, &body2, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+			panic(err)
+		}
 	}
 
 }

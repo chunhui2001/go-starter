@@ -49,8 +49,16 @@ $ sysctl -w fs.file-max=1000000
 ### and /etc/security/limits.conf or /etc/sysctl.conf change:
 fs.file-max = 1000000
 
+
+# binary will be $(go env GOPATH)/bin/golangci-lint
+$ curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.50.1
+$ golangci-lint --version
+
 ### Go Playground
 https://go.dev/play/
+
+### building microservices go gin
+https://blog.logrocket.com/building-microservices-go-gin/
 
 ### websocket 
 # https://hoohoo.top/blog/20220320172715-go-websocket/
@@ -184,6 +192,9 @@ https://gqlgen.com/config/
 
 ### Mapping GraphQL scalar types to Go types
 https://gqlgen.com/reference/scalars/
+
+### graphql tools
+https://hygraph.com/blog/graphql-tools
 
 ### A helper to merge structs and maps in Golang. Useful for configuration default values, avoiding messy if-statements.
 https://github.com/imdario/mergo

@@ -60,6 +60,9 @@ run:
 dev:
 	TZ=$(zone) GIN_ENV=$(e) GIN_MAPS_TIMESTAMP=$(GIN_MAPS_TIMESTAMP) NODE_ID=$(NODE_ID) gin -i --appPort 8080 --port 3000 run main.go
 
+### lint
+lint:
+	golangci-lint run
 
 ### 构建跨平台的可执行程序
 Built1:

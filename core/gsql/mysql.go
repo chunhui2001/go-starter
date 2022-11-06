@@ -76,7 +76,7 @@ func Version() (string, error) {
 	return version, err2
 }
 
-func exceScripts() (bool, error) {
+func exceScripts() {
 
 	if mySqlConf.InitScript != "" {
 
@@ -151,8 +151,6 @@ func exceScripts() (bool, error) {
 		}
 
 	}
-
-	return true, nil
 
 }
 

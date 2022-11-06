@@ -150,7 +150,7 @@ func prettyprint(filename string, tplname string, b []byte) (string, error) {
 		return string(b), err
 	}
 
-	prettyjson := regexp.MustCompile(`\r?\n`).ReplaceAllString(string(out.Bytes()), "")
+	prettyjson := regexp.MustCompile(`\r?\n`).ReplaceAllString(out.String(), "")
 	mylog.Infof(`DSLQuery: filename=%s, tplname=%s, prettyjson=%s`, filename, tplname, prettyjson)
 
 	return prettyjson, nil

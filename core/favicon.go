@@ -86,8 +86,6 @@ func Favicon(path string) gin.HandlerFunc {
 		c.Header("Expires", utils.ToDateTimeUTCString(time.Now().Add(time.Duration(2592000*time.Second)))) // one month
 		http.ServeContent(c.Writer, c.Request, "favicon.ico", modTime, reader)
 
-		return
-
 	}
 }
 

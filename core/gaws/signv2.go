@@ -13,7 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chunhui2001/go-starter/core/config"
 	"github.com/chunhui2001/go-starter/core/utils"
 )
 
@@ -23,10 +22,6 @@ const (
 	timeFormat             = "2006-01-02T15:04:05Z"
 	ExpireSecondsFieldKey  = "ExpireSeconds"
 	AWSAccessKeyIdFieldKey = "AWSAccessKeyId"
-)
-
-var (
-	logger = config.Log
 )
 
 func SignV2Request(req *http.Request, accessKeyID string, secretAccessKey string, expireSeconds int) {

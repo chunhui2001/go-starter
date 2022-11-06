@@ -159,14 +159,6 @@ func BigIntFromHexString(num string) *big.Int {
 	return a
 }
 
-func randint64() (int64, error) {
-	val, err := rand.Int(rand.Reader, big.NewInt(int64(math.MaxInt64)))
-	if err != nil {
-		return 0, err
-	}
-	return val.Int64(), nil
-}
-
 func ToBase64String(s string) string {
 	return base64.StdEncoding.EncodeToString([]byte(s))
 }
@@ -579,10 +571,6 @@ func HumanFileSize(size float64) string {
 }
 
 func HumanFileSizeUint(size uint64) string {
-
-	if size < 0 {
-		return "0"
-	}
 
 	var suffixes [5]string
 

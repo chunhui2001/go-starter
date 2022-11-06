@@ -141,9 +141,7 @@ func WriteToSpreadsheet(spreadsheetId string, writeRange string, values *[][]int
 
 	var vr sheets.ValueRange
 
-	for _, val := range *values {
-		vr.Values = append(vr.Values, val)
-	}
+	vr.Values = append(vr.Values, *values...)
 
 	var theWriteRange string = writeRange
 

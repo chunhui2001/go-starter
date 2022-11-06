@@ -1,6 +1,7 @@
 package starter
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"html/template"
@@ -150,7 +151,9 @@ func (s *Server) Bootstrap(hooks ...func(*gin.Engine)) *Server {
 		}
 	}
 
-	copier.CopyWithOption(&defaultServer, &s, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	if err := copier.CopyWithOption(&defaultServer, &s, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+		panic(err)
+	}
 
 	s.R = Setup()
 
@@ -175,8 +178,11 @@ func (s *Server) Running() {
 	utils.AddShutDownHook(func() {
 		config.Log.Info("shutting down server")
 		// clean up
-		srv.Shutdown(nil)
-		config.Log.Info("shutting down server-done")
+		if err := srv.Shutdown(context.Background()); err != nil {
+			config.Log.Info("shutting down server-err")
+		} else {
+			config.Log.Info("shutting down server-done")
+		}
 	})
 
 	l, err := net.Listen("tcp", APP_SETTINGS.AppPort)
@@ -223,7 +229,11 @@ func (s *Server) RunningTLS() {
 	utils.AddShutDownHook(func() {
 		config.Log.Info("shutting down server")
 		// clean up
-		srv.Shutdown(nil)
+		if err := srv.Shutdown(context.Background()); err != nil {
+			config.Log.Info("shutting down server-err")
+		} else {
+			config.Log.Info("shutting down server-done")
+		}
 		config.Log.Info("shutting down server-done")
 	})
 

@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -141,9 +141,9 @@ func CatIndices(indexNamePattern ...string) ([]map[string]interface{}, error) {
 	defer res.Body.Close()
 	var resMap []map[string]interface{}
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, _ := io.ReadAll(res.Body)
 
-	if err := json.Unmarshal(body, &resMap); err != nil {
+	if err2 := json.Unmarshal(body, &resMap); err2 != nil {
 		logger.Errorf("OpenSearch-CatIndices-Error-2: ErrorMessage=%s, Indices=%s", err.Error(), string(body))
 		return nil, err
 	}

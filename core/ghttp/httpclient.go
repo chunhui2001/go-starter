@@ -5,7 +5,7 @@ import (
 	_ "context"
 	"crypto/tls"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"strconv"
@@ -140,7 +140,7 @@ func (c *HttpClient) AddHeader(key string, val string) *HttpClient {
 
 func (c *HttpClient) Query(queryParams map[string]interface{}) *HttpClient {
 
-	if queryParams == nil || len(queryParams) == 0 {
+	if len(queryParams) == 0 {
 		return c
 	}
 
@@ -228,7 +228,7 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 
 	contentLength := res.Header.Get("Content-Length")
 	keepAlived := res.Header.Get("Connection")
-	resBody, err := ioutil.ReadAll(res.Body)
+	resBody, err := io.ReadAll(res.Body)
 	contentLengthValue, err2 := strconv.Atoi(contentLength)
 
 	if err2 != nil {

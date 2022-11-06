@@ -37,6 +37,8 @@ func RecoveryWithWriter(f func(c *gin.Context, err interface{}), out io.Writer) 
 
 func AbortMsg(code int, err error, c *gin.Context) {
 	c.String(code, "Oops! Please retry.")
-	c.Error(err)
+	if e := c.Error(err); e != nil {
+		panic(e)
+	}
 	c.Abort()
 }

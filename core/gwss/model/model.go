@@ -144,7 +144,10 @@ func (s *Server) NewClient(client *Client) {
 func (s *Server) Send(client *Client, messageBytes []byte) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	client.Connection.WriteMessage(1, messageBytes)
+	err := client.Connection.WriteMessage(1, messageBytes)
+	if err != nil {
+		logger.Errorf("WebSocket-Send-Error: ErrorMessage=%V", err)
+	}
 }
 
 func (s *Server) ProcessMessage(client Client, messageType int, payload []byte) *Server {
@@ -160,22 +163,21 @@ func (s *Server) ProcessMessage(client Client, messageType int, payload []byte) 
 	case publish:
 		// s.Publish(m.Topic, "publish", m.Message)
 		s.Publish(NewMessage(m.Topic, "publish", m.Message))
-		break
+		return s
 	case subscribe:
 		s.Subscribe(&client, m.Topic)
-		break
+		return s
 	case unsubscribe:
 		s.Unsubscribe(&client, m.Topic)
-		break
+		return s
 	case pong:
 		s.ReceiveClientPong(&client, m.Message.(string))
-		break
+		return s
 	default:
 		s.Send(&client, []byte("Server: Action unrecognized"))
-		break
+		return s
 	}
 
-	return s
 }
 
 func (s *Server) Publish(message *Message) {
