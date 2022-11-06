@@ -307,7 +307,7 @@ func ToString(s any) string {
 
 	switch s.(type) {
 	case float64, float32:
-		return fmt.Sprintf("%f", s)
+		return fmt.Sprint(s)
 	case string:
 		return fmt.Sprintf("%s", s)
 	case bool:
