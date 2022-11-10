@@ -181,6 +181,21 @@ func DeleteIndex(indexName string) bool {
 
 }
 
+// 重命名索引
+func RenameIndex(source string, dest string) bool {
+
+	serverUri := strings.Split(esConf.Servers, ",")[0]
+	requestUrl := fmt.Sprintf(`%s/_reindex`, serverUri)
+
+	httpResult := ghttp.SendRequest(
+		ghttp.POST(requestUrl,
+			fmt.Sprintf(`{ "source": { "index": "%s" }, "dest": { "index": "%s" } }`, source, dest)).AddHeader("Content-Type", "application/json"),
+	)
+
+	return httpResult.Status == 200
+
+}
+
 // 创建mapping
 func PutMapping(mappingName string, jsonTemplate string) bool {
 
