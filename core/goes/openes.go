@@ -102,32 +102,6 @@ func Ping(es *opensearch.Client) *opensearch.Client {
 
 }
 
-func ConstructQuery(q string, size int) *strings.Reader {
-
-	var queryJsonString = fmt.Sprintf(`{"query": { %s }, "size": %d}`, q, size)
-
-	// Check for JSON errors
-	isValid := json.Valid([]byte(queryJsonString)) // returns bool
-
-	// Default query is "{}" if JSON is invalid
-	if !isValid {
-		fmt.Println("constructQuery() ERROR: query string not valid:", queryJsonString)
-		fmt.Println("Using default match_all query")
-		queryJsonString = "{}"
-	}
-
-	// Build a new string from JSON query
-	var b strings.Builder
-	b.WriteString(queryJsonString)
-
-	// Instantiate a *strings.Reader object from string
-	read := strings.NewReader(b.String())
-
-	// Return a *strings.Reader object
-	return read
-
-}
-
 // 查询所有索引
 func CatIndices(indexNamePattern ...string) ([]map[string]interface{}, error) {
 
@@ -149,6 +123,70 @@ func CatIndices(indexNamePattern ...string) ([]map[string]interface{}, error) {
 	}
 
 	return resMap, nil
+
+}
+
+// 查询索引是否存在
+func IndexExists(indexName string) bool {
+
+	serverUri := strings.Split(esConf.Servers, ",")[0]
+	requestUrl := fmt.Sprintf(`%s/%s`, serverUri, indexName)
+
+	httpResult := ghttp.SendRequest(
+		ghttp.GET(requestUrl),
+	)
+
+	if !httpResult.Success() {
+		return false
+	}
+
+	responseMap := utils.AsMap(httpResult.ResponseBody)
+
+	if responseMap["status"].(int) == 404 {
+		return false
+	}
+
+	return false
+
+}
+
+// 删除索引
+func DeleteIndex(indexName string) bool {
+
+	serverUri := strings.Split(esConf.Servers, ",")[0]
+	requestUrl := fmt.Sprintf(`%s/%s`, serverUri, indexName)
+
+	httpResult := ghttp.SendRequest(
+		ghttp.DELETE(requestUrl),
+	)
+
+	return httpResult.Success()
+
+}
+
+func ConstructQuery(q string, size int) *strings.Reader {
+
+	var queryJsonString = fmt.Sprintf(`{"query": { %s }, "size": %d}`, q, size)
+
+	// Check for JSON errors
+	isValid := json.Valid([]byte(queryJsonString)) // returns bool
+
+	// Default query is "{}" if JSON is invalid
+	if !isValid {
+		logger.Errorf("constructQuery() ERROR: query string not valid: %s", queryJsonString)
+		logger.Errorf("Using default match_all query")
+		queryJsonString = "{}"
+	}
+
+	// Build a new string from JSON query
+	var b strings.Builder
+	b.WriteString(queryJsonString)
+
+	// Instantiate a *strings.Reader object from string
+	read := strings.NewReader(b.String())
+
+	// Return a *strings.Reader object
+	return read
 
 }
 
@@ -277,7 +315,7 @@ func Bulk(indexName string, dataMap *[]map[string]interface{}) (uint64, error) {
 
 }
 
-// // curl -X 'POST' -H 'Content-Type: application/x-ndjson' 'http://localhost:9092/sales_achiev_20221028/_bulk?pretty' --data-binary "@/Users/keesh/Desktop/ndjson.txt"
+// // curl -X 'POST' -H 'Content-Type: application/x-ndjson' 'http://localhost:9092/index_name_here/_bulk?pretty' --data-binary "@/Users/keesh/Desktop/ndjson.txt"
 func BulkRequest(indexName string, dataMap *[]map[string]interface{}) (bool, error) {
 
 	nsJsonString := GetNdJson(indexName, "_doc", dataMap)
@@ -365,7 +403,7 @@ func Search(indexName string, queryJsonString string) ([]map[string]interface{},
 	// Default query is "{}" if JSON is invalid
 	if !isValid {
 		logger.Errorf("OpenSearch-Search-Failed: ErrorMessage=%s, queryJsonString=%s", "Not a valid json query string", queryJsonString)
-		return nil, 0, errors.New("Not a valid json query string")
+		return nil, 0, errors.New("not a valid json query string")
 	}
 
 	// Pass the JSON query to the Golang client's Search() method
@@ -438,7 +476,7 @@ func Collapse(indexName string, queryJsonString string) ([]map[string]interface{
 	// Default query is "{}" if JSON is invalid
 	if !isValid {
 		logger.Errorf("OpenSearch-Collapse-Failed: ErrorMessage=%s, queryJsonString=%s", "Not a valid json query string", queryJsonString)
-		return nil, 0, errors.New("Not a valid json query string")
+		return nil, 0, errors.New("not a valid json query string")
 	}
 
 	// Pass the JSON query to the Golang client's Search() method
@@ -509,7 +547,7 @@ func AggsQuery(indexName string, aggsName string, queryJsonString string) ([]map
 	// Default query is "{}" if JSON is invalid
 	if !isValid {
 		logger.Errorf("OpenSearch-AggsQuery-Failed: ErrorMessage=%s, queryJsonString=%s", "Not a valid json query string", queryJsonString)
-		return nil, 0, errors.New("Not a valid json query string")
+		return nil, 0, errors.New("not a valid json query string")
 	}
 
 	// Pass the JSON query to the Golang client's Search() method

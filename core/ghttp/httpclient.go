@@ -118,6 +118,14 @@ func GET(url string) *HttpClient {
 	}
 }
 
+func DELETE(url string) *HttpClient {
+	return &HttpClient{
+		Method:  "DELETE",
+		TimeOut: defaultTimeOut,
+		Url:     url,
+	}
+}
+
 func POST(url string, reqBody string) *HttpClient {
 	return &HttpClient{
 		Method:      "POST",
