@@ -177,7 +177,7 @@ func DeleteIndex(indexName string) bool {
 		ghttp.DELETE(requestUrl),
 	)
 
-	return httpResult.Success()
+	return httpResult.Success() || httpResult.Status == 404
 
 }
 
