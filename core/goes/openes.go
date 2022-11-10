@@ -159,11 +159,11 @@ func IndexExists(indexName string) bool {
 
 	responseMap := utils.AsMap(httpResult.ResponseBody)
 
-	if responseMap["status"].(int) == 404 {
+	if responseMap["status"] != nil && responseMap["status"].(int) == 404 {
 		return false
 	}
 
-	return false
+	return responseMap[indexName] != nil
 
 }
 
