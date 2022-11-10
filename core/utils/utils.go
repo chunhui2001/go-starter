@@ -197,6 +197,7 @@ func ToJsonBytes(v interface{}) []byte {
 func AsMap(buf []byte) map[string]interface{} {
 	var m map[string]interface{}
 	if err := json.Unmarshal(buf, &m); err != nil {
+		fmt.Println(fmt.Sprintf("字节转json异常: jsonString=%s", string(buf)))
 		panic(err)
 	}
 	return m
