@@ -143,6 +143,25 @@ func CatIndices(indexName string) string {
 
 }
 
+func CountApi(indexName string) (int64, error) {
+
+	serverUri := strings.Split(esConf.Servers, ",")[0]
+	requestUrl := fmt.Sprintf(`%s/%s/_count`, serverUri, indexName)
+
+	httpResult := ghttp.SendRequest(
+		ghttp.GET(requestUrl),
+	)
+
+	if !httpResult.Success() {
+		return 0, httpResult.Error
+	}
+
+	responseMap := utils.AsMap(httpResult.ResponseBody)
+
+	return responseMap["count"].(int64), nil
+
+}
+
 // 查询索引是否存在
 func IndexExists(indexName string) bool {
 
