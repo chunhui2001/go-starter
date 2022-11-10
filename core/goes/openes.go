@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -103,26 +102,44 @@ func Ping(es *opensearch.Client) *opensearch.Client {
 }
 
 // 查询所有索引
-func CatIndices(indexNamePattern ...string) ([]map[string]interface{}, error) {
+// func CatIndices(indexNamePattern ...string) ([]map[string]interface{}, error) {
 
-	res, err := esapi.CatIndicesRequest{Format: "json", FilterPath: indexNamePattern}.Do(context.Background(), esClient)
+// 	res, err := esapi.CatIndicesRequest{Format: "json", FilterPath: indexNamePattern}.Do(context.Background(), esClient)
 
-	if err != nil {
-		logger.Errorf("OpenSearch-CatIndices-Error-1: ErrorMessage=%s", err.Error())
-		return nil, err
+// 	if err != nil {
+// 		logger.Errorf("OpenSearch-CatIndices-Error-1: ErrorMessage=%s", err.Error())
+// 		return nil, err
+// 	}
+
+// 	defer res.Body.Close()
+// 	var resMap []map[string]interface{}
+
+// 	body, _ := io.ReadAll(res.Body)
+
+// 	if err2 := json.Unmarshal(body, &resMap); err2 != nil {
+// 		logger.Errorf("OpenSearch-CatIndices-Error-2: ErrorMessage=%s, Indices=%s", err.Error(), string(body))
+// 		return nil, err
+// 	}
+
+// 	return resMap, nil
+
+// }
+
+// 查询索引是否存在
+func CatIndices(indexName string) string {
+
+	serverUri := strings.Split(esConf.Servers, ",")[0]
+	requestUrl := fmt.Sprintf(`%s/_cat/indices/%s`, serverUri, indexName)
+
+	httpResult := ghttp.SendRequest(
+		ghttp.GET(requestUrl),
+	)
+
+	if !httpResult.Success() {
+		return ""
 	}
 
-	defer res.Body.Close()
-	var resMap []map[string]interface{}
-
-	body, _ := io.ReadAll(res.Body)
-
-	if err2 := json.Unmarshal(body, &resMap); err2 != nil {
-		logger.Errorf("OpenSearch-CatIndices-Error-2: ErrorMessage=%s, Indices=%s", err.Error(), string(body))
-		return nil, err
-	}
-
-	return resMap, nil
+	return string(httpResult.ResponseBody)
 
 }
 
