@@ -188,7 +188,7 @@ func PutMapping(mappingName string, jsonTemplate string) bool {
 	requestUrl := fmt.Sprintf(`%s/_template/%s`, serverUri, mappingName)
 
 	httpResult := ghttp.SendRequest(
-		ghttp.PUT(requestUrl),
+		ghttp.PUT(requestUrl, jsonTemplate),
 	)
 
 	return httpResult.Success()
