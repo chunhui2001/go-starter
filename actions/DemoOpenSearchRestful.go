@@ -15,7 +15,7 @@ import (
 )
 
 func OpenSearchIndicesRouter(c *gin.Context) {
-	reault, err := goes.CatIndices()
+	reault, err := goes.CatIndices("")
 	c.JSON(200, (&R{Data: reault, Error: err}).IfErr(400))
 }
 
