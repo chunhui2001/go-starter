@@ -99,7 +99,7 @@ func GetFileMd5(file multipart.File) (md5Str string) {
 		panic(err)
 	}
 
-	return fmt.Sprintf("%x\n", h.Sum(nil))
+	return fmt.Sprintf("%x", h.Sum(nil))
 
 }
 
