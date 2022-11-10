@@ -158,7 +158,7 @@ func CountApi(indexName string) (int64, error) {
 
 	responseMap := utils.AsMap(httpResult.ResponseBody)
 
-	return responseMap["count"].(int64), nil
+	return int64(responseMap["count"].(float64)), nil
 
 }
 
