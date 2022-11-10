@@ -101,7 +101,9 @@ func runTask(lockKey string, currentNode string, task func(node string, lockKey 
 	start := time.Now()
 
 	defer func() {
-		time.Sleep(175 * time.Millisecond)
+		spendTime := time.Since(start)
+		start1 := time.Now()
+		time.Sleep(475 * time.Millisecond)
 		gredis.Del(lockKey)
 		time.Sleep(15 * time.Millisecond)
 		gredis.Del(lockKey)
@@ -111,7 +113,7 @@ func runTask(lockKey string, currentNode string, task func(node string, lockKey 
 		gredis.Del(lockKey)
 		time.Sleep(15 * time.Millisecond) // 暂停75毫秒, 避免定时任务执行的太快, 同时拿到锁
 		gredis.Del(lockKey)
-		logger.Infof(`GRTask-Completed: currentNode=%s, 耗时=%s, LockKey=%s`, currentNode, time.Since(start)-75*time.Millisecond, lockKey)
+		logger.Infof(`GRTask-Completed: currentNode=%s, 耗时=%s/%s, LockKey=%s`, currentNode, spendTime, time.Since(start1), lockKey)
 	}()
 
 	logger.Infof(`GRTask-Started: currentNode=%s, OutboundIP=%s, LockKey=%s`, currentNode, utils.OutboundIP().String(), lockKey)
