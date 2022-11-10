@@ -148,6 +148,9 @@ https://gist.github.com/denji/12b3a568f092ab951456
 ### xslt
 https://www.ardanlabs.com/blog/2013/11/using-xslt-with-go.html
 
+### excel
+https://github.com/tealeg/csv2xlsx/blob/master/main.go
+
 ### Installing protoc
 http://google.github.io/proto-lens/installing-protoc.html
 
