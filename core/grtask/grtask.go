@@ -101,7 +101,7 @@ func runTask(lockKey string, currentNode string, task func(node string, lockKey 
 	start := time.Now()
 
 	defer func() {
-		time.Sleep(15 * time.Millisecond)
+		time.Sleep(175 * time.Millisecond)
 		gredis.Del(lockKey)
 		time.Sleep(15 * time.Millisecond)
 		gredis.Del(lockKey)
