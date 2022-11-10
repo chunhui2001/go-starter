@@ -163,7 +163,7 @@ func IndexExists(indexName string) bool {
 		return false
 	}
 
-	return responseMap["indexName"] != nil
+	return responseMap[indexName] != nil
 
 }
 
