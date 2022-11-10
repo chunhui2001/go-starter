@@ -181,6 +181,20 @@ func DeleteIndex(indexName string) bool {
 
 }
 
+// 创建mapping
+func PutMapping(mappingName string, jsonTemplate string) bool {
+
+	serverUri := strings.Split(esConf.Servers, ",")[0]
+	requestUrl := fmt.Sprintf(`%s/_template/%s`, serverUri, mappingName)
+
+	httpResult := ghttp.SendRequest(
+		ghttp.PUT(requestUrl),
+	)
+
+	return httpResult.Success()
+
+}
+
 func ConstructQuery(q string, size int) *strings.Reader {
 
 	var queryJsonString = fmt.Sprintf(`{"query": { %s }, "size": %d}`, q, size)

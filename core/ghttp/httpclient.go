@@ -126,6 +126,16 @@ func DELETE(url string) *HttpClient {
 	}
 }
 
+func PUT(url string, reqBody string) *HttpClient {
+	return &HttpClient{
+		Method:      "PUT",
+		TimeOut:     defaultTimeOut,
+		Url:         url,
+		RequestBody: reqBody,
+		Ellipsis:    true,
+	}
+}
+
 func POST(url string, reqBody string) *HttpClient {
 	return &HttpClient{
 		Method:      "POST",
