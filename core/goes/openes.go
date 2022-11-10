@@ -192,6 +192,8 @@ func RenameIndex(source string, dest string) bool {
 			fmt.Sprintf(`{ "source": { "index": "%s" }, "dest": { "index": "%s" } }`, source, dest)).AddHeader("Content-Type", "application/json"),
 	)
 
+	logger.Infof(`RenameIndex: source=%s, dest=%s, ResponseBody=%s`, source, dest, string(httpResult.ResponseBody))
+
 	return httpResult.Status == 200
 
 }
