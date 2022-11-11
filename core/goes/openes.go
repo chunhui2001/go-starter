@@ -393,7 +393,7 @@ func BulkRequest(indexName string, dataMap *[]map[string]interface{}) (bool, err
 		ghttp.POST(requestUrl, nsJsonString).AddHeader("Content-Type", "application/x-ndjson"),
 	)
 
-	logger.Infof("Es-BulkRequest: IndexName=%s, Count=%d, ResponseBody=%s", indexName, len(*dataMap), string(httpResult.ResponseBody))
+	// logger.Infof("Es-BulkRequest: IndexName=%s, Count=%d, ResponseBody=%s", indexName, len(*dataMap), string(httpResult.ResponseBody))
 
 	if httpResult.Success() {
 		return true, nil
