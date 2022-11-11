@@ -573,6 +573,10 @@ func HumanFileSize(size float64) string {
 
 func HumanFileSizeUint(size uint64) string {
 
+	if size <= 0 {
+		return "0"
+	}
+
 	var suffixes [5]string
 
 	suffixes[0] = "B"
