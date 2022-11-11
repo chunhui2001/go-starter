@@ -549,7 +549,7 @@ func HumanFileSizeWithInt(size int) string {
 
 func HumanFileSize(size float64) string {
 
-	if size < 0 {
+	if size <= 0 {
 		return "0"
 	}
 
