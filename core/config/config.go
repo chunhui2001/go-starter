@@ -461,7 +461,7 @@ func InitLog() {
 
 		hook, err := lkh.NewKafkaHook(
 			"kh",
-			[]logrus.Level{logrus.InfoLevel, logrus.WarnLevel, logrus.ErrorLevel},
+			[]logrus.Level{logrus.InfoLevel, logrus.WarnLevel, logrus.ErrorLevel, logrus.DebugLevel},
 			jsonFormatter(), // &logrus.JSONFormatter{},
 			strings.Split(kafkaServerAddr, ","),
 		)
