@@ -37,7 +37,9 @@ func init() {
 
 func main() {
 
-	starterServer.Bootstrap().Running()
+	starterServer.Bootstrap(func(c *gin.Engine) {
+
+	}).Running()
 	// starterServer.Bootstrap().RunningTLS()
 
 }

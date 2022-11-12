@@ -27,6 +27,7 @@ import (
 	"github.com/chunhui2001/go-starter/core/grtask"
 	"github.com/chunhui2001/go-starter/core/gsql"
 	"github.com/chunhui2001/go-starter/core/gzok"
+	"github.com/chunhui2001/go-starter/core/gztask"
 	"github.com/chunhui2001/go-starter/core/utils"
 	_ "github.com/joho/godotenv"
 	"github.com/shirou/gopsutil/v3/cpu"
@@ -379,6 +380,7 @@ func init() {
 		printConfigLogLines()
 
 		grtask.Init(Log, AppSetting.NodeId)
+		gztask.Init(Log, AppSetting.AppName)
 
 		gid.Init(Log, AppSetting.NodeId)
 

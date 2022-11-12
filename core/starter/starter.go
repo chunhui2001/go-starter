@@ -20,8 +20,9 @@ import (
 	"github.com/chunhui2001/go-starter/core/config"
 	"github.com/chunhui2001/go-starter/core/gproxy"
 	"github.com/chunhui2001/go-starter/core/gredis"
-	"github.com/chunhui2001/go-starter/core/grtask"
+	// "github.com/chunhui2001/go-starter/core/grtask"
 	"github.com/chunhui2001/go-starter/core/gwss"
+	"github.com/chunhui2001/go-starter/core/gztask"
 	"github.com/chunhui2001/go-starter/core/utils"
 	"github.com/chunhui2001/go-starter/graph"
 	"github.com/chunhui2001/go-starter/graph/generated"
@@ -133,7 +134,7 @@ var (
 	WEB_PAGE_CONF     *config.WebPageConf        = config.WebPageSettings
 	store             *persistence.InMemoryStore = persistence.NewInMemoryStore(time.Second)
 	Redis_Conf        *gredis.GRedis             = config.RedisConf
-	Simple_Task_Conf  *config.SimpleGTask        = config.SimpleGTaskConf
+	SimpleTask        *config.SimpleGTask        = config.SimpleGTaskConf
 	logger                                       = config.Log
 	graphServerConf                              = config.GraphServerSetting
 	reverseProxyArray []ReverseProxy
@@ -392,11 +393,11 @@ func Setup() *gin.Engine {
 		logger.Info("Startup a websocket server running on " + config.WssSetting.Wss())
 	}
 
-	if Simple_Task_Conf.Enable {
-		grtask.AddTask(APP_SETTINGS.AppName, Simple_Task_Conf.ID, Simple_Task_Conf.Name, Simple_Task_Conf.Expr, func(node string, taskId string) {
+	if SimpleTask.Enable {
+		gztask.AddTask(&gztask.GZTaskItem{Id: SimpleTask.ID, Expr: SimpleTask.Expr, Name: SimpleTask.Name}, func() {
 			for i := 0; i < 3; i++ {
 				time.Sleep(1 * time.Second)
-				config.Log.Infof("定时任务正在执行每秒1次,耗时3秒: num=%d, node=%s, taskId=%s", i+1, node, taskId)
+				config.Log.Infof("GZTask定时任务正在执行每秒1次,耗时3秒: num=%d", i+1)
 			}
 		})
 	}
