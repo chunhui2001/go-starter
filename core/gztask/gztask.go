@@ -61,14 +61,10 @@ func AddTask(task *GZTaskItem, ftask func()) {
 		logger.Infof(`GZTask-Add-a-Task: lockPath=%s, lockNode=%s, %s`, theLockKey, currentNode, task.String())
 
 		_ = c.AddFunc(task.Expr, func() {
-			runTask(theLockKey, task, ftask) // run task
+			logger.Infof(`GZTask-Running: lockPath=%s, lockNode=%s, %s`, theLockKey, currentNode, task.String())
+			ftask()
 		})
 
 	}()
 
-}
-
-func runTask(theLockKey string, task *GZTaskItem, ftask func()) {
-	logger.Infof(`GZTask-Running: lockPath=%s, lockNode=%s, %s`, theLockKey, currentNode, task.String())
-	ftask()
 }
