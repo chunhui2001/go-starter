@@ -26,6 +26,7 @@ import (
 	"github.com/chunhui2001/go-starter/core/gredis"
 	"github.com/chunhui2001/go-starter/core/grtask"
 	"github.com/chunhui2001/go-starter/core/gsql"
+	"github.com/chunhui2001/go-starter/core/gzok"
 	"github.com/chunhui2001/go-starter/core/utils"
 	_ "github.com/joho/godotenv"
 	"github.com/shirou/gopsutil/v3/cpu"
@@ -172,6 +173,11 @@ var OpenEsSettings = &goes.OpenESConf{
 	Enable:      false,
 	Servers:     "http://localhost:9200",
 	PrettyPrint: false,
+}
+
+var GZokConf = &gzok.GZokConf{
+	Enabled: false,
+	Hosts:   []string{"127.0.0.1:2181"},
 }
 
 var jsonFormatter = func() *MyJSONFormatter {
@@ -336,7 +342,11 @@ func init() {
 	if exists, _ := utils.FileExists(filepath.Join(AppRoot(), envfile)); exists {
 		filename = envfile
 	} else {
-		log.Println("Configuration loading " + filepath.Join(AppRoot(), envfile) + " file error, use .env file.")
+		if env == "" {
+			filename = ""
+		} else {
+			log.Println("Configuration loading " + filepath.Join(AppRoot(), envfile) + " file error")
+		}
 	}
 
 	log.Println(built.INFO.Info())
@@ -355,6 +365,7 @@ func init() {
 		loadWssSettings(v1, filename)
 		loadHttpClientSettings(v1, filename)
 		loadRedisSettings(v1, filename)
+		loadZookeeperSettings(v1, filename)
 		loadMongoDBSettings(v1, filename)
 		loadCookieSettings(v1, filename)
 		loadMySqlSettings(v1, filename)
@@ -536,6 +547,23 @@ func loadRedisSettings(v1 *viper.Viper, filename string) {
 		configLoggerLines = append(configLoggerLines, []string{"RedisSettings", "Mode=" + RedisConf.Mode.String()})
 		if !RedisConf.Disabled() {
 			gredis.Init(RedisConf, Log)
+		}
+	}
+
+}
+
+func loadZookeeperSettings(v1 *viper.Viper, filename string) {
+
+	err := v1.Unmarshal(&GZokConf)
+
+	if err != nil {
+		Log.Info("viper parse GZokConf error: file=" + filename + " errorMessage=" + fmt.Sprint(err) + ".")
+		os.Exit(3)
+		return
+	} else {
+		configLoggerLines = append(configLoggerLines, []string{"Zookeeper", "Enable=" + fmt.Sprint(GZokConf.Enabled)})
+		if GZokConf.Enabled {
+			gzok.Init(GZokConf, Log)
 		}
 	}
 
@@ -816,7 +844,7 @@ func readConfig(defaults map[string]interface{}, filenames ...string) *viper.Vip
 		err := v.ReadInConfig()
 
 		if err != nil {
-			log.Println("viper loaded error: file=" + file + " errorMessage=" + fmt.Sprint(err) + ".")
+			log.Println("viper loaded error: AppRoot=" + AppRoot() + ", file=" + file + ", errorMessage=" + fmt.Sprint(err) + ".")
 			return nil
 		}
 
@@ -832,7 +860,9 @@ func readConfig(defaults map[string]interface{}, filenames ...string) *viper.Vip
 	}
 
 	for _, fname := range filenames {
-		v = f(fname, v.AllSettings())
+		if fname != "" {
+			v = f(fname, v.AllSettings())
+		}
 	}
 
 	return v
