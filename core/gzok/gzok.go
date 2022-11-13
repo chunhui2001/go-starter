@@ -3,9 +3,10 @@ package gzok
 import (
 	"time"
 
+	"strings"
+
 	"github.com/go-zookeeper/zk"
 	"github.com/sirupsen/logrus"
-	"strings"
 )
 
 type GZokConf struct {
@@ -59,7 +60,7 @@ func tryLock(path string, data string) bool {
 	_, err := Conn.Create(path, []byte(data), zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
 
 	if err == nil {
-		logger.Warnf(`Zookeeper-TryLock-Successful: LockPath=%s, Data=%s`, path, data)
+		logger.Infof(`Zookeeper-TryLock-Successful: LockPath=%s, Data=%s`, path, data)
 		return true
 	}
 
