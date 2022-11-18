@@ -137,6 +137,8 @@ list:
 ### 性能测试
 # make load n=10000 p=info
 load:
-	h2load -n$(n) -c100 -m10 --h1 "http://localhost:4000/$(p)"
+	@#h2load -n$(n) -c100 -m10 --h1 "http://localhost:4000/$(p)"
+	ab -n 10000 -c 10 "http://localhost:8080/info_cache"
+
 
 
