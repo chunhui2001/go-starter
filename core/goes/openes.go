@@ -544,7 +544,7 @@ func Collapse(indexName string, queryJsonString string) ([]map[string]interface{
 
 	// Default query is "{}" if JSON is invalid
 	if !isValid {
-		logger.Errorf("OpenSearch-Collapse-Failed: ErrorMessage=%s, queryJsonString=%s", "Not a valid json query string", queryJsonString)
+		logger.Errorf("OpenSearch-Collapse-Failed: IndexName=%s, ErrorMessage=%s, queryJsonString=%s", "Not a valid json query string", indexName, queryJsonString)
 		return nil, 0, errors.New("not a valid json query string")
 	}
 
@@ -557,7 +557,7 @@ func Collapse(indexName string, queryJsonString string) ([]map[string]interface{
 	)
 
 	if err != nil {
-		logger.Errorf("OpenSearch-Collapse-Error-1: queryJsonString=%s, ErrorMessage=%s", queryJsonString, err.Error())
+		logger.Errorf("OpenSearch-Collapse-Error-1: IndexName=%s, queryJsonString=%s, ErrorMessage=%s", indexName, queryJsonString, err.Error())
 		return nil, 0, err
 	}
 
@@ -567,7 +567,7 @@ func Collapse(indexName string, queryJsonString string) ([]map[string]interface{
 	var resMap map[string]interface{}
 
 	if err := json.NewDecoder(res.Body).Decode(&resMap); err != nil {
-		logger.Errorf("OpenSearch-Collapse-Error-2: ErrorMessage=%s", err.Error())
+		logger.Errorf("OpenSearch-Collapse-Error-2: IndexName=%s, ErrorMessage=%s", indexName, err.Error())
 		return nil, 0, err
 	}
 
@@ -575,7 +575,7 @@ func Collapse(indexName string, queryJsonString string) ([]map[string]interface{
 		if resMap["error"].(map[string]interface{})["type"].(string) == "index_not_found_exception" {
 			return nil, 0, nil
 		}
-		logger.Errorf("OpenSearch-Collapse-Error-3: ErrorMessage=%s", utils.ToJsonString(resMap["error"]))
+		logger.Errorf("OpenSearch-Collapse-Error-3: IndexName=%s, ErrorMessage=%s", indexName, utils.ToJsonString(resMap["error"]))
 		return nil, 0, errors.New(resMap["error"].(map[string]interface{})["reason"].(string))
 	}
 
