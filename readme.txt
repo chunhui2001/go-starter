@@ -273,6 +273,12 @@ windows								amd64
 ### 【golang】性能优化
 https://blog.csdn.net/shanxiaoshuai/article/details/121720800
 
+### Parallel For-Loop
+http://www.golangpatterns.info/concurrency/parallel-for-loop
+
+### Vec中的Rust元组：使用val0方法时出现编译错误
+https://www.javaroad.cn/questions/341960
+
 ### Golang性能调优(go-torch, go tool pprof)
 http://www.manongjc.com/detail/51-ygrewovmblzibqg.html
 

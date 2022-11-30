@@ -95,6 +95,11 @@ func init() {
 		// decimal
 		AppendRouter("GET", []string{"/demo/NewFromString"}, actions.DecimalNewFromStringHandler)
 
+		// ParallelLoop
+		AppendRouter("GET", []string{"/demo/ParallelLoop0"}, actions.ParallelLoop0Handler)
+		AppendRouter("GET", []string{"/demo/ParallelLoop1"}, actions.ParallelLoop1Handler)
+		AppendRouter("GET", []string{"/demo/ParallelLoop2"}, actions.ParallelLoop2Handler)
+
 	}
 
 }
