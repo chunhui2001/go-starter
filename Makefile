@@ -78,6 +78,9 @@ Build:
 up: rm
 	docker-compose -f docker-compose.yml up -d
 
+serve:
+	GIN_ENV=$(e) ./dist/go-starter-darwin-amd64
+
 ### 1 = stdout = normal output of a command
 ### 2 = stderr = error output of a command
 ### 0 = stdin = input to a command (this isn't usefull for redirecting, more for logging)
