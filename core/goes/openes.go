@@ -646,7 +646,7 @@ func AggsQuery(indexName string, aggsName string, queryJsonString string) ([]map
 		if resMap["error"].(map[string]interface{})["type"].(string) == "index_not_found_exception" {
 			return nil, 0, nil
 		}
-		logger.Errorf("OpenSearch-AggsQuery-Error-3: ErrorMessage=%s", utils.ToJsonString(resMap["error"]))
+		logger.Errorf("OpenSearch-AggsQuery-Error-3: indexName=%s, queryJsonString=%s, ErrorMessage=%s", indexName, queryJsonString, utils.ToJsonString(resMap["error"]))
 		return nil, 0, errors.New(resMap["error"].(map[string]interface{})["reason"].(string))
 	}
 
@@ -660,7 +660,7 @@ func AggsQuery(indexName string, aggsName string, queryJsonString string) ([]map
 			failuresArray := shardsMap["failures"].([]interface{})
 			if len(failuresArray) > 0 {
 				for _, failItem := range failuresArray {
-					logger.Warnf(`OpenSearch-AggsQuery-Fail-3: indexName=%s, queryJsonString=%s, ErrorMessage=%s`, indexName, queryJsonString, utils.ToJsonString(failItem))
+					logger.Warnf(`OpenSearch-AggsQuery-Fail-4: indexName=%s, queryJsonString=%s, ErrorMessage=%s`, indexName, queryJsonString, utils.ToJsonString(failItem))
 				}
 			}
 		}
