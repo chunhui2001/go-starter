@@ -162,21 +162,21 @@ func WriteExcel(sheetName string, fields *[]string, dataList *[]map[string]inter
 
 	if dataList != nil {
 		for i, currentItem := range *dataList {
-			currentMap := currentItem
+			currentMap := &currentItem
 			currentCellIndex := fmt.Sprintf("A%d", i+2)
 			if fields != nil {
 				for _, fieldName := range *fields {
-					currentCellValue := currentMap[fieldName]
+					currentCellValue := (*currentMap)[fieldName]
 					f.SetCellValue(sheetName, currentCellIndex, currentCellValue)
 					currentCellIndex = IncrementNextCellIndex(currentCellIndex, i+1+1)
 				}
 			} else {
 				theFields := make([]string, 0)
-				for k, _ := range currentMap {
+				for k, _ := range *currentMap {
 					theFields = append(theFields, k)
 				}
 				for _, fieldName := range theFields {
-					currentCellValue := currentMap[fieldName]
+					currentCellValue := (*currentMap)[fieldName]
 					f.SetCellValue(sheetName, currentCellIndex, currentCellValue)
 					currentCellIndex = IncrementNextCellIndex(currentCellIndex, i+1+1)
 				}
