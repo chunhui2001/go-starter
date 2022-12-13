@@ -86,6 +86,26 @@ func ReadFile(filePath string) ([]byte, error) {
 	return os.ReadFile(filePath)
 }
 
+func WriteFile(filePath string, byteBuf []byte) bool {
+
+	file, err := os.Create(filePath)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer file.Close()
+
+	_, err = io.WriteString(file, string(byteBuf))
+
+	if err != nil {
+		panic(err)
+	}
+
+	return true
+
+}
+
 // https://gist.github.com/josephspurrier/90e957f1277964f26852
 func GetFileMd5(file multipart.File) (md5Str string) {
 
@@ -323,6 +343,9 @@ func ToString(s any) string {
 }
 
 func ErrorToString(err interface{}) string {
+	if err == nil {
+		return ""
+	}
 	return gerror.Wrap(err, 2).ErrorStack()
 }
 
