@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"math"
 	"math/big"
 	"mime/multipart"
@@ -16,6 +17,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"runtime"
@@ -28,6 +30,7 @@ import (
 	_ "github.com/kardianos/osext"
 	"github.com/shopspring/decimal"
 	"github.com/ubiq/go-ubiq/common/hexutil"
+	"github.com/xuri/excelize/v2"
 	"golang.org/x/exp/slices"
 )
 
@@ -86,12 +89,48 @@ func ReadFile(filePath string) ([]byte, error) {
 	return os.ReadFile(filePath)
 }
 
-func WriteFile(filePath string, byteBuf []byte) bool {
+func ListFile(dir string) (*[]string, error) {
+
+	file, err := os.Stat(dir)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !file.IsDir() {
+		return nil, errors.New("not a dir")
+	}
+
+	fileInfo, err := ioutil.ReadDir(dir)
+
+	if err != nil {
+		return nil, err
+	}
+
+	fileList := make([]string, 0)
+
+	for _, v := range fileInfo {
+		if !v.IsDir() {
+			fileList = append(fileList, filepath.Join(dir, v.Name()))
+		}
+	}
+
+	return &fileList, nil
+
+}
+
+func WriteFile(filePath string, byteBuf []byte) (bool, error) {
+
+	if exists, err := FileExists(filePath); err != nil {
+		return false, err
+	} else if exists {
+		return false, errors.New("file already exists")
+	}
 
 	file, err := os.Create(filePath)
 
 	if err != nil {
-		panic(err)
+		return false, err
 	}
 
 	defer file.Close()
@@ -99,10 +138,54 @@ func WriteFile(filePath string, byteBuf []byte) bool {
 	_, err = io.WriteString(file, string(byteBuf))
 
 	if err != nil {
-		panic(err)
+		return false, err
 	}
 
-	return true
+	return true, nil
+
+}
+
+func WriteExcel(sheetName string, fields *[]string, dataList *[]map[string]interface{}) *excelize.File {
+
+	f := excelize.NewFile()
+	f.SetActiveSheet(f.NewSheet(sheetName))
+	// defer f.Close()
+
+	currentCellIndex := fmt.Sprintf("A%d", 1)
+
+	if fields != nil {
+		for _, v := range *fields {
+			f.SetCellValue(sheetName, currentCellIndex, v)
+			currentCellIndex = IncrementNextCellIndex(currentCellIndex, 1)
+		}
+	}
+
+	if dataList != nil {
+		for i, currentItem := range *dataList {
+			currentMap := currentItem
+			currentCellIndex := fmt.Sprintf("A%d", i+2)
+			if fields != nil {
+				for _, fieldName := range *fields {
+					currentCellValue := currentMap[fieldName]
+					f.SetCellValue(sheetName, currentCellIndex, currentCellValue)
+					currentCellIndex = IncrementNextCellIndex(currentCellIndex, i+1+1)
+				}
+			} else {
+				theFields := make([]string, 0)
+				for k, _ := range currentMap {
+					theFields = append(theFields, k)
+				}
+				for _, fieldName := range theFields {
+					currentCellValue := currentMap[fieldName]
+					f.SetCellValue(sheetName, currentCellIndex, currentCellValue)
+					currentCellIndex = IncrementNextCellIndex(currentCellIndex, i+1+1)
+				}
+			}
+		}
+	}
+
+	// don't forget to close
+	return f
 
 }
 
