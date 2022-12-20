@@ -40,31 +40,68 @@ func NewSession(accessKey string, secretKey string, regionName string) *session.
 
 }
 
+// // 读取所有文件对象
+// func ListObjects(sess *session.Session, bucket string, prefix string) [][]string {
+
+// 	var maxKeys int64 = 10000000
+// 	svc := s3.New(sess)
+
+// 	resp, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{
+// 		Bucket:  aws.String(bucket),
+// 		MaxKeys: &maxKeys,
+// 	})
+
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	keys := [][]string{}
+
+// 	for _, item := range resp.Contents {
+// 		if strings.HasPrefix(*item.Key, prefix) {
+// 			if *item.Size == 0 {
+// 				keys = append(keys, []string{*item.Key, "0"})
+// 			} else {
+// 				keys = append(keys, []string{*item.Key, utils.HumanFileSize(float64(*item.Size))})
+// 			}
+// 		}
+// 	}
+
+// 	return keys
+
+// }
+
 // 读取所有文件对象
 func ListObjects(sess *session.Session, bucket string, prefix string) [][]string {
 
-	var maxKeys int64 = 100000
 	svc := s3.New(sess)
+	keys := [][]string{}
 
-	resp, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{
-		Bucket:  aws.String(bucket),
-		MaxKeys: &maxKeys,
+	err := svc.ListObjectsPages(&s3.ListObjectsInput{
+		Bucket: aws.String(bucket),
+		// Prefix: "",
+	}, func(p *s3.ListObjectsOutput, last bool) (shouldContinue bool) {
+
+		for _, item := range p.Contents {
+			if strings.HasPrefix(*item.Key, prefix) {
+				if *item.Size == 0 {
+					keys = append(keys, []string{*item.Key, "0"})
+				} else {
+					keys = append(keys, []string{*item.Key, utils.HumanFileSize(float64(*item.Size))})
+				}
+			}
+		}
+
+		if last {
+			return false
+		}
+
+		return true
+
 	})
 
 	if err != nil {
 		panic(err)
-	}
-
-	keys := [][]string{}
-
-	for _, item := range resp.Contents {
-		if strings.HasPrefix(*item.Key, prefix) {
-			if *item.Size == 0 {
-				keys = append(keys, []string{*item.Key, "0"})
-			} else {
-				keys = append(keys, []string{*item.Key, utils.HumanFileSize(float64(*item.Size))})
-			}
-		}
 	}
 
 	return keys
