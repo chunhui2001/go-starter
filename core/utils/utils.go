@@ -848,3 +848,24 @@ func Chunk(list []map[string]interface{}, chunkSize int, f func([]map[string]int
 	}
 
 }
+
+func IndexOf(arr interface{}, target interface{}) int {
+
+	switch arr := arr.(type) {
+	case []string:
+		for i, element := range arr {
+			if element == target {
+				return i
+			}
+		}
+	case []int:
+		for i, element := range arr {
+			if element == target {
+				return i
+			}
+		}
+		// 添加其他需要支持的类型
+	}
+
+	return -1
+}
