@@ -1,0 +1,27 @@
+authtoken: 1T750atJi3xccndeUqJ4ewiS62o_2s6f8GUccL1qDUXTGSftN
+version: "2"
+region: us
+console_ui: true
+#####http_proxy: false
+inspect_db_size: 50000000
+log_level: info
+log_format: json
+######log: /var/log/ngrok.log
+metadata: '{"serial": "00012xa-33rUtz9", "comment": "For customer alan@example.com"}'
+######root_cas: trusted
+######socks5_proxy: "socks5://localhost:9150"
+#update: false
+update_channel: stable
+web_addr: localhost:4040
+tunnels:
+  go-starter:
+    addr: 4000
+    #auth: keesh:Cc
+    #bind_tls: true
+    host_header: "go-starter.dev"
+    inspect: false
+    proto: http
+
+
+# ngrok start -config ~/ngrok.yml mylab2013
+

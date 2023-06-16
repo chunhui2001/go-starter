@@ -1,0 +1,168 @@
+
+LAST_SNAPSHOT_DATE: >
+  {
+    "_source": [
+      "createDate"
+    ],
+    "size": 1,
+    "timeout": "120s",
+    "sort": [
+      {
+        "createDate": {
+          "order": "desc"
+        }
+      }
+    ]
+  }
+
+DISTINCT_QUERY: >
+  {
+    "_source": [
+      "createDate"
+    ],
+    "size": {{.size}},
+    "timeout": "120s",
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "term": {
+              "createDate": {{.createDate}}
+            }
+          }
+        ]
+      }
+    },
+    "collapse": {
+      "field": "{{.fieldName}}"
+    }
+  }
+
+MULTIPLE_AGGS: >
+  {
+    "size": 0,
+    "timeout": "120s",
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "term": {
+              "createDate": {{.createDate}}
+            }
+          }
+        ],
+        "filter": [
+          {
+            "exists": {
+              "field": "_id"
+            }
+          }
+          {{- if .where.groups }}
+          , {
+            "terms": {
+              "groupName": ["{{ join "\",\"" .where.groups }}"]
+            }
+          }
+          {{- end}}
+          {{- if .where.bdUsers }}
+          , {
+            "terms": {
+              "bdUserId": [{{ join "," .where.bdUsers }}]
+            }
+          }
+          {{- end}}
+          {{- if .where.labels }}
+          , {
+            "terms": {
+              "identityLabel1Name": ["{{ join "\",\"" .where.labels }}"]
+            }
+          }
+          {{- end}}
+          {{- if .where.flags }}
+          , {
+            "terms": {
+              "newRegFlag": [{{ join "," .where.flags }}]
+            }
+          }
+          {{- end}}
+          {{- if .where.logDates }}
+          , {
+            "terms": {
+              "logDate": [{{ join "," .where.logDates }}]
+            }
+          }
+          {{- end}}
+        ]
+      }
+    },
+    "aggs": {
+      "group_by_{{.groupByFieldName}}": {
+        "terms": {
+          "field": "{{.groupByFieldName}}",
+          "size": 10000
+        },
+        "aggs": {
+          {{ range $i, $v := .aggs }}
+          {{- if ne $i 0 }},{{- end}} "{{ $v.alias }}": {
+              "{{ $v.inst }}": {
+                "field": "{{ $v.aggsFieldName }}"
+              }
+          }
+          {{end}}
+        }
+      }
+    }
+  }
+
+QUERY_DATA_BY_DATE: >
+  {
+    "size": {{.size}},
+    "timeout": "120s",
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "term": {
+              "createDate": {{.createDate}}
+            }
+          }
+        ],
+        "filter": [
+          {
+            "exists": {
+              "field": "_id"
+            }
+          }
+          {{- if .bdUsers}}
+          , {
+            "terms": {
+              "bdUserId": [{{ join "," .bdUsers }}]
+            }
+          }
+          {{- end}}
+          {{- if .labels}}
+          , {
+            "terms": {
+              "identityLabel1Name": ["{{ join "\",\"" .labels }}"]
+            }
+          }
+          {{- end}}
+          {{- if .flags}}
+          , {
+            "terms": {
+              "newRegFlag": [{{ join "," .flags }}]
+            }
+          }
+          {{- end}}
+        ]
+      }
+    },
+    "sort": [
+      {
+        "createDate": {
+          "order": "desc"
+        }
+      }
+    ]
+  }
+

@@ -1,0 +1,36 @@
+{{define "head"}}
+<title>Transactions</title>
+{{end}}
+{{define "content"}}
+<h1 id="_server_time" style="text-align: left;font-family: monospace;">Transactions</h1>
+<table class="pure-table pure-table-bordered" style="width: 100%;font-size: 0.825em;font-family: monospace, monospace;background-color: white;">
+    <thead>
+        <tr>
+            <th>区块高度</th>
+            <th>交易哈希</th>
+            <th>从</th>
+            <th>到</th>
+            <th>值</th>
+            <th>手续费</th>
+            <th>时间</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range $i, $v := .transactionList}}
+        <tr>
+            <td>{{$v.BlockNumber}}</td>
+            <td><a href="#" style="max-width:150px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none;vertical-align:bottom;color:#3498db;">{{$v.Hash}}</a></td>
+            <td><a href="#" style="max-width:150px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none;vertical-align:bottom;color:#3498db;">{{$v.From}}</a></td>
+            <td><a href="#" style="max-width:150px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none;vertical-align:bottom;color:#3498db;">{{$v.To}}</a></td>
+            <td>{{$v.Value}}</td>
+            <td>{{$v.Gas}}</td>
+            <td>{{timestring $v.Timestamp}}</td>
+        </tr>
+        {{end}}
+    </tbody>
+</table>
+{{end}}
+{{define "scripts"}}
+<script type="text/javascript">
+</script>
+{{end}}

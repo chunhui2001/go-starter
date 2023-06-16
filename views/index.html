@@ -1,0 +1,69 @@
+{{define "head"}}
+<title>Index Page...</title>
+{{end}}
+
+{{define "content"}}
+    <div>
+        <h1 id="_server_time" style="text-align: center;font-family: monospace;">&nbsp;</h1>
+        <div>
+            <h3 style="text-align: center;"><a href="/{{.yourRoomId}}">{{.yourRoomId}}</a></h3>
+        </div>
+    </div>
+{{end}}
+
+{{define "scripts"}}
+<script type="text/javascript">
+
+    // jQuery.noConflict();
+
+    var ws;
+
+    $(function() {
+      {{- if .wssEndpoint }}
+        connect({{.wssEndpoint}});
+      {{- end}}
+    });
+
+    function connect(wssEndpoint) {
+
+        ws = new WebSocket(wssEndpoint);
+
+        ws.onopen = e => {
+            //console.log('connected!')
+        }
+
+        ws.onmessage = e => {
+            
+            try {
+                
+                if (e.data.isJSON()) {
+                    var messageData = JSON.parse(e.data);
+                    
+                    if (messageData.topic == 'server_ping') {
+                        $("#_server_time").html(messageData.message);
+                        ws.send('{ "action": "pong", "message": "' + new Date().toISOString() + '"}')
+                    } else {
+                        console.info(messageData)
+                    }
+                } else {
+                    console.info(e.data)
+                }
+
+            } catch (err) {
+                console.warn(e.data + ", errorMessage=" + err.message)
+            }
+        }
+
+        ws.onerror = msg => {
+            console.log('socket error:' + msg.toString());
+        }
+        
+        ws.onclose = () => {
+            console.log('socket closed');
+            connect();
+        }
+    
+    }
+
+</script>
+{{end}}

@@ -1,0 +1,44 @@
+
+## 安装Docker Compose
+# curl -L https://github.com/docker/compose/releases/download/1.24.1/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+# chmod +x /usr/local/bin/docker-compose
+# docker-compose --version
+# docker-compose up -d
+version: '2.4'
+networks:
+    br0:
+      external: true
+
+services:
+  go-starter:
+    container_name: go-starter
+    image: chunhui2001/ubuntu_20.04_dev:golang_1.19
+    hostname: go-starter
+    #mem_limit: 2048m
+    ports:
+      - 4000:8080
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      #- TZ=Asia/Shanghai
+      - TZ=UTC
+      - GIN_ENV=production
+      - NODE_ID=1
+      - WSS_HOST=ws://192.168.0.101:4000
+      - ES_SERVERS=http://host.docker.internal:9200
+      - APP_ROOT=/dist
+    #entrypoint: ["/bin/sh", "-c", "while true; do echo 1 >/dev/null 2>/dev/null; sleep 1; done"]
+    entrypoint: ["/dist/app"]
+    volumes:
+      - ./resources:/dist/resources:ro
+      - ./static:/dist/static:ro
+      - ./views:/dist/views:ro
+      - ./.env:/dist/.env:ro
+      - ./dist/go-starter-linux-amd64:/dist/app:ro
+    restart: always
+    networks:
+        br0:
+          ipv4_address: 172.16.197.232
+    
+
+

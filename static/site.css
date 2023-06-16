@@ -1,0 +1,22 @@
+
+:root {
+  --colorPrimaryDark: #0b132b;
+  --colorPrimaryLight: #494f61;
+  --colorPlaceholder: #9b9fa8;
+  --colorBackground: #eeeff0;
+  --colorBorder: #cdcfd3;
+  --colorAccent: #003bde;
+  --gutter: 0 16px;
+  --border: 1.5px solid var(--colorBorder);
+  --radius: 3px;
+}
+
+body {
+  	background-color: var(--colorBackground);
+}
+
+.container {
+	max-width: 1135px;
+	margin: auto;
+}
+

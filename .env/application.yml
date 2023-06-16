@@ -1,0 +1,24 @@
+
+my-cacheKey:
+  cache1: ___mykey1_default
+  cache2: ___mykey2_default
+
+Reverse-Proxy:
+  - 
+    from: /a/scan-api
+    to: /scan-api
+    remotes: 
+      - http://172.16.197.233:8080
+      - http://172.16.197.134:8080
+  - 
+    from: /b/scan-api
+    to: /scan-api
+    remotes: 
+      - http://172.16.197.233:8080
+      - http://172.16.197.134:8080
+  - 
+    from: /c/scan-api
+    to: /scan-api
+    remotes: 
+      - http://172.16.197.233:8080
+      - http://172.16.197.134:8080

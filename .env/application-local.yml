@@ -1,0 +1,22 @@
+
+my-cacheKey:
+  cache1: ___mykey1_local
+  cache2: ___mykey2_local
+  cache3: ___mykey3_local
+
+Reverse-Proxy:
+  - 
+    from: /a/scan-api
+    to: /scan-api
+    remotes: 
+      - http://127.0.0.1:4002
+
+Access-Clients:
+  # x5iDuUTmxfECU0uV:
+  #   clientName: simple-app
+  #   accessKeyID: x5iDuUTmxfECU0uV
+  #   secretAccessKey: tgYfmagF85tA1as
+  #   enabled: true
+  #   scope:
+  #     - /info
+  #     - /health
