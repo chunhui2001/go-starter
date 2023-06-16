@@ -30,13 +30,6 @@ func RawSql(c *gin.Context) {
 	var placeholderIndex uint
 	var regEx = `(?P<Val>[\w\W]+)(?P<Typ>\([a-zA-Z]+\))`
 
-	match1 := utils.MatchesGroup(regEx, "BTC-USDT(String)")
-	logger.Infof(`BTC-USDT(String): matched=%s`, utils.ToJsonString(match1))
-	match2 := utils.MatchesGroup(regEx, "BTC-USDT(BigDecimal)")
-	logger.Infof(`BTC-USDT(BigDecimal): matched=%s`, utils.ToJsonString(match2))
-	match3 := utils.MatchesGroup(regEx, "BTC-USDT(Integer)")
-	logger.Infof(`BTC-USDT(Integer): matched=%s`, utils.ToJsonString(match3))
-
 	for _, ch := range sql {
 		if ch == '?' {
 			// BTC-USDT(String)

@@ -3,11 +3,11 @@
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
 APP_NAME 	?=go-starter
-#e 			?=local
 e 			?=local
+#e 			?=production
 c 			?=10000
-#zone 		?=Asia/Shanghai
-zone 		?=UTC
+zone 		?=Asia/Shanghai
+#zone 		?=UTC
 #WSS_HOST	?=ws://127.0.0.1:8080
 APP_PORT 	?=8080
 GIT_HASH 	?=$(shell git rev-parse HEAD)
@@ -15,7 +15,6 @@ COMMITER 	?=$(shell git log -1 --pretty=format:'%ae')
 PWD 		?=$(shell pwd)
 TIME 		?=$(shell date +%s)
 CGO_ENABLED ?=0
-NODE_ID 	?=1
 GOPROXY 	?=go env -w GO111MODULE=on && go env -w GOPROXY=https://goproxy.cn,direct
 
 ### 整理模块
@@ -25,6 +24,11 @@ GOPROXY 	?=go env -w GO111MODULE=on && go env -w GOPROXY=https://goproxy.cn,dire
 # make tidy
 tidy:
 	go mod tidy
+
+### 显示已安装的模块
+# show install utils
+list:
+	ls -alh `go env GOPATH`/bin
 
 ### 安装模块
 # make install mod=github.com/codegangsta/gin
@@ -51,17 +55,17 @@ get:
 	go get
 
 ### 启动开发程序
-# make run e=development 
+# make run e=development
 run:
 	rm -rf gin-bin >/dev/null 2>&1
-	TZ=$(zone) GIN_ENV=$(e) NODE_ID=$(NODE_ID) WSS_HOST=$(WSS_HOST) go run .
+	TZ=$(zone) GIN_ENV=$(e) WSS_HOST=$(WSS_HOST) go run .
 
 ### 启动调试程序, 当代码变化时自动重启
 # make dev
 dev:
-	TZ=$(zone) GIN_ENV=$(e) GIN_MAPS_TIMESTAMP=$(GIN_MAPS_TIMESTAMP) NODE_ID=$(NODE_ID) gin -i --appPort 8080 --port 3000 run main.go
+	TZ=$(zone) GIN_ENV=$(e) GIN_MAPS_TIMESTAMP=$(GIN_MAPS_TIMESTAMP) gin -i --appPort 8080 --port 3000 run main.go
 
-### lint
+### curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
 lint:
 	golangci-lint run
 
@@ -72,15 +76,20 @@ Built1:
 Built2:
 	env GOOS=linux  GOARCH=amd64 CGO_ENABLED=1 $(GOPROXY) && go build -buildvcs -ldflags "-X main.Name=$(APP_NAME) -X main.Author=$(COMMITER) -X main.Commit=$(GIT_HASH) -X main.Time=$(TIME)" -o ./dist/$(APP_NAME)-linux-amd64 ./main.go
 
+### 构建跨平台的可执行程序
+Built3:
+	env GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 $(GOPROXY) && go build -buildvcs -ldflags "-X main.Name=$(APP_NAME) -X main.Author=$(COMMITER) -X main.Commit=$(GIT_HASH) -X main.Time=$(TIME)" -o ./dist/$(APP_NAME)-darwin-arm64 ./main.go
+
 Build:
-	docker run --rm -it -v $(PWD):/dist:rw --name build_$(APP_NAME) chunhui2001/ubuntu_20.04_dev:golang_1.19 /bin/bash -c 'cd /dist && make -f Makefile install Built2' -m 4g
+	docker run --platform linux/amd64 --rm -it -v $(PWD):/dist:rw --name build_$(APP_NAME) chunhui2001/ubuntu_20.04_dev:golang_1.23 /bin/bash -c 'cd /dist && make -f Makefile install Built2' -m 4g
 
 ### 通过容器启动
 up: rm
 	docker-compose -f docker-compose.yml up -d
 
 serve:
-	GIN_ENV=$(e) ./dist/go-starter-darwin-amd64
+	@#GIN_ENV=$(e) ./dist/go-starter-darwin-amd64
+	GIN_ENV=$(e) ./dist/go-starter-darwin-arm64
 
 ### 1 = stdout = normal output of a command
 ### 2 = stderr = error output of a command
@@ -129,11 +138,6 @@ passwd:
 	head -c12 < /dev/random | base64
 	@#head -c12 < /dev/urandom | base64
 
-### 显示已安装的可执行程序
-# show install utils
-list:
-	ls -alh `go env GOPATH`/bin
-
 # make ngrok
 #ngrok:
 #	ngrok start --config ./ngrok.yml $(APP_NAME)
@@ -143,6 +147,3 @@ list:
 load:
 	@#h2load -n$(n) -c100 -m10 --h1 "http://localhost:4000/$(p)"
 	ab -n 10000 -c 10 "http://localhost:8080/info_cache"
-
-
-

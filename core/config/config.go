@@ -1,11 +1,19 @@
 package config
 
 import (
+	"bytes"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
+	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -39,7 +47,8 @@ import (
 
 	lkh "github.com/gfremex/logrus-kafka-hook"
 	"github.com/jinzhu/copier"
-	"github.com/olekukonko/tablewriter"
+
+	// "github.com/olekukonko/tablewriter"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -82,14 +91,15 @@ type Cookie struct {
 }
 
 type LogConf struct {
-	Output         string `mapstructure:"LOG_OUTPUT"`
-	FilePath       string `mapstructure:"LOG_FILE_PATH"`
-	FileMaxSize    int    `mapstructure:"LOG_FILE_MAX_SIZE"`
-	FileMaxBackups int    `mapstructure:"LOG_FILE_MAX_BACKUPS"`
-	FileMaxAge     int    `mapstructure:"LOG_FILE_MAX_AGE"`
-	KafkaServer    string `mapstructure:"LOG_KAFKA_SERVER"`
-	KafkaTopic     string `mapstructure:"LOG_KAFKA_TOPIC"`
-	FileFormatter  string `mapstructure:"LOG_FILE_FORMATTER"` // json OR txt
+	Output           string `mapstructure:"LOG_OUTPUT"`
+	FilePath         string `mapstructure:"LOG_FILE_PATH"`
+	FileMaxSize      int    `mapstructure:"LOG_FILE_MAX_SIZE"`
+	FileMaxBackups   int    `mapstructure:"LOG_FILE_MAX_BACKUPS"`
+	FileMaxAge       int    `mapstructure:"LOG_FILE_MAX_AGE"`
+	KafkaServer      string `mapstructure:"LOG_KAFKA_SERVER"`
+	KafkaTopic       string `mapstructure:"LOG_KAFKA_TOPIC"`
+	FileFormatter    string `mapstructure:"LOG_FILE_FORMATTER"`    // json OR txt
+	ConsoleFormatter string `mapstructure:"LOG_CONSOLE_FORMATTER"` // json OR txt
 }
 
 type WebPageConf struct {
@@ -136,11 +146,12 @@ var SimpleGTaskConf = &gztask.SimpleGTask{
 }
 
 var LogSettings = &LogConf{
-	Output:         "console",
-	FileMaxSize:    1, // 1MB
-	FileMaxBackups: 10,
-	FileMaxAge:     30,
-	FileFormatter:  "txt", // json OR txt
+	Output:           "console",
+	FileMaxSize:      1, // 1MB
+	FileMaxBackups:   10,
+	FileMaxAge:       30,
+	FileFormatter:    "txt", // json OR txt,
+	ConsoleFormatter: "txt", // json OR txt
 }
 
 var WebPageSettings = &WebPageConf{
@@ -280,8 +291,8 @@ var HttpClientConf = &ghttp.HttpConf{
 
 var GoogleAPIConfSettings = &googleapi.GoogleAPIConf{
 	Enable:          false,
-	CredentialsFile: "resources/googleapi-oauth-credentials_gos3.json",
-	TokenFile:       "resources/gos3_token.json",
+	CredentialsFile: "resources/googleapi-oauth-credentials.json",
+	TokenFile:       "resources/googleapi-oauth-token.json",
 	Scopes:          []string{"https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive.metadata", "https://www.googleapis.com/auth/drive.appdata", "https://www.googleapis.com/auth/spreadsheets"},
 }
 
@@ -289,6 +300,7 @@ var Log *logrus.Entry
 var myViper *viper.Viper
 var filename string = ".env"
 var applicationConfig map[string]interface{}
+var yamlContent string = ""
 
 func AppRoot() string {
 	return utils.RootDir()
@@ -389,25 +401,25 @@ func init() {
 
 func printConfigLogLines() {
 
-	tableString := &strings.Builder{}
-	table := tablewriter.NewWriter(tableString)
-	table.SetBorders(tablewriter.Border{Left: true, Top: true, Right: true, Bottom: true})
-	table.SetRowLine(true)
-	table.SetAutoWrapText(false)
-	table.SetColumnAlignment([]int{tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_LEFT})
+	// tableString := &strings.Builder{}
+	// table := tablewriter.NewWriter(tableString)
+	// table.SetBorders(tablewriter.Border{Left: true, Top: true, Right: true, Bottom: true})
+	// table.SetRowLine(true)
+	// table.SetAutoWrapText(false)
+	// table.SetColumnAlignment([]int{tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_LEFT})
 
-	for _, v := range configLoggerLines {
-		table.Append(v)
-	}
+	// for _, v := range configLoggerLines {
+	// 	table.Append(v)
+	// }
 
-	table.Render() // Send output
-	tableLines := utils.Split(tableString.String(), "\n")
+	// table.Render() // Send output
+	// tableLines := utils.Split(tableString.String(), "\n")
 
-	for _, line := range tableLines {
-		if line != "" {
-			Log.Info(line)
-		}
-	}
+	// for _, line := range tableLines {
+	// 	if line != "" {
+	// 		Log.Info(line)
+	// 	}
+	// }
 }
 
 func InitLog() {
@@ -425,7 +437,12 @@ func InitLog() {
 
 		myLog.SetLevel(logrus.DebugLevel)
 		myLog.SetReportCaller(true)
-		myLog.SetFormatter(txtFormatter())
+
+		if LogSettings.ConsoleFormatter == "json" {
+			myLog.SetFormatter(jsonFormatter())
+		} else {
+			myLog.SetFormatter(txtFormatter())
+		}
 
 	} else {
 		myLog.Out = ioutil.Discard
@@ -768,13 +785,20 @@ func loadCookieSettings(v1 *viper.Viper, filename string) {
 }
 
 func loadYamlConfiguraion() {
+	var agolloService string = os.Getenv("APOLLO_CONFIGSERVICE")
+
+	if len(agolloService) > 0 {
+		readApollo2()
+
+		return
+	}
+
+	var env string = os.Getenv("GIN_ENV")
 
 	var f = func(file string) map[string]interface{} {
-
 		yamlFilePath := filepath.Join(utils.RootDir(), ".env", file)
 
 		if exists, _ := utils.FileExists(yamlFilePath); exists {
-
 			if yamlContent, err := utils.ReadFile(yamlFilePath); err != nil {
 				Log.Errorf(`Read-Yaml-File-Error: FilePath=%s, ErrorMessage=%s`, yamlFilePath, err.Error())
 			} else {
@@ -786,14 +810,10 @@ func loadYamlConfiguraion() {
 					return body
 				}
 			}
-
 		}
 
 		return nil
-
 	}
-
-	var env string = os.Getenv("GIN_ENV")
 
 	var body1 map[string]interface{} = f("application.yml")
 	var body2 map[string]interface{} = f("application-" + env + ".yml")
@@ -809,23 +829,52 @@ func loadYamlConfiguraion() {
 			panic(err)
 		}
 	}
-
 }
 
 // yaml config
 func ReadConfig(key string, data any) error {
+
 	value := applicationConfig[key]
+
+	var agolloService string = os.Getenv("APOLLO_CONFIGSERVICE")
+	var parse0Enable string = os.Getenv("APOLLO_PARSE0_ENABLE")
+
+	if len(agolloService) > 0 && parse0Enable == "true" {
+		conf := parse0(applicationConfig)
+
+		value = conf[key]
+	}
+
 	if err := json.Unmarshal(utils.ToJsonBytes(value), data); err != nil {
 		Log.Errorf("Configuration-Error: Key=%s, ErrorMessage=%v", "key", err)
 		return err
 	}
+
 	return nil
 }
 
+func AllConfig() map[string]interface{} {
+
+	return applicationConfig
+}
+
+func AllYamlContent() string {
+
+	return yamlContent
+}
+
 func readConfig(defaults map[string]interface{}, filenames ...string) *viper.Viper {
+	v := viper.New()
+
+	var agolloService string = os.Getenv("APOLLO_CONFIGSERVICE")
+
+	if len(agolloService) > 0 {
+		readApollo1(v)
+
+		return v
+	}
 
 	var f = func(file string, defaultMaps map[string]interface{}) *viper.Viper {
-
 		v := viper.New()
 
 		for key, value := range defaultMaps {
@@ -851,8 +900,6 @@ func readConfig(defaults map[string]interface{}, filenames ...string) *viper.Vip
 		return v
 	}
 
-	v := viper.New()
-
 	for key, value := range defaults {
 		v.SetDefault(key, value)
 	}
@@ -864,5 +911,249 @@ func readConfig(defaults map[string]interface{}, filenames ...string) *viper.Vip
 	}
 
 	return v
+}
 
+func readApollo1(v *viper.Viper) {
+
+	var agolloService string = os.Getenv("APOLLO_CONFIGSERVICE")
+	var appId string = os.Getenv("APP_ID")
+	var env string = os.Getenv("GIN_ENV") // cluster
+
+	if len(agolloService) <= 0 {
+		log.Println("Loaded-agollo-properties processed: Disabled")
+		return
+	}
+
+	var s1 = fmt.Sprintf("%s/configs/%s/%s/application.properties", agolloService, appId, env)
+
+	httpResponse1 := sendApolloRequest(s1)
+
+	if httpResponse1 != nil {
+		responseMap := utils.AsMap(httpResponse1)
+		config := responseMap["configurations"].(map[string]interface{})
+
+		for key, val := range config {
+			v.SetDefault(strings.TrimSpace(key), strings.TrimSpace(val.(string)))
+		}
+
+		log.Printf("Loaded-agollo-properties Successful: configKeyLen=%d, agolloService=%s", len(config), s1)
+	}
+}
+
+func readApollo2() {
+
+	var agolloService string = os.Getenv("APOLLO_CONFIGSERVICE")
+	var appId string = os.Getenv("APP_ID")
+	var env string = os.Getenv("GIN_ENV") // cluster
+
+	if len(agolloService) <= 0 {
+		log.Println("Loaded-agollo-properties processed: Disabled")
+		return
+	}
+
+	var s2 = fmt.Sprintf("%s/configs/%s/%s/application.yaml", agolloService, appId, env)
+
+	httpResponse2 := sendApolloRequest(s2)
+
+	if httpResponse2 != nil {
+		responseMap := utils.AsMap(httpResponse2)
+		config := responseMap["configurations"].(map[string]interface{})["content"].(string)
+		yamlContent = config
+
+		var body map[string]interface{}
+
+		if err := yaml.Unmarshal([]byte(config), &body); err != nil {
+			Log.Errorf(`Loading-Yaml-File-Error: s2=%s, ErrorMessage=%s`, s2, err.Error())
+		}
+
+		if body != nil {
+			if err := copier.CopyWithOption(&applicationConfig, &body, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+				panic(err)
+			}
+		}
+
+		Log.Infof("Loaded-agollo-yaml Successful: configKeyLen=%d, agolloService=%s", len(body), s2)
+	}
+}
+
+func sendApolloRequest(url string) []byte {
+	req, _ := http.NewRequest("GET", url, nil)
+
+	res, err2 := (&http.Client{}).Do(req)
+
+	if err2 != nil {
+		log.Printf("Loaded-agollo-properties Error: Url=%s, ErrorMessage=%s", url, err2)
+
+		return nil
+	}
+
+	var headerKey string = os.Getenv("APOLLO_HEADER_KEY")
+	var secretKey string = os.Getenv("APOLLO_SECRET_KEY")
+
+	log.Printf("sendApolloRequest: headerKey=%s, exists=%s", headerKey, res.Header.Get(headerKey))
+
+	if res.Header.Get(headerKey) == "true" {
+
+		log.Printf("sendApolloRequest: secretKeyLength=%d", len(secretKey))
+
+		// 解密
+		raw, errr1 := base64.RawStdEncoding.DecodeString(secretKey)
+
+		if errr1 != nil {
+			log.Printf("sendApolloRequest-DecodeString: Error: ErrorMessage=%s", errr1)
+		}
+
+		sk, errr2 := x509.ParsePKCS8PrivateKey(raw)
+
+		if errr2 != nil {
+			log.Printf("sendApolloRequest-ParsePKCS8PrivateKey: Error: ErrorMessage=%s", errr2)
+		}
+
+		privKey := sk.(*rsa.PrivateKey)
+		partLen := privKey.PublicKey.N.BitLen() / 8
+
+		resBody, errr3 := io.ReadAll(res.Body)
+
+		if errr3 != nil {
+			log.Printf("sendApolloRequest-ParsePKCS8PrivateKey: Error: ErrorMessage=%s", errr3)
+		}
+
+		chunks := split(resBody, partLen)
+
+		buffer := bytes.NewBufferString("")
+
+		for _, chunk := range chunks {
+			decrypted, _ := rsa.DecryptPKCS1v15(rand.Reader, privKey, chunk)
+
+			buffer.Write(decrypted)
+		}
+
+		return buffer.Bytes()
+	}
+
+	resBody, _ := io.ReadAll(res.Body)
+
+	return resBody
+}
+
+func split(buf []byte, lim int) [][]byte {
+	var chunk []byte
+	chunks := make([][]byte, 0, len(buf)/lim+1)
+
+	for len(buf) >= lim {
+		chunk, buf = buf[:lim], buf[lim:]
+		chunks = append(chunks, chunk)
+	}
+
+	if len(buf) > 0 {
+		chunks = append(chunks, buf[:])
+	}
+
+	return chunks
+}
+
+func parse0(input map[string]any) map[string]any {
+	result := map[string]any{}
+
+	// 正则匹配数组形式字段
+	reArray := regexp.MustCompile(`^([^\[]+)\[(\d+)\]\.(.+)$`)
+
+	for key, val := range input {
+		if matches := reArray.FindStringSubmatch(key); len(matches) == 4 {
+			listKey, indexStr, fieldPath := matches[1], matches[2], matches[3]
+			index, _ := strconv.Atoi(indexStr)
+
+			// 初始化数组容器
+			if _, ok := result[listKey]; !ok {
+				result[listKey] = map[int]map[string]any{}
+			}
+
+			list := result[listKey].(map[int]map[string]any)
+
+			if _, ok := list[index]; !ok {
+				list[index] = map[string]any{}
+			}
+
+			// 解析字段路径
+			assignNestedMap(list[index], fieldPath, parseValue(fieldPath, val))
+		} else {
+			// 普通嵌套 map 形式
+			assignNestedMap(result, key, parseValue(key, val))
+		}
+	}
+
+	// 把 map[int] → []map 的转换进行处理
+	for key, val := range result {
+		if m, ok := val.(map[int]map[string]any); ok {
+			length := len(m)
+			list := make([]map[string]any, length)
+			indices := []int{}
+
+			for i := range m {
+				indices = append(indices, i)
+			}
+
+			sort.Ints(indices)
+
+			for i, idx := range indices {
+				list[i] = m[idx]
+			}
+
+			result[key] = list
+		}
+	}
+
+	// 输出为 YAML
+	yamlBytes, err := yaml.Marshal(result)
+
+	if err != nil {
+		panic(err)
+	}
+
+	var body map[string]any
+
+	if err := yaml.Unmarshal(yamlBytes, &body); err != nil {
+		return body
+	} else {
+		return body
+	}
+}
+
+// parseValue 将字符串转 bool 或去引号
+func parseValue(key string, v any) any {
+	if v == nil {
+		return ""
+	}
+
+	log.Printf("parseValue: key=%s, Value=%?", key, v)
+
+	v = strings.Trim(v.(string), `"'`)
+
+	if v == "true" {
+
+		return true
+	} else if v == "false" {
+
+		return false
+	}
+
+	return v
+}
+
+// assignNestedMap 将路径如 "a.b.c" 分配到嵌套结构中
+func assignNestedMap(m map[string]any, path string, val any) {
+	parts := strings.Split(path, ".")
+	curr := m
+
+	for i, p := range parts {
+		if i == len(parts)-1 {
+			curr[p] = val
+		} else {
+			if _, ok := curr[p]; !ok {
+				curr[p] = map[string]any{}
+			}
+
+			curr = curr[p].(map[string]any)
+		}
+	}
 }
