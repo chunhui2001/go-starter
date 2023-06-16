@@ -19,7 +19,9 @@ import (
 const (
 	signatureVersion       = "2"
 	signatureMethod        = "HmacSHA256"
-	timeFormat             = "2006-01-02T15:04:05Z"
+	// timeFormat0  		   = time.RFC3339
+	timeFormatZ             = "2006-01-02T15:04:05Z"
+	timeFormat2             = "2006-01-02T15:04:05"
 	ExpireSecondsFieldKey  = "ExpireSeconds"
 	AWSAccessKeyIdFieldKey = "AWSAccessKeyId"
 )
@@ -61,10 +63,10 @@ func CheckSign(accessKeyID string, secretAccessKey string, method string, reqUrl
 
 	if accessQuery.Has(ExpireSecondsFieldKey) {
 
-		expireSeconds, err := strconv.Atoi(accessQuery.Get(ExpireSecondsFieldKey))
+		expireSeconds, err0 := strconv.Atoi(accessQuery.Get(ExpireSecondsFieldKey))
 
 		// 过期时间格式不对
-		if err != nil {
+		if err0 != nil {
 			return false, errors.New("ILLEGAL_EXPIRES_ECONDS")
 		}
 
@@ -73,7 +75,15 @@ func CheckSign(accessKeyID string, secretAccessKey string, method string, reqUrl
 			return true, nil
 		}
 
-		signTime, err := time.Parse(timeFormat, accessQuery.Get("Timestamp"))
+		var signTime time.Time
+		var err error
+		var timestampString string = accessQuery.Get("Timestamp")
+
+		if strings.HasSuffix(timestampString, "Z") {
+			signTime, err = time.Parse(timeFormatZ, timestampString)
+		} else {
+			signTime, err = time.Parse(timeFormat2, timestampString)
+		}
 
 		// 时间格式不对
 		if err != nil {
@@ -110,7 +120,7 @@ func PreSignedUrlV2(accessKeyID string, secretAccessKey string, expireSeconds in
 	Query.Set("SignatureMethod", signatureMethod)
 
 	if !Query.Has("Timestamp") {
-		Query.Set("Timestamp", time.Now().Format(timeFormat))
+		Query.Set("Timestamp", time.Now().UTC().Format(timeFormatZ))
 	}
 
 	if expireSeconds > 0 {

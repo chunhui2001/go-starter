@@ -199,12 +199,13 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 			fmt.Sprintf(
 				"Could-Not-Create-HttpRequest: Method=%s, contentType=%s, Url=%s, ErrorMessage=%s",
 				httpClient.Method, httpClient.Headers["Content-Type"], httpClient.Url, err))
+
 		return &HttpResult{
 			Error: err,
 		}
 	}
 
-	if httpClient.QueryParams != nil && len(httpClient.QueryParams) > 0 {
+	if len(httpClient.QueryParams) > 0 {
 
 		q := req.URL.Query()
 
@@ -213,16 +214,16 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 		}
 
 		req.URL.RawQuery = q.Encode()
-
 	}
+
+	command, _ := http2curl.GetCurlCommand(req)
+	commandCurl := command.String()
 
 	// req = req.WithContext(ctx)
 
 	start := time.Now()
 	res, err = myHttpClient.Do(req)
 	latency := time.Since(start)
-	command, _ := http2curl.GetCurlCommand(req)
-	commandCurl := command.String()
 
 	if httpClient.RequestBody != "" {
 		if !httpClient.Ellipsis && len(httpClient.RequestBody) > 165 {
@@ -242,6 +243,7 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 				fmt.Sprintf(
 					"Send-HttpRequest-Failed: Curl=%s, ErrorMessage=%s", commandCurl, err))
 		}
+
 		return &HttpResult{
 			Error: err,
 		}
@@ -262,10 +264,10 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 			fmt.Sprintf(
 				"HttpRequest-Could-Not-Read-Response-Body: StatusCode=%d, ContentLength=%s, Connection=%s, Curl=%s, ErrorMessage=%s",
 				res.StatusCode, utils.HumanFileSizeWithInt(contentLengthValue), keepAlived, commandCurl, err))
+
 		return &HttpResult{
 			Error: err,
 		}
-
 	}
 
 	if printCurl {
@@ -273,16 +275,10 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 			fmt.Sprintf(
 				"HttpRequest-Successful: Latency=%s, StatusCode=%d, ContentLength=%s, Connection=%s, Curl=%s",
 				latency, res.StatusCode, utils.HumanFileSizeWithInt(contentLengthValue), keepAlived, commandCurl))
-	} else {
-		logger.Info(
-			fmt.Sprintf(
-				"HttpRequest-Successful: Latency=%s, StatusCode=%d, ContentLength=%s, Connection=%s",
-				latency, res.StatusCode, utils.HumanFileSizeWithInt(contentLengthValue), keepAlived))
 	}
 
 	return &HttpResult{
 		Status:       res.StatusCode,
 		ResponseBody: resBody,
 	}
-
 }

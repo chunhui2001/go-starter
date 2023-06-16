@@ -89,13 +89,9 @@ func Init(redisConf *GRedis, log *logrus.Entry) {
 	conf = redisConf
 	logger = log
 
-	events.Listen(func(e events.Event) {
-		logger.Infof("### e2 -> %s", e)
-	})
-
-	events.NamedListen("my-listener", func(e events.Event) {
-		logger.Infof("### e1 -> %s", e)
-	})
+	// events.NamedListen("my-listener", func(e events.Event) {
+	// 	logger.Infof("### e1 -> %s", e)
+	// })
 
 	if conf.Mode == Disabled {
 		return

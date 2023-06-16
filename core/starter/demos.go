@@ -105,6 +105,17 @@ func init() {
 		// mysql cat
 		AppendRouter("POST", []string{"/demo/mysqlcat/listTables"}, actions.ListTables)
 
+		// promise
+		AppendRouter("GET", []string{"/demo/promise/WaitGroup"}, actions.WaitGroup)
+
+		// google
+		AppendRouter("GET", []string{"/demo/google/listAllPermissions"}, actions.GoogleDocListAllPermissionsRouter)
+		AppendRouter("GET", []string{"/demo/google/shardWithReader"}, actions.GoogleDocShardWithReaderRouter)
+		AppendRouter("GET", []string{"/demo/google/createSheet"}, actions.GoogleDocCreateSheetRouter)
+		AppendRouter("GET", []string{"/demo/google/importCsv"}, actions.GoogleDocImportCsvRouter)
+		AppendRouter("GET", []string{"/demo/google/csvReader"}, actions.GoogleDocCsvReaderRouter)
+		AppendRouter("GET", []string{"/demo/google/clearSheet"}, actions.GoogleDocClearSheetRouter)
+
 	}
 
 }

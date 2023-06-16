@@ -57,6 +57,7 @@ func (r *R) IfErr(failCode int) map[string]interface{} {
 
 	if r.Error != nil {
 		r.Code = failCode
+		r.Data = nil
 	} else {
 		r.Code = 200
 	}

@@ -2,6 +2,7 @@ package googleapi
 
 import (
 	"context"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -9,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/chunhui2001/go-starter/core/utils"
@@ -50,12 +52,14 @@ func Init(conf *GoogleAPIConf, log *logrus.Entry) {
 
 	if err != nil {
 		logger.Errorf("GoogleApi-Unable-to-read-client-secret-file: %v", err)
+		return
 	}
 
 	config, err := google.ConfigFromJSON(b, conf.Scopes...)
 
 	if err != nil {
 		logger.Errorf("GoogleApi-Unable-to-parse-client-secret-file-to-config: %v", err)
+		return
 	}
 
 	Client = getClient(config)
@@ -81,7 +85,9 @@ func Init(conf *GoogleAPIConf, log *logrus.Entry) {
 		return
 	}
 
-	logger.Infof("GoogleApi-Client-init-Successful: CredentialsFile=%s, TokenFile=%s, Scope=%v", CREDENTIALS_FILE, TOKEN_FILE, utils.ToJsonString(SCOPES))
+	logger.Infof("GoogleApi-Client-init-CredentialsFile: File=%s", strings.Replace(CREDENTIALS_FILE, utils.RootDir(), "", -1))
+	logger.Infof("GoogleApi-Client-init-TokenFile: File=%s", strings.Replace(TOKEN_FILE, utils.RootDir(), "", -1))
+	logger.Infof("GoogleApi-Client-init-Scope: Value=%v", SCOPES)
 
 }
 
@@ -113,6 +119,8 @@ func ReadSheet(spreadsheetId string, readRange string) ([][]interface{}, error) 
 
 }
 
+// https://docs.google.com/spreadsheets/u/0/
+// https://docs.google.com/spreadsheets/d/${SpreadsheetId}
 func CreateSheet(title string) (string, error) {
 
 	rb := &sheets.Spreadsheet{
@@ -156,6 +164,95 @@ func WriteToSpreadsheet(spreadsheetId string, writeRange string, values *[][]int
 	}
 
 	return err
+
+}
+
+func ClearSheet(spreadsheetId string) error {
+
+	// 清空表格内容
+	clearRequest := &sheets.BatchClearValuesRequest{}
+
+	_, err := SHEET_SERVICE.Spreadsheets.Values.BatchClear(spreadsheetId, clearRequest).Do()
+
+	return err
+
+}
+
+// 使用 sed 命令来打印文件的指定行数
+// sed -n '1,5p' 文件路径, 这个命令将打印文件 file.txt 中的第 1 行到第 5 行之间的内容。
+func ImportCsv(spreadsheetId string, sheetName string, csvFilePath string, separator string) (int, error) {
+
+	fi, err := os.Stat(csvFilePath)
+
+	if err != nil {
+		logger.Errorf("GoogleApi-ImportCsv-StatError: %v", err)
+		return 0, err
+	}
+
+	start0 := time.Now()
+
+	// 读取CSV文件数据
+	csvFile, err := os.Open(csvFilePath)
+
+	if err != nil {
+		logger.Errorf("GoogleApi-ImportCsv-OpenError: %v", err)
+		return 0, err
+	}
+
+	defer csvFile.Close()
+
+	logger.Debugf("GoogleApi-ImportCsv-打开文件: 耗时=%s, csvFilePath=%s", time.Since(start0), csvFilePath)
+
+	start1 := time.Now()
+
+	reader := csv.NewReader(csvFile)
+	reader.Comma = []rune(separator)[0] // 设置分隔符
+	csvData, err := reader.ReadAll()
+
+	if err != nil {
+		logger.Fatalf("无法读取CSV文件：%v", err)
+		return 0, err
+	}
+
+	logger.Debugf("GoogleApi-ImportCsv-读取数据: 耗时=%s, Size=%s, csvFilePath=%s", time.Since(start1), utils.HumanFileSizeInt64(fi.Size()), csvFilePath)
+
+	start2 := time.Now()
+
+	// 转换CSV数据格式
+	var values [][]interface{}
+
+	for _, row := range csvData {
+
+		var valueRow []interface{}
+
+		for _, cell := range row {
+			valueRow = append(valueRow, cell)
+		}
+
+		values = append(values, valueRow)
+
+	}
+
+	logger.Debugf("GoogleApi-ImportCsv-转换数据: 耗时=%s, csvFilePath=%s", time.Since(start2), csvFilePath)
+
+	// 构建请求体
+	valueRange := &sheets.ValueRange{
+		Values: values,
+	}
+
+	start3 := time.Now()
+
+	// 执行导入请求
+	_, err = SHEET_SERVICE.Spreadsheets.Values.Update(spreadsheetId, sheetName, valueRange).ValueInputOption("RAW").Do()
+
+	logger.Debugf("GoogleApi-ImportCsv-更新文件: 耗时=%s, 数量=%d, spreadsheetId=%s", time.Since(start3), len(values), spreadsheetId)
+
+	if err != nil {
+		logger.Errorf("GoogleApi-ImportCsv-导入异常：spreadsheetId=%s, csvFilePath=%s, Error=%v", spreadsheetId, csvFilePath, err)
+		return 0, err
+	}
+
+	return len(values), nil
 
 }
 
@@ -208,6 +305,10 @@ func AllPermissions(fileId string) ([]*drive.Permission, error) {
 		return nil, err
 	}
 
+	for _, p := range r.Items {
+		p.Etag = utils.DecodeJsonString(p.Etag)
+	}
+
 	return r.Items, nil
 
 }
@@ -238,6 +339,34 @@ func InsertPermission(fileId string, value string, permType string, role string)
 	}
 
 	return nil
+
+}
+
+// 多个email地址用逗号分隔
+func ShardWithReader(fileId string, userEmails string) (*drive.Permission, error) {
+
+	permission := &drive.Permission{
+		Type:         "user",
+		Role:         "reader", // 为目标用户授予 "reader" 角色，以允许他们查看和复制文件，但不能修改原始文件。
+		EmailAddress: userEmails,
+		Value:        userEmails,
+	}
+
+	p, err := DRIVE_SERVICE.Permissions.Insert(fileId, permission).Do()
+
+	// createdPermission, err := DRIVE_SERVICE.Permissions.Create(fileId, permission).Do()
+
+	if err != nil {
+		logger.Errorf("GoogleApi-ShardWithReader-Error: fileId=%s, %v", fileId, err)
+		return nil, err
+	}
+
+	// 获取分享链接
+	// shareURL := createdPermission.Link
+
+	p.Etag = utils.DecodeJsonString(p.Etag)
+
+	return p, nil
 
 }
 

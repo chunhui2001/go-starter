@@ -4,6 +4,9 @@ Content-Type restriction
 ### 版本列表
 https://go.dev/doc/devel/release
 
+## All releases
+https://go.dev/dl/
+
 ### 设置国内代理
 $ go env -w GO111MODULE=on
 $ go env -w GOPROXY=https://goproxy.cn,direct

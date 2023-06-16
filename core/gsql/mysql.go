@@ -58,7 +58,7 @@ func Init(conf *MySql, log *logrus.Entry) {
 
 	if err := DbClient.Ping(); err != nil {
 		logger.Error(fmt.Sprintf("Mysql-Client-Connect-Error: ConnString=%s, errorMessage=%s", conf.connString("****"), string(err.Error())))
-		return
+		panic(err)
 	}
 
 	if version, err := Version(); err == nil {

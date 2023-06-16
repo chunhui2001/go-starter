@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -82,14 +83,15 @@ type Cookie struct {
 }
 
 type LogConf struct {
-	Output         string `mapstructure:"LOG_OUTPUT"`
-	FilePath       string `mapstructure:"LOG_FILE_PATH"`
-	FileMaxSize    int    `mapstructure:"LOG_FILE_MAX_SIZE"`
-	FileMaxBackups int    `mapstructure:"LOG_FILE_MAX_BACKUPS"`
-	FileMaxAge     int    `mapstructure:"LOG_FILE_MAX_AGE"`
-	KafkaServer    string `mapstructure:"LOG_KAFKA_SERVER"`
-	KafkaTopic     string `mapstructure:"LOG_KAFKA_TOPIC"`
-	FileFormatter  string `mapstructure:"LOG_FILE_FORMATTER"` // json OR txt
+	Output           string `mapstructure:"LOG_OUTPUT"`
+	FilePath         string `mapstructure:"LOG_FILE_PATH"`
+	FileMaxSize      int    `mapstructure:"LOG_FILE_MAX_SIZE"`
+	FileMaxBackups   int    `mapstructure:"LOG_FILE_MAX_BACKUPS"`
+	FileMaxAge       int    `mapstructure:"LOG_FILE_MAX_AGE"`
+	KafkaServer      string `mapstructure:"LOG_KAFKA_SERVER"`
+	KafkaTopic       string `mapstructure:"LOG_KAFKA_TOPIC"`
+	FileFormatter    string `mapstructure:"LOG_FILE_FORMATTER"`    // json OR txt
+	ConsoleFormatter string `mapstructure:"LOG_CONSOLE_FORMATTER"` // json OR txt
 }
 
 type WebPageConf struct {
@@ -136,11 +138,12 @@ var SimpleGTaskConf = &gztask.SimpleGTask{
 }
 
 var LogSettings = &LogConf{
-	Output:         "console",
-	FileMaxSize:    1, // 1MB
-	FileMaxBackups: 10,
-	FileMaxAge:     30,
-	FileFormatter:  "txt", // json OR txt
+	Output:           "console",
+	FileMaxSize:      1, // 1MB
+	FileMaxBackups:   10,
+	FileMaxAge:       30,
+	FileFormatter:    "txt", // json OR txt,
+	ConsoleFormatter: "txt", // json OR txt
 }
 
 var WebPageSettings = &WebPageConf{
@@ -280,8 +283,8 @@ var HttpClientConf = &ghttp.HttpConf{
 
 var GoogleAPIConfSettings = &googleapi.GoogleAPIConf{
 	Enable:          false,
-	CredentialsFile: "resources/googleapi-oauth-credentials_gos3.json",
-	TokenFile:       "resources/gos3_token.json",
+	CredentialsFile: "resources/googleapi-oauth-credentials.json",
+	TokenFile:       "resources/googleapi-oauth-token.json",
 	Scopes:          []string{"https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive.metadata", "https://www.googleapis.com/auth/drive.appdata", "https://www.googleapis.com/auth/spreadsheets"},
 }
 
@@ -425,7 +428,12 @@ func InitLog() {
 
 		myLog.SetLevel(logrus.DebugLevel)
 		myLog.SetReportCaller(true)
-		myLog.SetFormatter(txtFormatter())
+
+		if LogSettings.ConsoleFormatter == "json" {
+			myLog.SetFormatter(jsonFormatter())
+		} else {
+			myLog.SetFormatter(txtFormatter())
+		}
 
 	} else {
 		myLog.Out = ioutil.Discard
@@ -768,13 +776,12 @@ func loadCookieSettings(v1 *viper.Viper, filename string) {
 }
 
 func loadYamlConfiguraion() {
+	var env string = os.Getenv("GIN_ENV")
 
 	var f = func(file string) map[string]interface{} {
-
 		yamlFilePath := filepath.Join(utils.RootDir(), ".env", file)
 
 		if exists, _ := utils.FileExists(yamlFilePath); exists {
-
 			if yamlContent, err := utils.ReadFile(yamlFilePath); err != nil {
 				Log.Errorf(`Read-Yaml-File-Error: FilePath=%s, ErrorMessage=%s`, yamlFilePath, err.Error())
 			} else {
@@ -786,14 +793,10 @@ func loadYamlConfiguraion() {
 					return body
 				}
 			}
-
 		}
 
 		return nil
-
 	}
-
-	var env string = os.Getenv("GIN_ENV")
 
 	var body1 map[string]interface{} = f("application.yml")
 	var body2 map[string]interface{} = f("application-" + env + ".yml")
@@ -810,22 +813,25 @@ func loadYamlConfiguraion() {
 		}
 	}
 
+	readApollo2()
 }
 
 // yaml config
 func ReadConfig(key string, data any) error {
 	value := applicationConfig[key]
+
 	if err := json.Unmarshal(utils.ToJsonBytes(value), data); err != nil {
 		Log.Errorf("Configuration-Error: Key=%s, ErrorMessage=%v", "key", err)
 		return err
 	}
+
 	return nil
 }
 
 func readConfig(defaults map[string]interface{}, filenames ...string) *viper.Viper {
+	v := viper.New()
 
 	var f = func(file string, defaultMaps map[string]interface{}) *viper.Viper {
-
 		v := viper.New()
 
 		for key, value := range defaultMaps {
@@ -851,8 +857,6 @@ func readConfig(defaults map[string]interface{}, filenames ...string) *viper.Vip
 		return v
 	}
 
-	v := viper.New()
-
 	for key, value := range defaults {
 		v.SetDefault(key, value)
 	}
@@ -863,6 +867,86 @@ func readConfig(defaults map[string]interface{}, filenames ...string) *viper.Vip
 		}
 	}
 
-	return v
+	// 加载apollo
+	readApollo1(v)
 
+	return v
+}
+
+func readApollo1(v *viper.Viper) {
+
+	var agolloService string = os.Getenv("APOLLO_CONFIGSERVICE")
+	var appId string = os.Getenv("APP_ID")
+	var env string = os.Getenv("GIN_ENV") // cluster
+
+	if len(agolloService) <= 0 {
+		log.Println("Loaded-agollo-properties processed: Disabled")
+		return
+	}
+
+	var s1 = fmt.Sprintf("%s/configs/%s/%s/application.properties", agolloService, appId, env)
+
+	httpResponse1 := sendApolloRequest(s1)
+
+	if httpResponse1 != nil {
+		responseMap := utils.AsMap(httpResponse1)
+		config := responseMap["configurations"].(map[string]interface{})
+
+		for key, val := range config {
+			v.SetDefault(strings.TrimSpace(key), strings.TrimSpace(val.(string)))
+		}
+
+		log.Printf("Loaded-agollo-properties Successful, agolloService=%s, bodyLen=%d", s1, len(config))
+	}
+}
+
+func readApollo2() {
+
+	var agolloService string = os.Getenv("APOLLO_CONFIGSERVICE")
+	var appId string = os.Getenv("APP_ID")
+	var env string = os.Getenv("GIN_ENV") // cluster
+
+	if len(agolloService) <= 0 {
+		log.Println("Loaded-agollo-properties processed: Disabled")
+		return
+	}
+
+	var s2 = fmt.Sprintf("%s/configs/%s/%s/application.yaml", agolloService, appId, env)
+
+	httpResponse2 := sendApolloRequest(s2)
+
+	if httpResponse2 != nil {
+		responseMap := utils.AsMap(httpResponse2)
+		config := responseMap["configurations"].(map[string]interface{})["content"].(string)
+
+		var body map[string]interface{}
+
+		if err := yaml.Unmarshal([]byte(config), &body); err != nil {
+			Log.Errorf(`Loading-Yaml-File-Error: s2=%s, ErrorMessage=%s`, s2, err.Error())
+		}
+
+		if body != nil {
+			if err := copier.CopyWithOption(&applicationConfig, &body, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+				panic(err)
+			}
+		}
+
+		Log.Infof("Loaded-agollo-yaml Successful, agolloService=%s, bodyLen=%d", s2, len(config))
+	}
+}
+
+func sendApolloRequest(url string) []byte {
+	req, _ := http.NewRequest("GET", url, nil)
+
+	res, err2 := (&http.Client{}).Do(req)
+
+	if err2 != nil {
+		log.Printf("Loaded-agollo-properties Error: Url=%s, ErrorMessage=%s", url, err2)
+
+		return nil
+	}
+
+	resBody, _ := io.ReadAll(res.Body)
+
+	return resBody
 }

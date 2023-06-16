@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"runtime"
+	"strings"
 
 	"github.com/chunhui2001/go-starter/core/built"
 	"github.com/chunhui2001/go-starter/core/utils"
@@ -99,7 +100,7 @@ func (f *MyJSONFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	}
 
 	data[f.FieldMap.resolve(logrus.FieldKeyMsg)] = entry.Message
-	data[f.FieldMap.resolve(logrus.FieldKeyLevel)] = entry.Level.String()
+	data[f.FieldMap.resolve(logrus.FieldKeyLevel)] = strings.ToUpper(entry.Level.String())
 
 	if entry.HasCaller() {
 		funcVal := entry.Caller.Function
