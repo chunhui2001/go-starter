@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -173,7 +174,7 @@ func WriteExcel(sheetName string, fields *[]string, dataList *[]map[string]inter
 				}
 			} else {
 				theFields := make([]string, 0)
-				for k, _ := range *currentMap {
+				for k := range *currentMap {
 					theFields = append(theFields, k)
 				}
 				for _, fieldName := range theFields {
@@ -204,6 +205,20 @@ func GetFileMd5(file multipart.File) (md5Str string) {
 	}
 
 	return fmt.Sprintf("%x", h.Sum(nil))
+
+}
+
+func Md5(data interface{}) string {
+
+	str := ToJsonString(data)
+
+	// 计算 MD5 值
+	hash := md5.Sum([]byte(str))
+
+	// 将结果转换为十六进制字符串
+	md5Str := hex.EncodeToString(hash[:])
+
+	return md5Str
 
 }
 
@@ -302,6 +317,15 @@ func AsMap(buf []byte) map[string]interface{} {
 	var m map[string]interface{}
 	if err := json.Unmarshal(buf, &m); err != nil {
 		fmt.Println(fmt.Sprintf("字节转json异常: jsonString=%s", string(buf)))
+		panic(err)
+	}
+	return m
+}
+
+func DecodeJsonString(str string) string {
+	var m string
+	if err := json.Unmarshal([]byte(str), &m); err != nil {
+		fmt.Println(fmt.Sprintf("字节转json异常: jsonString=%s", str))
 		panic(err)
 	}
 	return m
@@ -718,6 +742,30 @@ func HumanFileSizeUint(size uint64) string {
 
 }
 
+func HumanFileSizeInt64(size int64) string {
+
+	if size <= 0 {
+		return "0"
+	}
+
+	var suffixes [5]string
+
+	suffixes[0] = "B"
+	suffixes[1] = "KB"
+	suffixes[2] = "MB"
+	suffixes[3] = "GB"
+	suffixes[4] = "TB"
+
+	base := math.Log(float64(size)) / math.Log(1024)
+
+	getSize := Round(math.Pow(1024, base-math.Floor(base)), .5, 2)
+
+	getSuffix := suffixes[int(math.Floor(base))]
+
+	return strconv.FormatFloat(getSize, 'f', -1, 64) + "" + string(getSuffix)
+
+}
+
 func SortedKeysInt(maps ...map[int]interface{}) (map[int]interface{}, []int) {
 
 	var keys []int
@@ -846,5 +894,47 @@ func Chunk(list []map[string]interface{}, chunkSize int, f func([]map[string]int
 		chunk := list[i:MinOfInt(i+chunkSize, totalSize)]
 		f(chunk)
 	}
+
+}
+
+func IndexOf(arr interface{}, target interface{}) int {
+
+	switch arr := arr.(type) {
+
+	case []string:
+		for i, element := range arr {
+			if element == target {
+				return i
+			}
+		}
+	case []int:
+		for i, element := range arr {
+			if element == target {
+				return i
+			}
+		}
+		// 添加其他需要支持的类型
+	}
+
+	return -1
+}
+
+func NotIn(arr1 []interface{}, arr2 []interface{}) []interface{} {
+
+	result := make([]interface{}, 0)
+
+	array2Map := make(map[interface{}]bool)
+
+	for _, element := range arr2 {
+		array2Map[element] = true
+	}
+
+	for _, element := range arr1 {
+		if _, found := array2Map[element]; !found {
+			result = append(result, element)
+		}
+	}
+
+	return result
 
 }

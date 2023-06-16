@@ -43,6 +43,9 @@ import (
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
+
+	"github.com/philchia/agollo/v4"
+	. "github.com/philchia/agollo/v4"
 )
 
 var timeStampFormat = "2006-01-02T15:04:05.000Z07:00"
@@ -82,14 +85,15 @@ type Cookie struct {
 }
 
 type LogConf struct {
-	Output         string `mapstructure:"LOG_OUTPUT"`
-	FilePath       string `mapstructure:"LOG_FILE_PATH"`
-	FileMaxSize    int    `mapstructure:"LOG_FILE_MAX_SIZE"`
-	FileMaxBackups int    `mapstructure:"LOG_FILE_MAX_BACKUPS"`
-	FileMaxAge     int    `mapstructure:"LOG_FILE_MAX_AGE"`
-	KafkaServer    string `mapstructure:"LOG_KAFKA_SERVER"`
-	KafkaTopic     string `mapstructure:"LOG_KAFKA_TOPIC"`
-	FileFormatter  string `mapstructure:"LOG_FILE_FORMATTER"` // json OR txt
+	Output           string `mapstructure:"LOG_OUTPUT"`
+	FilePath         string `mapstructure:"LOG_FILE_PATH"`
+	FileMaxSize      int    `mapstructure:"LOG_FILE_MAX_SIZE"`
+	FileMaxBackups   int    `mapstructure:"LOG_FILE_MAX_BACKUPS"`
+	FileMaxAge       int    `mapstructure:"LOG_FILE_MAX_AGE"`
+	KafkaServer      string `mapstructure:"LOG_KAFKA_SERVER"`
+	KafkaTopic       string `mapstructure:"LOG_KAFKA_TOPIC"`
+	FileFormatter    string `mapstructure:"LOG_FILE_FORMATTER"`    // json OR txt
+	ConsoleFormatter string `mapstructure:"LOG_CONSOLE_FORMATTER"` // json OR txt
 }
 
 type WebPageConf struct {
@@ -136,11 +140,12 @@ var SimpleGTaskConf = &gztask.SimpleGTask{
 }
 
 var LogSettings = &LogConf{
-	Output:         "console",
-	FileMaxSize:    1, // 1MB
-	FileMaxBackups: 10,
-	FileMaxAge:     30,
-	FileFormatter:  "txt", // json OR txt
+	Output:           "console",
+	FileMaxSize:      1, // 1MB
+	FileMaxBackups:   10,
+	FileMaxAge:       30,
+	FileFormatter:    "txt", // json OR txt,
+	ConsoleFormatter: "txt", // json OR txt
 }
 
 var WebPageSettings = &WebPageConf{
@@ -280,8 +285,8 @@ var HttpClientConf = &ghttp.HttpConf{
 
 var GoogleAPIConfSettings = &googleapi.GoogleAPIConf{
 	Enable:          false,
-	CredentialsFile: "resources/googleapi-oauth-credentials_gos3.json",
-	TokenFile:       "resources/gos3_token.json",
+	CredentialsFile: "resources/googleapi-oauth-credentials.json",
+	TokenFile:       "resources/googleapi-oauth-token.json",
 	Scopes:          []string{"https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive.metadata", "https://www.googleapis.com/auth/drive.appdata", "https://www.googleapis.com/auth/spreadsheets"},
 }
 
@@ -347,7 +352,23 @@ func init() {
 
 	log.Println(built.INFO.Info())
 
-	if v1 := readConfig(map[string]interface{}{}, defaultenv, filename); v1 != nil {
+	var agolloService string = os.Getenv("APOLLO_CONFIGSERVICE")
+	var appId string = os.Getenv("APP_ID")
+
+	if len(agolloService) > 0 {
+		// agollo
+		if err := agollo.Start(&agollo.Conf{
+			AppID:          appId,
+			Cluster:        env,
+			NameSpaceNames: []string{"application.yaml"},
+			MetaAddr:       agolloService,
+		}); err != nil {
+			log.Println("Loading-agollo-Yaml-Error: ErrorMessage=" + err.Error())
+			// return v
+		}
+	}
+
+	if v1 := readConfig(map[string]interface{}{}, len(agolloService) > 0, defaultenv, filename); v1 != nil {
 
 		myViper = v1
 
@@ -379,7 +400,7 @@ func init() {
 
 		gid.Init(Log, AppSetting.NodeId)
 
-		loadYamlConfiguraion()
+		loadYamlConfiguraion(len(agolloService) > 0)
 
 	} else {
 		Log = logrus.NewEntry(logrus.New())
@@ -425,7 +446,12 @@ func InitLog() {
 
 		myLog.SetLevel(logrus.DebugLevel)
 		myLog.SetReportCaller(true)
-		myLog.SetFormatter(txtFormatter())
+
+		if LogSettings.ConsoleFormatter == "json" {
+			myLog.SetFormatter(jsonFormatter())
+		} else {
+			myLog.SetFormatter(txtFormatter())
+		}
 
 	} else {
 		myLog.Out = ioutil.Discard
@@ -767,49 +793,62 @@ func loadCookieSettings(v1 *viper.Viper, filename string) {
 
 }
 
-func loadYamlConfiguraion() {
+func loadYamlConfiguraion(enableAgollo bool) {
+	var env string = os.Getenv("GIN_ENV")
 
-	var f = func(file string) map[string]interface{} {
+	if enableAgollo {
+		valYaml := agollo.GetContent(WithNamespace("application.yaml"))
+		var body map[string]interface{}
 
-		yamlFilePath := filepath.Join(utils.RootDir(), ".env", file)
-
-		if exists, _ := utils.FileExists(yamlFilePath); exists {
-
-			if yamlContent, err := utils.ReadFile(yamlFilePath); err != nil {
-				Log.Errorf(`Read-Yaml-File-Error: FilePath=%s, ErrorMessage=%s`, yamlFilePath, err.Error())
+		if len(valYaml) > 0 {
+			if err := yaml.Unmarshal([]byte(valYaml), &body); err != nil {
+				Log.Errorf("Loading-agollo-Yaml-Error: content=" + valYaml + ", ErrorMessage=" + err.Error())
 			} else {
-				var body map[string]interface{}
-				if err := yaml.Unmarshal([]byte(yamlContent), &body); err != nil {
-					Log.Errorf(`Loading-Yaml-File-Error: FilePath=%s, ErrorMessage=%s`, yamlFilePath, err.Error())
+				if err := copier.CopyWithOption(&applicationConfig, &body, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+					panic(err)
+				}
+
+				Log.Infof("Loaded-agollo-Yaml Successful ....")
+				// Log.Infof("Loaded-agollo-Yaml: content=" + utils.ToJsonString(&body))
+				// return body
+			}
+		}
+	} else {
+		var f = func(file string) map[string]interface{} {
+			yamlFilePath := filepath.Join(utils.RootDir(), ".env", file)
+
+			if exists, _ := utils.FileExists(yamlFilePath); exists {
+				if yamlContent, err := utils.ReadFile(yamlFilePath); err != nil {
+					Log.Errorf(`Read-Yaml-File-Error: FilePath=%s, ErrorMessage=%s`, yamlFilePath, err.Error())
 				} else {
-					Log.Infof(`LoadedYaml-Configuration: FilePath=%s`, yamlFilePath)
-					return body
+					var body map[string]interface{}
+					if err := yaml.Unmarshal([]byte(yamlContent), &body); err != nil {
+						Log.Errorf(`Loading-Yaml-File-Error: FilePath=%s, ErrorMessage=%s`, yamlFilePath, err.Error())
+					} else {
+						Log.Infof(`LoadedYaml-Configuration: FilePath=%s`, yamlFilePath)
+						return body
+					}
 				}
 			}
 
+			return nil
 		}
 
-		return nil
+		var body1 map[string]interface{} = f("application.yml")
+		var body2 map[string]interface{} = f("application-" + env + ".yml")
 
-	}
+		if body1 != nil {
+			if err := copier.CopyWithOption(&applicationConfig, &body1, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+				panic(err)
+			}
+		}
 
-	var env string = os.Getenv("GIN_ENV")
-
-	var body1 map[string]interface{} = f("application.yml")
-	var body2 map[string]interface{} = f("application-" + env + ".yml")
-
-	if body1 != nil {
-		if err := copier.CopyWithOption(&applicationConfig, &body1, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
-			panic(err)
+		if body2 != nil {
+			if err := copier.CopyWithOption(&applicationConfig, &body2, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+				panic(err)
+			}
 		}
 	}
-
-	if body2 != nil {
-		if err := copier.CopyWithOption(&applicationConfig, &body2, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
-			panic(err)
-		}
-	}
-
 }
 
 // yaml config
@@ -822,47 +861,67 @@ func ReadConfig(key string, data any) error {
 	return nil
 }
 
-func readConfig(defaults map[string]interface{}, filenames ...string) *viper.Viper {
+func readConfig(defaults map[string]interface{}, enableAgollo bool, filenames ...string) *viper.Viper {
+	v := viper.New()
 
-	var f = func(file string, defaultMaps map[string]interface{}) *viper.Viper {
+	if enableAgollo {
+		valProp := agollo.GetContent(WithNamespace("application.properties"))
 
-		v := viper.New()
+		if len(valProp) > 0 {
+			propLines := strings.Split(valProp, "\n")
+			for _, line := range propLines {
+				if len(line) > 0 {
+					if equal := strings.Index(line, "="); equal >= 0 {
+						if key := strings.TrimSpace(line[:equal]); len(key) > 0 {
+							if len(line) > equal {
+								currValue := strings.TrimSpace(line[equal+1:])
+								// log.Println("agollo-prop: line=" + line + ",key=" + key + ",currValue=" + currValue)
+								v.SetDefault(key, currValue)
+							}
+						}
+					}
+				}
+			}
+		}
 
-		for key, value := range defaultMaps {
+		log.Println("Loaded-agollo-properties Successful ....")
+	} else {
+		var f = func(file string, defaultMaps map[string]interface{}) *viper.Viper {
+			v := viper.New()
+
+			for key, value := range defaultMaps {
+				v.SetDefault(key, value)
+			}
+
+			v.SetConfigName(file)
+			v.SetConfigType("env")
+			// v.AddConfigPath("/etc/appname/")   // path to look for the config file in
+			// v.AddConfigPath("$(home)/.env") // call multiple times to add many search paths
+			v.AddConfigPath(AppRoot())
+			v.AutomaticEnv() // 将读取当前目录下的 .env 配置文件或"环境变量", .env 优先级最高
+
+			err := v.ReadInConfig()
+
+			if err != nil {
+				log.Println("viper loaded error: AppRoot=" + AppRoot() + ", file=" + file + ", errorMessage=" + fmt.Sprint(err) + ".")
+				return nil
+			}
+
+			log.Println("viper Configuration loaded " + filepath.Join(AppRoot(), file) + " successful.")
+
+			return v
+		}
+
+		for key, value := range defaults {
 			v.SetDefault(key, value)
 		}
 
-		v.SetConfigName(file)
-		v.SetConfigType("env")
-		// v.AddConfigPath("/etc/appname/")   // path to look for the config file in
-		// v.AddConfigPath("$(home)/.env") // call multiple times to add many search paths
-		v.AddConfigPath(AppRoot())
-		v.AutomaticEnv() // 将读取当前目录下的 .env 配置文件或"环境变量", .env 优先级最高
-
-		err := v.ReadInConfig()
-
-		if err != nil {
-			log.Println("viper loaded error: AppRoot=" + AppRoot() + ", file=" + file + ", errorMessage=" + fmt.Sprint(err) + ".")
-			return nil
-		}
-
-		log.Println("viper Configuration loaded " + filepath.Join(AppRoot(), file) + " successful.")
-
-		return v
-	}
-
-	v := viper.New()
-
-	for key, value := range defaults {
-		v.SetDefault(key, value)
-	}
-
-	for _, fname := range filenames {
-		if fname != "" {
-			v = f(fname, v.AllSettings())
+		for _, fname := range filenames {
+			if fname != "" {
+				v = f(fname, v.AllSettings())
+			}
 		}
 	}
 
 	return v
-
 }

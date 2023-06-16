@@ -273,11 +273,6 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 			fmt.Sprintf(
 				"HttpRequest-Successful: Latency=%s, StatusCode=%d, ContentLength=%s, Connection=%s, Curl=%s",
 				latency, res.StatusCode, utils.HumanFileSizeWithInt(contentLengthValue), keepAlived, commandCurl))
-	} else {
-		logger.Info(
-			fmt.Sprintf(
-				"HttpRequest-Successful: Latency=%s, StatusCode=%d, ContentLength=%s, Connection=%s",
-				latency, res.StatusCode, utils.HumanFileSizeWithInt(contentLengthValue), keepAlived))
 	}
 
 	return &HttpResult{
