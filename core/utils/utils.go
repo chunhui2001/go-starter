@@ -852,6 +852,7 @@ func Chunk(list []map[string]interface{}, chunkSize int, f func([]map[string]int
 func IndexOf(arr interface{}, target interface{}) int {
 
 	switch arr := arr.(type) {
+
 	case []string:
 		for i, element := range arr {
 			if element == target {
@@ -868,4 +869,24 @@ func IndexOf(arr interface{}, target interface{}) int {
 	}
 
 	return -1
+}
+
+func NotIn(arr1 []interface{}, arr2 []interface{}) []interface{} {
+
+	result := make([]interface{}, 0)
+
+	array2Map := make(map[interface{}]bool)
+
+	for _, element := range arr2 {
+		array2Map[element] = true
+	}
+
+	for _, element := range arr1 {
+		if _, found := array2Map[element]; !found {
+			result = append(result, element)
+		}
+	}
+
+	return result
+
 }
