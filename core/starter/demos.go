@@ -105,6 +105,9 @@ func init() {
 		// mysql cat
 		AppendRouter("POST", []string{"/demo/mysqlcat/listTables"}, actions.ListTables)
 
+		// promise
+		AppendRouter("GET", []string{"/demo/promise/WaitGroup"}, actions.WaitGroup)
+
 	}
 
 }
