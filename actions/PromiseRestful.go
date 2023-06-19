@@ -28,7 +28,8 @@ func WaitGroup(c *gin.Context) {
 		}, func() {
 			result["3"] = 4
 		}, func() {
-			result["4"] = 5
+			val := 0
+			result["4"] = 5 / val
 		})
 
 		if success {

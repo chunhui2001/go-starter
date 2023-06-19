@@ -22,11 +22,17 @@ func WaitGroup(timeOut int, f ...func()) bool {
 
 		go func(fn func()) {
 
+			defer func() {
+				if r := recover(); r != nil {
+					logger.Errorf("WaitGroup-Func-Error: Error=%v", r)
+				}
+				mu.Unlock()
+				wg.Done()
+			}()
+
 			// 使用互斥锁保护对调用者的并发访问
 			mu.Lock()
 			fn()
-			mu.Unlock()
-			wg.Done()
 
 		}(fn)
 	}
