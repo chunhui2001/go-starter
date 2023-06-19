@@ -14,7 +14,7 @@ var (
 func WaitGroup(timeOut int, f ...func()) bool {
 
 	var wg sync.WaitGroup
-	var mu sync.Mutex
+	// var mu sync.Mutex
 
 	wg.Add(len(f))
 
@@ -26,12 +26,12 @@ func WaitGroup(timeOut int, f ...func()) bool {
 				if r := recover(); r != nil {
 					logger.Errorf("WaitGroup-Func-Error: Error=%v", r)
 				}
-				mu.Unlock()
+				// mu.Unlock()
 				wg.Done()
 			}()
 
 			// 使用互斥锁保护对调用者的并发访问
-			mu.Lock()
+			// mu.Lock()
 			fn()
 
 		}(fn)
