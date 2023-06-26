@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -173,7 +174,7 @@ func WriteExcel(sheetName string, fields *[]string, dataList *[]map[string]inter
 				}
 			} else {
 				theFields := make([]string, 0)
-				for k, _ := range *currentMap {
+				for k := range *currentMap {
 					theFields = append(theFields, k)
 				}
 				for _, fieldName := range theFields {
@@ -204,6 +205,20 @@ func GetFileMd5(file multipart.File) (md5Str string) {
 	}
 
 	return fmt.Sprintf("%x", h.Sum(nil))
+
+}
+
+func Md5(data interface{}) string {
+
+	str := ToJsonString(data)
+
+	// 计算 MD5 值
+	hash := md5.Sum([]byte(str))
+
+	// 将结果转换为十六进制字符串
+	md5Str := hex.EncodeToString(hash[:])
+
+	return md5Str
 
 }
 
