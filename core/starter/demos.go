@@ -108,6 +108,11 @@ func init() {
 		// promise
 		AppendRouter("GET", []string{"/demo/promise/WaitGroup"}, actions.WaitGroup)
 
+		// google
+		AppendRouter("GET", []string{"/demo/google/listAllPermissions"}, actions.GoogleDocListAllPermissionsRouter)
+		AppendRouter("GET", []string{"/demo/google/shardWithReader"}, actions.GoogleDocShardWithReaderRouter)
+		AppendRouter("GET", []string{"/demo/google/createSheet"}, actions.GoogleDocCreateSheetRouter)
+
 	}
 
 }

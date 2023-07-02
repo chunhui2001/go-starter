@@ -280,8 +280,8 @@ var HttpClientConf = &ghttp.HttpConf{
 
 var GoogleAPIConfSettings = &googleapi.GoogleAPIConf{
 	Enable:          false,
-	CredentialsFile: "resources/googleapi-oauth-credentials_gos3.json",
-	TokenFile:       "resources/gos3_token.json",
+	CredentialsFile: "resources/googleapi-oauth-credentials.json",
+	TokenFile:       "resources/googleapi-oauth-token.json",
 	Scopes:          []string{"https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive.metadata", "https://www.googleapis.com/auth/drive.appdata", "https://www.googleapis.com/auth/spreadsheets"},
 }
 

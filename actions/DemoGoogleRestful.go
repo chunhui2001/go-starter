@@ -1,0 +1,31 @@
+package actions
+
+import (
+	. "github.com/chunhui2001/go-starter/core/commons"
+	"github.com/gin-gonic/gin"
+	"net/http"
+
+	"github.com/chunhui2001/go-starter/core/googleapi"
+)
+
+// 列出指定文件的所有权限
+func GoogleDocListAllPermissionsRouter(c *gin.Context) {
+	fileId := c.Query("fileId")
+	permissions, err := googleapi.AllPermissions(fileId)
+	c.JSON(http.StatusOK, (&R{Data: permissions, Error: err}).IfErr(400))
+}
+
+// 创建一个excel表格
+func GoogleDocCreateSheetRouter(c *gin.Context) {
+	sheetTitle := c.Query("sheetTitle")
+	sheetId, err := googleapi.CreateSheet(sheetTitle)
+	c.JSON(http.StatusOK, (&R{Data: sheetId, Error: err}).IfErr(400))
+}
+
+// 分享文件
+func GoogleDocShardWithReaderRouter(c *gin.Context) {
+	fileId := c.Query("fileId")
+	emailAddresses := c.Query("emailAddresses")
+	p, err := googleapi.ShardWithReader(fileId, emailAddresses)
+	c.JSON(http.StatusOK, (&R{Data: p, Error: err}).IfErr(400))
+}

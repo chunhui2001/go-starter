@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/chunhui2001/go-starter/core/utils"
@@ -50,12 +51,14 @@ func Init(conf *GoogleAPIConf, log *logrus.Entry) {
 
 	if err != nil {
 		logger.Errorf("GoogleApi-Unable-to-read-client-secret-file: %v", err)
+		return
 	}
 
 	config, err := google.ConfigFromJSON(b, conf.Scopes...)
 
 	if err != nil {
 		logger.Errorf("GoogleApi-Unable-to-parse-client-secret-file-to-config: %v", err)
+		return
 	}
 
 	Client = getClient(config)
@@ -81,7 +84,9 @@ func Init(conf *GoogleAPIConf, log *logrus.Entry) {
 		return
 	}
 
-	logger.Infof("GoogleApi-Client-init-Successful: CredentialsFile=%s, TokenFile=%s, Scope=%v", CREDENTIALS_FILE, TOKEN_FILE, utils.ToJsonString(SCOPES))
+	logger.Infof("GoogleApi-Client-init-CredentialsFile: File=%s", strings.Replace(CREDENTIALS_FILE, utils.RootDir(), "", -1))
+	logger.Infof("GoogleApi-Client-init-TokenFile: File=%s", strings.Replace(TOKEN_FILE, utils.RootDir(), "", -1))
+	logger.Infof("GoogleApi-Client-init-Scope: Value=%v", SCOPES)
 
 }
 
@@ -113,6 +118,8 @@ func ReadSheet(spreadsheetId string, readRange string) ([][]interface{}, error) 
 
 }
 
+// https://docs.google.com/spreadsheets/u/0/
+// https://docs.google.com/spreadsheets/d/${SpreadsheetId}
 func CreateSheet(title string) (string, error) {
 
 	rb := &sheets.Spreadsheet{
@@ -238,6 +245,32 @@ func InsertPermission(fileId string, value string, permType string, role string)
 	}
 
 	return nil
+
+}
+
+// 多个email地址用逗号分隔
+func ShardWithReader(fileId string, userEmails string) (*drive.Permission, error) {
+
+	permission := &drive.Permission{
+		Type:         "user",
+		Role:         "reader", // 为目标用户授予 "reader" 角色，以允许他们查看和复制文件，但不能修改原始文件。
+		EmailAddress: userEmails,
+		// Value:        userEmails,
+	}
+
+	p, err := DRIVE_SERVICE.Permissions.Insert(fileId, permission).Do()
+
+	// createdPermission, err := DRIVE_SERVICE.Permissions.Create(fileId, permission).Do()
+
+	if err != nil {
+		logger.Errorf("GoogleApi-ShardWithReader-Error: fileId=%s, %v", fileId, err)
+		return nil, err
+	}
+
+	// 获取分享链接
+	// shareURL := createdPermission.Link
+
+	return p, nil
 
 }
 

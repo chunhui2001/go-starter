@@ -3,7 +3,6 @@
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
 APP_NAME 	?=go-starter
-#e 			?=local
 e 			?=local
 c 			?=10000
 #zone 		?=Asia/Shanghai
