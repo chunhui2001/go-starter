@@ -167,6 +167,17 @@ func WriteToSpreadsheet(spreadsheetId string, writeRange string, values *[][]int
 
 }
 
+func ClearSheet(spreadsheetId string) error {
+
+	// 清空表格内容
+	clearRequest := &sheets.BatchClearValuesRequest{}
+
+	_, err := SHEET_SERVICE.Spreadsheets.Values.BatchClear(spreadsheetId, clearRequest).Do()
+
+	return err
+
+}
+
 // 使用 sed 命令来打印文件的指定行数
 // sed -n '1,5p' 文件路径, 这个命令将打印文件 file.txt 中的第 1 行到第 5 行之间的内容。
 func ImportCsv(spreadsheetId string, sheetName string, csvFilePath string, separator string) (int, error) {

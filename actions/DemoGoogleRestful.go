@@ -30,11 +30,18 @@ func GoogleDocShardWithReaderRouter(c *gin.Context) {
 	c.JSON(http.StatusOK, (&R{Data: p, Error: err}).IfErr(400))
 }
 
-// 分享文件
+// 导入csv
 func GoogleDocImportCsvRouter(c *gin.Context) {
 	spreadsheetId := c.Query("spreadsheetId")
 	csvFilePath := c.Query("csvFilePath")
 	_range := c.Query("_range")
 	count, err := googleapi.ImportCsv(spreadsheetId, _range, csvFilePath, ",")
 	c.JSON(http.StatusOK, (&R{Data: count, Error: err}).IfErr(400))
+}
+
+// 导入csv
+func GoogleDocClearSheetRouter(c *gin.Context) {
+	spreadsheetId := c.Query("spreadsheetId")
+	err := googleapi.ClearSheet(spreadsheetId)
+	c.JSON(http.StatusOK, (&R{Data: true, Error: err}).IfErr(400))
 }
