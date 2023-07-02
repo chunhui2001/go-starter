@@ -112,6 +112,7 @@ func init() {
 		AppendRouter("GET", []string{"/demo/google/listAllPermissions"}, actions.GoogleDocListAllPermissionsRouter)
 		AppendRouter("GET", []string{"/demo/google/shardWithReader"}, actions.GoogleDocShardWithReaderRouter)
 		AppendRouter("GET", []string{"/demo/google/createSheet"}, actions.GoogleDocCreateSheetRouter)
+		AppendRouter("GET", []string{"/demo/google/importCsv"}, actions.GoogleDocImportCsvRouter)
 
 	}
 

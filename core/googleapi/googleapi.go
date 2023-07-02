@@ -2,6 +2,7 @@ package googleapi
 
 import (
 	"context"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -163,6 +164,84 @@ func WriteToSpreadsheet(spreadsheetId string, writeRange string, values *[][]int
 	}
 
 	return err
+
+}
+
+// 使用 sed 命令来打印文件的指定行数
+// sed -n '1,5p' 文件路径, 这个命令将打印文件 file.txt 中的第 1 行到第 5 行之间的内容。
+func ImportCsv(spreadsheetId string, sheetName string, csvFilePath string, separator string) (int, error) {
+
+	fi, err := os.Stat(csvFilePath)
+
+	if err != nil {
+		logger.Errorf("GoogleApi-ImportCsv-StatError: %v", err)
+		return 0, err
+	}
+
+	start0 := time.Now()
+
+	// 读取CSV文件数据
+	csvFile, err := os.Open(csvFilePath)
+
+	if err != nil {
+		logger.Errorf("GoogleApi-ImportCsv-OpenError: %v", err)
+		return 0, err
+	}
+
+	defer csvFile.Close()
+
+	logger.Debugf("GoogleApi-ImportCsv-打开文件: 耗时=%s, csvFilePath=%s", time.Since(start0), csvFilePath)
+
+	start1 := time.Now()
+
+	reader := csv.NewReader(csvFile)
+	reader.Comma = []rune(separator)[0] // 设置分隔符
+	csvData, err := reader.ReadAll()
+
+	if err != nil {
+		logger.Fatalf("无法读取CSV文件：%v", err)
+		return 0, err
+	}
+
+	logger.Debugf("GoogleApi-ImportCsv-读取数据: 耗时=%s, Size=%s, csvFilePath=%s", time.Since(start1), utils.HumanFileSizeInt64(fi.Size()), csvFilePath)
+
+	start2 := time.Now()
+
+	// 转换CSV数据格式
+	var values [][]interface{}
+
+	for _, row := range csvData {
+
+		var valueRow []interface{}
+
+		for _, cell := range row {
+			valueRow = append(valueRow, cell)
+		}
+
+		values = append(values, valueRow)
+
+	}
+
+	logger.Debugf("GoogleApi-ImportCsv-转换数据: 耗时=%s, csvFilePath=%s", time.Since(start2), csvFilePath)
+
+	// 构建请求体
+	valueRange := &sheets.ValueRange{
+		Values: values,
+	}
+
+	start3 := time.Now()
+
+	// 执行导入请求
+	_, err = SHEET_SERVICE.Spreadsheets.Values.Update(spreadsheetId, sheetName, valueRange).ValueInputOption("RAW").Do()
+
+	logger.Debugf("GoogleApi-ImportCsv-更新文件: 耗时=%s, 数量=%d, spreadsheetId=%s", time.Since(start3), len(values), spreadsheetId)
+
+	if err != nil {
+		logger.Errorf("GoogleApi-ImportCsv-导入异常：spreadsheetId=%s, csvFilePath=%s, Error=%v", spreadsheetId, csvFilePath, err)
+		return 0, err
+	}
+
+	return len(values), nil
 
 }
 
