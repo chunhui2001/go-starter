@@ -322,6 +322,15 @@ func AsMap(buf []byte) map[string]interface{} {
 	return m
 }
 
+func DecodeJsonString(str string) string {
+	var m string
+	if err := json.Unmarshal([]byte(str), &m); err != nil {
+		fmt.Println(fmt.Sprintf("字节转json异常: jsonString=%s", str))
+		panic(err)
+	}
+	return m
+}
+
 func ToMap(v interface{}) map[string]interface{} {
 	return AsMap(ToJsonBytes(v))
 }

@@ -215,6 +215,10 @@ func AllPermissions(fileId string) ([]*drive.Permission, error) {
 		return nil, err
 	}
 
+	for _, p := range r.Items {
+		p.Etag = utils.DecodeJsonString(p.Etag)
+	}
+
 	return r.Items, nil
 
 }
@@ -255,7 +259,7 @@ func ShardWithReader(fileId string, userEmails string) (*drive.Permission, error
 		Type:         "user",
 		Role:         "reader", // 为目标用户授予 "reader" 角色，以允许他们查看和复制文件，但不能修改原始文件。
 		EmailAddress: userEmails,
-		// Value:        userEmails,
+		Value:        userEmails,
 	}
 
 	p, err := DRIVE_SERVICE.Permissions.Insert(fileId, permission).Do()
@@ -269,6 +273,8 @@ func ShardWithReader(fileId string, userEmails string) (*drive.Permission, error
 
 	// 获取分享链接
 	// shareURL := createdPermission.Link
+
+	p.Etag = utils.DecodeJsonString(p.Etag)
 
 	return p, nil
 
