@@ -82,14 +82,15 @@ type Cookie struct {
 }
 
 type LogConf struct {
-	Output         string `mapstructure:"LOG_OUTPUT"`
-	FilePath       string `mapstructure:"LOG_FILE_PATH"`
-	FileMaxSize    int    `mapstructure:"LOG_FILE_MAX_SIZE"`
-	FileMaxBackups int    `mapstructure:"LOG_FILE_MAX_BACKUPS"`
-	FileMaxAge     int    `mapstructure:"LOG_FILE_MAX_AGE"`
-	KafkaServer    string `mapstructure:"LOG_KAFKA_SERVER"`
-	KafkaTopic     string `mapstructure:"LOG_KAFKA_TOPIC"`
-	FileFormatter  string `mapstructure:"LOG_FILE_FORMATTER"` // json OR txt
+	Output           string `mapstructure:"LOG_OUTPUT"`
+	FilePath         string `mapstructure:"LOG_FILE_PATH"`
+	FileMaxSize      int    `mapstructure:"LOG_FILE_MAX_SIZE"`
+	FileMaxBackups   int    `mapstructure:"LOG_FILE_MAX_BACKUPS"`
+	FileMaxAge       int    `mapstructure:"LOG_FILE_MAX_AGE"`
+	KafkaServer      string `mapstructure:"LOG_KAFKA_SERVER"`
+	KafkaTopic       string `mapstructure:"LOG_KAFKA_TOPIC"`
+	FileFormatter    string `mapstructure:"LOG_FILE_FORMATTER"`    // json OR txt
+	ConsoleFormatter string `mapstructure:"LOG_CONSOLE_FORMATTER"` // json OR txt
 }
 
 type WebPageConf struct {
@@ -136,11 +137,12 @@ var SimpleGTaskConf = &gztask.SimpleGTask{
 }
 
 var LogSettings = &LogConf{
-	Output:         "console",
-	FileMaxSize:    1, // 1MB
-	FileMaxBackups: 10,
-	FileMaxAge:     30,
-	FileFormatter:  "txt", // json OR txt
+	Output:           "console",
+	FileMaxSize:      1, // 1MB
+	FileMaxBackups:   10,
+	FileMaxAge:       30,
+	FileFormatter:    "txt", // json OR txt,
+	ConsoleFormatter: "txt", // json OR txt
 }
 
 var WebPageSettings = &WebPageConf{
@@ -425,7 +427,12 @@ func InitLog() {
 
 		myLog.SetLevel(logrus.DebugLevel)
 		myLog.SetReportCaller(true)
-		myLog.SetFormatter(txtFormatter())
+
+		if LogSettings.ConsoleFormatter == "json" {
+			myLog.SetFormatter(jsonFormatter())
+		} else {
+			myLog.SetFormatter(txtFormatter())
+		}
 
 	} else {
 		myLog.Out = ioutil.Discard
