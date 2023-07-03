@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/chunhui2001/go-starter/core/googleapi"
+	"github.com/chunhui2001/go-starter/core/utils"
 )
 
 // 列出指定文件的所有权限
@@ -44,4 +45,26 @@ func GoogleDocClearSheetRouter(c *gin.Context) {
 	spreadsheetId := c.Query("spreadsheetId")
 	err := googleapi.ClearSheet(spreadsheetId)
 	c.JSON(http.StatusOK, (&R{Data: true, Error: err}).IfErr(400))
+}
+
+// 导入csv
+func GoogleDocCsvReaderRouter(c *gin.Context) {
+
+	csvFilePath := c.Query("csvFilePath")
+	windowSize := c.Query("windowSize")
+
+	stream := func(rows [][]string, err error) {
+		logger.Infof(`Count=%d, Error=%v`, len(rows), err)
+	}
+
+	csvReader := googleapi.CsvReader{
+		HasHeader: true,
+		FilePath:  csvFilePath,
+		Stream:    stream,
+	}
+
+	csvReader.Read(utils.StrToInt(windowSize))
+
+	c.JSON(http.StatusOK, (&R{Data: csvReader.TotalCount}).Ok())
+
 }

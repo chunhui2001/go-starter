@@ -113,6 +113,7 @@ func init() {
 		AppendRouter("GET", []string{"/demo/google/shardWithReader"}, actions.GoogleDocShardWithReaderRouter)
 		AppendRouter("GET", []string{"/demo/google/createSheet"}, actions.GoogleDocCreateSheetRouter)
 		AppendRouter("GET", []string{"/demo/google/importCsv"}, actions.GoogleDocImportCsvRouter)
+		AppendRouter("GET", []string{"/demo/google/csvReader"}, actions.GoogleDocCsvReaderRouter)
 		AppendRouter("GET", []string{"/demo/google/clearSheet"}, actions.GoogleDocClearSheetRouter)
 
 	}
