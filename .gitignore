@@ -58,6 +58,7 @@ ProjectSettings.json
 *.lock
 *.sqlite
 VSWorkspaceState.json
+log
 
 
 
