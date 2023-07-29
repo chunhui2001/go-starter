@@ -15,7 +15,6 @@ COMMITER 	?=$(shell git log -1 --pretty=format:'%ae')
 PWD 		?=$(shell pwd)
 TIME 		?=$(shell date +%s)
 CGO_ENABLED ?=0
-NODE_ID 	?=1
 GOPROXY 	?=go env -w GO111MODULE=on && go env -w GOPROXY=https://goproxy.cn,direct
 
 ### 整理模块
@@ -54,12 +53,12 @@ get:
 # make run e=development 
 run:
 	rm -rf gin-bin >/dev/null 2>&1
-	TZ=$(zone) GIN_ENV=$(e) NODE_ID=$(NODE_ID) WSS_HOST=$(WSS_HOST) go run .
+	TZ=$(zone) GIN_ENV=$(e) WSS_HOST=$(WSS_HOST) go run .
 
 ### 启动调试程序, 当代码变化时自动重启
 # make dev
 dev:
-	TZ=$(zone) GIN_ENV=$(e) GIN_MAPS_TIMESTAMP=$(GIN_MAPS_TIMESTAMP) NODE_ID=$(NODE_ID) gin -i --appPort 8080 --port 3000 run main.go
+	TZ=$(zone) GIN_ENV=$(e) GIN_MAPS_TIMESTAMP=$(GIN_MAPS_TIMESTAMP) gin -i --appPort 8080 --port 3000 run main.go
 
 ### lint
 lint:
