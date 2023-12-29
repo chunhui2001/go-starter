@@ -25,6 +25,11 @@ GOPROXY 	?=go env -w GO111MODULE=on && go env -w GOPROXY=https://goproxy.cn,dire
 tidy:
 	go mod tidy
 
+### 显示已安装的模块
+# show install utils
+list:
+	ls -alh `go env GOPATH`/bin
+
 ### 安装模块
 # make install mod=github.com/codegangsta/gin
 install:
@@ -71,6 +76,10 @@ Built1:
 Built2:
 	env GOOS=linux  GOARCH=amd64 CGO_ENABLED=1 $(GOPROXY) && go build -buildvcs -ldflags "-X main.Name=$(APP_NAME) -X main.Author=$(COMMITER) -X main.Commit=$(GIT_HASH) -X main.Time=$(TIME)" -o ./dist/$(APP_NAME)-linux-amd64 ./main.go
 
+### 构建跨平台的可执行程序
+Built3:
+	env GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 $(GOPROXY) && go build -buildvcs -ldflags "-X main.Name=$(APP_NAME) -X main.Author=$(COMMITER) -X main.Commit=$(GIT_HASH) -X main.Time=$(TIME)" -o ./dist/$(APP_NAME)-darwin-arm64 ./main.go
+
 Build:
 	docker run --rm -it -v $(PWD):/dist:rw --name build_$(APP_NAME) chunhui2001/ubuntu_20.04_dev:golang_1.19 /bin/bash -c 'cd /dist && make -f Makefile install Built2' -m 4g
 
@@ -79,7 +88,8 @@ up: rm
 	docker-compose -f docker-compose.yml up -d
 
 serve:
-	GIN_ENV=$(e) ./dist/go-starter-darwin-amd64
+	@#GIN_ENV=$(e) ./dist/go-starter-darwin-amd64
+	GIN_ENV=$(e) ./dist/go-starter-darwin-arm64
 
 ### 1 = stdout = normal output of a command
 ### 2 = stderr = error output of a command
@@ -127,11 +137,6 @@ clear:
 passwd:
 	head -c12 < /dev/random | base64
 	@#head -c12 < /dev/urandom | base64
-
-### 显示已安装的可执行程序
-# show install utils
-list:
-	ls -alh `go env GOPATH`/bin
 
 # make ngrok
 #ngrok:

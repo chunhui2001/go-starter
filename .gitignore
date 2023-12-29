@@ -59,6 +59,7 @@ ProjectSettings.json
 *.sqlite
 VSWorkspaceState.json
 log
-
+applog.txt
+gin-bin
 
 
