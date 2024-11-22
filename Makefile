@@ -81,7 +81,7 @@ Built3:
 	env GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 $(GOPROXY) && go build -buildvcs -ldflags "-X main.Name=$(APP_NAME) -X main.Author=$(COMMITER) -X main.Commit=$(GIT_HASH) -X main.Time=$(TIME)" -o ./dist/$(APP_NAME)-darwin-arm64 ./main.go
 
 Build:
-	docker run --rm -it -v $(PWD):/dist:rw --name build_$(APP_NAME) chunhui2001/ubuntu_20.04_dev:golang_1.19 /bin/bash -c 'cd /dist && make -f Makefile install Built2' -m 4g
+	docker run --platform linux/amd64 --rm -it -v $(PWD):/dist:rw --name build_$(APP_NAME) chunhui2001/ubuntu_20.04_dev:golang_1.23 /bin/bash -c 'cd /dist && make -f Makefile install Built2' -m 4g
 
 ### 通过容器启动
 up: rm
