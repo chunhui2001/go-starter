@@ -776,6 +776,14 @@ func loadCookieSettings(v1 *viper.Viper, filename string) {
 }
 
 func loadYamlConfiguraion() {
+	var agolloService string = os.Getenv("APOLLO_CONFIGSERVICE")
+
+	if len(agolloService) > 0 {
+		readApollo2()
+
+		return
+	}
+
 	var env string = os.Getenv("GIN_ENV")
 
 	var f = func(file string) map[string]interface{} {
@@ -812,8 +820,6 @@ func loadYamlConfiguraion() {
 			panic(err)
 		}
 	}
-
-	readApollo2()
 }
 
 // yaml config
@@ -831,8 +837,13 @@ func ReadConfig(key string, data any) error {
 func readConfig(defaults map[string]interface{}, filenames ...string) *viper.Viper {
 	v := viper.New()
 
-	// 加载apollo
-	readApollo1(v)
+	var agolloService string = os.Getenv("APOLLO_CONFIGSERVICE")
+
+	if len(agolloService) > 0 {
+		readApollo1(v)
+
+		return v
+	}
 
 	var f = func(file string, defaultMaps map[string]interface{}) *viper.Viper {
 		v := viper.New()
