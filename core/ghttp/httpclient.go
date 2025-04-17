@@ -271,7 +271,7 @@ func SendRequest(httpClient *HttpClient) *HttpResult {
 	}
 
 	if printCurl {
-		logger.Info(
+		logger.Debug(
 			fmt.Sprintf(
 				"HttpRequest-Successful: Latency=%s, StatusCode=%d, ContentLength=%s, Connection=%s, Curl=%s",
 				latency, res.StatusCode, utils.HumanFileSizeWithInt(contentLengthValue), keepAlived, commandCurl))

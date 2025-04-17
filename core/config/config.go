@@ -831,6 +831,9 @@ func ReadConfig(key string, data any) error {
 func readConfig(defaults map[string]interface{}, filenames ...string) *viper.Viper {
 	v := viper.New()
 
+	// 加载apollo
+	readApollo1(v)
+
 	var f = func(file string, defaultMaps map[string]interface{}) *viper.Viper {
 		v := viper.New()
 
@@ -867,9 +870,6 @@ func readConfig(defaults map[string]interface{}, filenames ...string) *viper.Vip
 		}
 	}
 
-	// 加载apollo
-	readApollo1(v)
-
 	return v
 }
 
@@ -896,7 +896,7 @@ func readApollo1(v *viper.Viper) {
 			v.SetDefault(strings.TrimSpace(key), strings.TrimSpace(val.(string)))
 		}
 
-		log.Printf("Loaded-agollo-properties Successful, agolloService=%s, bodyLen=%d", s1, len(config))
+		log.Printf("Loaded-agollo-properties Successful: configKeyLen=%d, agolloService=%s", len(config), s1)
 	}
 }
 
@@ -931,7 +931,7 @@ func readApollo2() {
 			}
 		}
 
-		Log.Infof("Loaded-agollo-yaml Successful, agolloService=%s, bodyLen=%d", s2, len(config))
+		Log.Infof("Loaded-agollo-yaml Successful: configKeyLen=%d, agolloService=%s", len(body), s2)
 	}
 }
 
