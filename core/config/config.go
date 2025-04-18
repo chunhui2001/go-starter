@@ -965,8 +965,6 @@ func sendApolloRequest(url string) []byte {
 	var headerKey string = os.Getenv("APOLLO_HEADER_KEY")
 	var secretKey string = os.Getenv("APOLLO_SECRET_KEY")
 
-	log.Printf("sendApolloRequest: headerKey=%s, exists=%s", headerKey, res.Header.Get(headerKey))
-
 	if res.Header.Get(headerKey) == "true" {
 		// 解密
 		raw, _ := base64.RawStdEncoding.DecodeString(secretKey)
