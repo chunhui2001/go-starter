@@ -957,7 +957,50 @@ func sendApolloRequest(url string) []byte {
 		return nil
 	}
 
+	var headerKey string = os.Getenv("APOLLO_HEADER_KEY")
+	// var secretKey string = os.Getenv("APOLLO_SECRET_KEY")
+
+	log.Printf("sendApolloRequest: headerKey=%s, exists=%s", headerKey, res.Header.Get(headerKey))
+
+	if res.Header.Get(headerKey) == "true" {
+		// // 解密
+		// raw, _ := base64.RawStdEncoding.DecodeString(secretKey)
+		// sk, _ := x509.ParsePKCS8PrivateKey(raw)
+
+		// privKey := sk.(*rsa.PrivateKey)
+		// partLen := privKey.PublicKey.N.BitLen() / 8
+
+		// resBody, _ := io.ReadAll(res.Body)
+		// chunks := split(resBody, partLen)
+
+		// buffer := bytes.NewBufferString("")
+
+		// for _, chunk := range chunks {
+		// 	decrypted, _ := rsa.DecryptPKCS1v15(rand.Reader, privKey, chunk)
+
+		// 	buffer.Write(decrypted)
+		// }
+
+		// return buffer.Bytes()
+	}
+
 	resBody, _ := io.ReadAll(res.Body)
 
 	return resBody
+}
+
+func split(buf []byte, lim int) [][]byte {
+	var chunk []byte
+	chunks := make([][]byte, 0, len(buf)/lim+1)
+
+	for len(buf) >= lim {
+		chunk, buf = buf[:lim], buf[lim:]
+		chunks = append(chunks, chunk)
+	}
+
+	if len(buf) > 0 {
+		chunks = append(chunks, buf[:])
+	}
+
+	return chunks
 }
