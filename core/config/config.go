@@ -1,6 +1,11 @@
 package config
 
 import (
+	"bytes"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -958,30 +963,30 @@ func sendApolloRequest(url string) []byte {
 	}
 
 	var headerKey string = os.Getenv("APOLLO_HEADER_KEY")
-	// var secretKey string = os.Getenv("APOLLO_SECRET_KEY")
+	var secretKey string = os.Getenv("APOLLO_SECRET_KEY")
 
 	log.Printf("sendApolloRequest: headerKey=%s, exists=%s", headerKey, res.Header.Get(headerKey))
 
 	if res.Header.Get(headerKey) == "true" {
-		// // 解密
-		// raw, _ := base64.RawStdEncoding.DecodeString(secretKey)
-		// sk, _ := x509.ParsePKCS8PrivateKey(raw)
+		// 解密
+		raw, _ := base64.RawStdEncoding.DecodeString(secretKey)
+		sk, _ := x509.ParsePKCS8PrivateKey(raw)
 
-		// privKey := sk.(*rsa.PrivateKey)
-		// partLen := privKey.PublicKey.N.BitLen() / 8
+		privKey := sk.(*rsa.PrivateKey)
+		partLen := privKey.PublicKey.N.BitLen() / 8
 
-		// resBody, _ := io.ReadAll(res.Body)
-		// chunks := split(resBody, partLen)
+		resBody, _ := io.ReadAll(res.Body)
+		chunks := split(resBody, partLen)
 
-		// buffer := bytes.NewBufferString("")
+		buffer := bytes.NewBufferString("")
 
-		// for _, chunk := range chunks {
-		// 	decrypted, _ := rsa.DecryptPKCS1v15(rand.Reader, privKey, chunk)
+		for _, chunk := range chunks {
+			decrypted, _ := rsa.DecryptPKCS1v15(rand.Reader, privKey, chunk)
 
-		// 	buffer.Write(decrypted)
-		// }
+			buffer.Write(decrypted)
+		}
 
-		// return buffer.Bytes()
+		return buffer.Bytes()
 	}
 
 	resBody, _ := io.ReadAll(res.Body)
