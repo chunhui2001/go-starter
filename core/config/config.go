@@ -965,15 +965,34 @@ func sendApolloRequest(url string) []byte {
 	var headerKey string = os.Getenv("APOLLO_HEADER_KEY")
 	var secretKey string = os.Getenv("APOLLO_SECRET_KEY")
 
+	log.Printf("sendApolloRequest: headerKey=%s, exists=%s", headerKey, res.Header.Get(headerKey))
+
 	if res.Header.Get(headerKey) == "true" {
+
+		log.Printf("sendApolloRequest: secretKeyLength=%d", len(secretKey))
+
 		// 解密
-		raw, _ := base64.RawStdEncoding.DecodeString(secretKey)
-		sk, _ := x509.ParsePKCS8PrivateKey(raw)
+		raw, errr1 := base64.RawStdEncoding.DecodeString(secretKey)
+
+		if errr1 != nil {
+			log.Printf("sendApolloRequest-DecodeString: Error: ErrorMessage=%s", errr1)
+		}
+
+		sk, errr2 := x509.ParsePKCS8PrivateKey(raw)
+
+		if errr2 != nil {
+			log.Printf("sendApolloRequest-ParsePKCS8PrivateKey: Error: ErrorMessage=%s", errr2)
+		}
 
 		privKey := sk.(*rsa.PrivateKey)
 		partLen := privKey.PublicKey.N.BitLen() / 8
 
-		resBody, _ := io.ReadAll(res.Body)
+		resBody, errr3 := io.ReadAll(res.Body)
+
+		if errr3 != nil {
+			log.Printf("sendApolloRequest-ParsePKCS8PrivateKey: Error: ErrorMessage=%s", errr3)
+		}
+
 		chunks := split(resBody, partLen)
 
 		buffer := bytes.NewBufferString("")
