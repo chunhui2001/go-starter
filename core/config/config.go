@@ -839,6 +839,11 @@ func ReadConfig(key string, data any) error {
 	return nil
 }
 
+func AllConfig() map[string]interface{} {
+
+	return applicationConfig
+}
+
 func readConfig(defaults map[string]interface{}, filenames ...string) *viper.Viper {
 	v := viper.New()
 
