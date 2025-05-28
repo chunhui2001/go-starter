@@ -45,7 +45,7 @@ import (
 
 	lkh "github.com/gfremex/logrus-kafka-hook"
 	"github.com/jinzhu/copier"
-	"github.com/olekukonko/tablewriter"
+	// "github.com/olekukonko/tablewriter"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -397,25 +397,25 @@ func init() {
 
 func printConfigLogLines() {
 
-	tableString := &strings.Builder{}
-	table := tablewriter.NewWriter(tableString)
-	table.SetBorders(tablewriter.Border{Left: true, Top: true, Right: true, Bottom: true})
-	table.SetRowLine(true)
-	table.SetAutoWrapText(false)
-	table.SetColumnAlignment([]int{tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_LEFT})
+	// tableString := &strings.Builder{}
+	// table := tablewriter.NewWriter(tableString)
+	// table.SetBorders(tablewriter.Border{Left: true, Top: true, Right: true, Bottom: true})
+	// table.SetRowLine(true)
+	// table.SetAutoWrapText(false)
+	// table.SetColumnAlignment([]int{tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_LEFT})
 
-	for _, v := range configLoggerLines {
-		table.Append(v)
-	}
+	// for _, v := range configLoggerLines {
+	// 	table.Append(v)
+	// }
 
-	table.Render() // Send output
-	tableLines := utils.Split(tableString.String(), "\n")
+	// table.Render() // Send output
+	// tableLines := utils.Split(tableString.String(), "\n")
 
-	for _, line := range tableLines {
-		if line != "" {
-			Log.Info(line)
-		}
-	}
+	// for _, line := range tableLines {
+	// 	if line != "" {
+	// 		Log.Info(line)
+	// 	}
+	// }
 }
 
 func InitLog() {
