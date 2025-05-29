@@ -1074,10 +1074,10 @@ func parse0(input map[string]any) map[string]any {
 			}
 
 			// 解析字段路径
-			assignNestedMap(list[index], fieldPath, parseValue(val))
+			assignNestedMap(list[index], fieldPath, parseValue(fieldPath, val))
 		} else {
 			// 普通嵌套 map 形式
-			assignNestedMap(result, key, parseValue(val))
+			assignNestedMap(result, key, parseValue(key, val))
 		}
 	}
 
@@ -1119,10 +1119,12 @@ func parse0(input map[string]any) map[string]any {
 }
 
 // parseValue 将字符串转 bool 或去引号
-func parseValue(v any) any {
+func parseValue(key string, v any) any {
 	if v == nil {
 		return ""
 	}
+
+	log.Printf("parseValue: key=%s, Value=%?", key, v)
 
 	v = strings.Trim(v.(string), `"'`)
 
