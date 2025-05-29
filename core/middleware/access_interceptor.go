@@ -32,7 +32,7 @@ func AccessInterceptor(enable bool) gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 
-		if !enable {
+		if !enable || accessClientsMap == nil || len(accessClientsMap) == 0 {
 			c.Next()
 			return
 		}
