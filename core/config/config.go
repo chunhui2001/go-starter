@@ -837,8 +837,9 @@ func ReadConfig(key string, data any) error {
 	value := applicationConfig[key]
 
 	var agolloService string = os.Getenv("APOLLO_CONFIGSERVICE")
+	var parse0Enable string = os.Getenv("APOLLO_PARSE0_ENABLE")
 
-	if len(agolloService) > 0 {
+	if len(agolloService) > 0 && parse0Enable == "true" {
 		conf := parse0(applicationConfig)
 
 		value = conf[key]
