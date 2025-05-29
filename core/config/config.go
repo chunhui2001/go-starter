@@ -12,6 +12,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -45,6 +47,7 @@ import (
 
 	lkh "github.com/gfremex/logrus-kafka-hook"
 	"github.com/jinzhu/copier"
+
 	// "github.com/olekukonko/tablewriter"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
@@ -830,7 +833,16 @@ func loadYamlConfiguraion() {
 
 // yaml config
 func ReadConfig(key string, data any) error {
+
 	value := applicationConfig[key]
+
+	var agolloService string = os.Getenv("APOLLO_CONFIGSERVICE")
+
+	if len(agolloService) > 0 {
+		conf := parse0(applicationConfig)
+
+		value = conf[key]
+	}
 
 	if err := json.Unmarshal(utils.ToJsonBytes(value), data); err != nil {
 		Log.Errorf("Configuration-Error: Key=%s, ErrorMessage=%v", "key", err)
@@ -1037,4 +1049,110 @@ func split(buf []byte, lim int) [][]byte {
 	}
 
 	return chunks
+}
+
+func parse0(input map[string]interface{}) map[string]interface{} {
+	result := map[string]interface{}{}
+
+	// 正则匹配数组形式字段
+	reArray := regexp.MustCompile(`^([^\[]+)\[(\d+)\]\.(.+)$`)
+
+	for key, val := range input {
+		if matches := reArray.FindStringSubmatch(key); len(matches) == 4 {
+			listKey, indexStr, fieldPath := matches[1], matches[2], matches[3]
+			index, _ := strconv.Atoi(indexStr)
+
+			// 初始化数组容器
+			if _, ok := result[listKey]; !ok {
+				result[listKey] = map[int]map[string]interface{}{}
+			}
+
+			list := result[listKey].(map[int]map[string]interface{})
+
+			if _, ok := list[index]; !ok {
+				list[index] = map[string]interface{}{}
+			}
+
+			// 解析字段路径
+			assignNestedMap(list[index], fieldPath, parseValue(val))
+		} else {
+			// 普通嵌套 map 形式
+			assignNestedMap(result, key, parseValue(val))
+		}
+	}
+
+	// 把 map[int] → []map 的转换进行处理
+	for key, val := range result {
+		if m, ok := val.(map[int]map[string]interface{}); ok {
+			length := len(m)
+			list := make([]map[string]interface{}, length)
+			indices := []int{}
+
+			for i := range m {
+				indices = append(indices, i)
+			}
+
+			sort.Ints(indices)
+
+			for i, idx := range indices {
+				list[i] = m[idx]
+			}
+
+			result[key] = list
+		}
+	}
+
+	// 输出为 YAML
+	yamlBytes, err := yaml.Marshal(result)
+
+	if err != nil {
+		panic(err)
+	}
+
+	var body map[string]interface{}
+
+	if err := yaml.Unmarshal(yamlBytes, &body); err != nil {
+		return body
+	} else {
+		return body
+	}
+}
+
+// parseValue 将字符串转 bool 或去引号
+func parseValue(v interface{}) interface{} {
+	if v == nil {
+		return ""
+	}
+
+	log.Printf("parseValue: Value=%?", v)
+
+	v = strings.Trim(v.(string), `"'`)
+
+	if v == "true" {
+
+		return true
+	} else if v == "false" {
+
+		return false
+	}
+
+	return v
+}
+
+// assignNestedMap 将路径如 "a.b.c" 分配到嵌套结构中
+func assignNestedMap(m map[string]interface{}, path string, val interface{}) {
+	parts := strings.Split(path, ".")
+	curr := m
+
+	for i, p := range parts {
+		if i == len(parts)-1 {
+			curr[p] = val
+		} else {
+			if _, ok := curr[p]; !ok {
+				curr[p] = map[string]interface{}{}
+			}
+
+			curr = curr[p].(map[string]interface{})
+		}
+	}
 }
