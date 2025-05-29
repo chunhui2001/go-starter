@@ -1051,8 +1051,8 @@ func split(buf []byte, lim int) [][]byte {
 	return chunks
 }
 
-func parse0(input map[string]interface{}) map[string]interface{} {
-	result := map[string]interface{}{}
+func parse0(input map[string]any) map[string]any {
+	result := map[string]any{}
 
 	// 正则匹配数组形式字段
 	reArray := regexp.MustCompile(`^([^\[]+)\[(\d+)\]\.(.+)$`)
@@ -1064,13 +1064,13 @@ func parse0(input map[string]interface{}) map[string]interface{} {
 
 			// 初始化数组容器
 			if _, ok := result[listKey]; !ok {
-				result[listKey] = map[int]map[string]interface{}{}
+				result[listKey] = map[int]map[string]any{}
 			}
 
-			list := result[listKey].(map[int]map[string]interface{})
+			list := result[listKey].(map[int]map[string]any)
 
 			if _, ok := list[index]; !ok {
-				list[index] = map[string]interface{}{}
+				list[index] = map[string]any{}
 			}
 
 			// 解析字段路径
@@ -1083,9 +1083,9 @@ func parse0(input map[string]interface{}) map[string]interface{} {
 
 	// 把 map[int] → []map 的转换进行处理
 	for key, val := range result {
-		if m, ok := val.(map[int]map[string]interface{}); ok {
+		if m, ok := val.(map[int]map[string]any); ok {
 			length := len(m)
-			list := make([]map[string]interface{}, length)
+			list := make([]map[string]any, length)
 			indices := []int{}
 
 			for i := range m {
@@ -1109,7 +1109,7 @@ func parse0(input map[string]interface{}) map[string]interface{} {
 		panic(err)
 	}
 
-	var body map[string]interface{}
+	var body map[string]any
 
 	if err := yaml.Unmarshal(yamlBytes, &body); err != nil {
 		return body
@@ -1119,12 +1119,10 @@ func parse0(input map[string]interface{}) map[string]interface{} {
 }
 
 // parseValue 将字符串转 bool 或去引号
-func parseValue(v interface{}) interface{} {
+func parseValue(v any) any {
 	if v == nil {
 		return ""
 	}
-
-	log.Printf("parseValue: Value=%?", v)
 
 	v = strings.Trim(v.(string), `"'`)
 
@@ -1140,7 +1138,7 @@ func parseValue(v interface{}) interface{} {
 }
 
 // assignNestedMap 将路径如 "a.b.c" 分配到嵌套结构中
-func assignNestedMap(m map[string]interface{}, path string, val interface{}) {
+func assignNestedMap(m map[string]any, path string, val any) {
 	parts := strings.Split(path, ".")
 	curr := m
 
@@ -1149,10 +1147,10 @@ func assignNestedMap(m map[string]interface{}, path string, val interface{}) {
 			curr[p] = val
 		} else {
 			if _, ok := curr[p]; !ok {
-				curr[p] = map[string]interface{}{}
+				curr[p] = map[string]any{}
 			}
 
-			curr = curr[p].(map[string]interface{})
+			curr = curr[p].(map[string]any)
 		}
 	}
 }
