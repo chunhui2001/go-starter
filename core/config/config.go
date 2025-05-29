@@ -297,6 +297,7 @@ var Log *logrus.Entry
 var myViper *viper.Viper
 var filename string = ".env"
 var applicationConfig map[string]interface{}
+var yamlContent string = ""
 
 func AppRoot() string {
 	return utils.RootDir()
@@ -844,6 +845,11 @@ func AllConfig() map[string]interface{} {
 	return applicationConfig
 }
 
+func AllYamlContent() string {
+
+	return yamlContent
+}
+
 func readConfig(defaults map[string]interface{}, filenames ...string) *viper.Viper {
 	v := viper.New()
 
@@ -939,6 +945,7 @@ func readApollo2() {
 	if httpResponse2 != nil {
 		responseMap := utils.AsMap(httpResponse2)
 		config := responseMap["configurations"].(map[string]interface{})["content"].(string)
+		yamlContent = config
 
 		var body map[string]interface{}
 
